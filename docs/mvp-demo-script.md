@@ -14,7 +14,7 @@ First, I created `docs/shipshape-audit-report.md`. This is the working audit rep
 
 Second, I created `scripts/audit-type-safety.mjs`. This script measures TypeScript escape hatches using the TypeScript compiler API instead of relying only on regex. It counts explicit `any` types, type assertions, non-null assertions, and `@ts-ignore` / `@ts-expect-error` directives across `web/src`, `api/src`, and `shared/src`.
 
-Third, I created `docs/workstation-mvp-runbook.md`. This turns the architecture plan into a local workstation checklist: PostgreSQL 16 on localhost, the Express API on port 3000, the Vite React frontend on port 5173, and local audit tools for the remaining measurements.
+Third, I created `docs/aws-mvp-deployment-notes.md`. This turns the architecture plan into an AWS deployment checklist: Terraform for infrastructure, Elastic Beanstalk for the Express API and WebSocket server, and S3 plus CloudFront for the React frontend.
 
 ## Type Safety Baseline
 
@@ -63,23 +63,23 @@ The remaining audit categories need a live app with a real database:
 
 I deliberately did not fake those numbers. API latency without seeded data would be misleading. Query efficiency without Postgres logs would be guesswork. Runtime and accessibility findings need a running UI, authenticated flows, and browser evidence.
 
-## Workstation Run Plan
+## AWS Deployment Plan
 
-The next step is to run the app locally on a workstation.
+The next step is to deploy the app on AWS using the government-compliant infrastructure plan.
 
-The clean local shape is:
+The clean AWS shape is:
 
-- PostgreSQL 16 on `localhost:5432`
-- Express API and WebSocket server on `localhost:3000`
-- Vite React frontend on `localhost:5173`
-- Browser-based audit tooling for Network traces, Lighthouse, axe, and runtime edge cases
+- Aurora Serverless v2 PostgreSQL 16 for the database
+- Elastic Beanstalk behind an ALB for the Express API and WebSocket server
+- S3 and CloudFront for the Vite frontend
+- SSM Parameter Store for secrets and environment configuration
 
-The API needs `DATABASE_URL`, `SESSION_SECRET`, `CORS_ORIGIN`, and `APP_BASE_URL`. The frontend needs `VITE_API_URL` and `VITE_APP_ENV=development`.
+The API needs `DATABASE_URL`, `SESSION_SECRET`, `CORS_ORIGIN`, and `APP_BASE_URL`. The frontend needs `VITE_API_URL` and `VITE_APP_ENV=production`.
 
-Once the local stack is live, I can seed the database, trace the five required user flows, run API benchmarks, capture query logs and `EXPLAIN ANALYZE`, run Lighthouse and axe, and complete the remaining audit tables.
+Once AWS is live, I can seed the Aurora database, trace the five required user flows, run API benchmarks, capture query logs and `EXPLAIN ANALYZE`, run Lighthouse and axe, and complete the remaining audit tables.
 
 ## Closing
 
-The main value of this MVP is that it establishes a defensible audit foundation. I have real baseline numbers for type safety, bundle size, and test surface area, and I have clearly separated what is measured from what still requires a fully running local environment.
+The main value of this MVP is that it establishes a defensible audit foundation. I have real baseline numbers for type safety, bundle size, and test surface area, and I have clearly separated what is measured from what still requires a deployed environment.
 
-The next milestone is to get the workstation stack live, seed it, and finish the remaining four measurement-heavy categories with evidence instead of assumptions.
+The next milestone is to get the AWS deployment live, seed it, and finish the remaining four measurement-heavy categories with evidence instead of assumptions.

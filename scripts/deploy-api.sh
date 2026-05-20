@@ -24,10 +24,14 @@ if ! command -v aws &> /dev/null; then
     exit 1
 fi
 
-# Check if pnpm is installed
-if ! command -v pnpm &> /dev/null; then
-    echo "Error: pnpm is not installed"
-    echo "Install with: npm install -g pnpm"
+# Check if pnpm is installed. Fall back to Corepack when pnpm is not on PATH.
+if command -v pnpm &> /dev/null; then
+    PNPM_CMD="pnpm"
+elif command -v corepack &> /dev/null; then
+    PNPM_CMD="corepack pnpm"
+else
+    echo "Error: pnpm is not installed and corepack is not available"
+    echo "Install with: npm install -g pnpm, or enable Corepack"
     exit 1
 fi
 
@@ -48,14 +52,14 @@ echo ""
 echo "Step 1: Building shared package..."
 echo "-----------------------------------"
 cd "$PROJECT_ROOT/shared"
-pnpm build
+$PNPM_CMD build
 echo "Shared package built successfully"
 
 echo ""
 echo "Step 2: Building API package..."
 echo "-----------------------------------"
 cd "$PROJECT_ROOT/api"
-pnpm build
+$PNPM_CMD build
 echo "API package built successfully"
 
 echo ""
@@ -86,9 +90,11 @@ cp -r "$PROJECT_ROOT/api/dist/"* "$DEPLOY_DIR/api/dist/"
 cp "$PROJECT_ROOT/shared/package.json" "$DEPLOY_DIR/shared/"
 cp -r "$PROJECT_ROOT/shared/dist/"* "$DEPLOY_DIR/shared/dist/"
 
-# Copy vendor dependencies (SDK linked via file: protocol)
-mkdir -p "$DEPLOY_DIR/vendor"
-cp -r "$PROJECT_ROOT/vendor/"* "$DEPLOY_DIR/vendor/"
+# Copy vendor dependencies if present (some clones do not use file: vendor deps)
+if [ -d "$PROJECT_ROOT/vendor" ]; then
+    mkdir -p "$DEPLOY_DIR/vendor"
+    cp -r "$PROJECT_ROOT/vendor/"* "$DEPLOY_DIR/vendor/"
+fi
 
 # Create the deployment ZIP
 ZIP_FILE="$PROJECT_ROOT/deploy-api-${VERSION_LABEL}.zip"

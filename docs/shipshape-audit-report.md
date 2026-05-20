@@ -138,7 +138,7 @@ Pending. Local API benchmarks require a running PostgreSQL database and a runnin
 
 ### Findings
 
-The audit cannot honestly report API latency from an empty database or from failed local setup. The next valid measurement point is a proper workstation setup with Node 20+, PostgreSQL 16, and seeded local data.
+The audit cannot honestly report API latency from an empty database or from failed local setup. The next valid measurement point is the AWS deployment with seeded Aurora data.
 
 Severity: Measurement blocked; not yet scored.
 
@@ -221,7 +221,7 @@ Pending. Requires a running app instance and representative authenticated pages.
 
 ### Findings
 
-The repo includes accessibility E2E files, including `e2e/accessibility.spec.ts` and `e2e/accessibility-remediation.spec.ts`, which suggests accessibility has been considered. That is not a substitute for current Lighthouse/axe evidence. The audit still needs page-level scores and violation counts from the running local app.
+The repo includes accessibility E2E files, including `e2e/accessibility.spec.ts` and `e2e/accessibility-remediation.spec.ts`, which suggests accessibility has been considered. That is not a substitute for current Lighthouse/axe evidence. The audit still needs page-level scores and violation counts from the deployed app.
 
 Severity: Measurement blocked; not yet scored.
 
@@ -229,7 +229,7 @@ Severity: Measurement blocked; not yet scored.
 
 To pass the audit gate tonight, the remaining required work is:
 
-1. Run the app locally with PostgreSQL and seeded data.
+1. Deploy the app to AWS with PostgreSQL and seeded data.
 2. Capture API benchmark numbers for five endpoints at 10, 25, and 50 concurrency.
 3. Enable query logging and capture query counts plus `EXPLAIN ANALYZE` for the five user flows.
 4. Run browser-based runtime error scenarios and record console/server evidence.
@@ -238,4 +238,4 @@ To pass the audit gate tonight, the remaining required work is:
 
 ## Recommendation
 
-For tonight's MVP, prioritize passing the audit gate before implementation work. Early implementation proof is useful only after the baseline is complete; without baseline numbers, any improvement claim is vulnerable. The best sequence is: provision the workstation, seed, measure all seven categories, finish the audit report, then use the clearest high-impact findings to choose Friday's fixes.
+For tonight's MVP, prioritize passing the audit gate before implementation work. Early implementation proof is useful only after the baseline is complete; without baseline numbers, any improvement claim is vulnerable. The best sequence is: deploy/provision, seed, measure all seven categories, finish the audit report, then use the clearest high-impact findings to choose Friday's fixes.

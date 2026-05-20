@@ -1,228 +1,117 @@
-# Ship - Workstation Architecture Plan
+# Ship - AWS Infrastructure Plan
 
-Local-first deployment for running and auditing the Express API + React frontend on a workstation.
+Government-compliant deployment for Express API + React frontend.
 
 ## Architecture Overview
 
 ```text
 +---------------------------------------------------------------------+
-| Developer Workstation                                               |
-|                                                                     |
-|  Browser                                                            |
-|    |                                                                |
-|    | http://localhost:5173                                          |
-|    v                                                                |
-|  Vite Dev Server (React frontend)                                   |
-|    |                                                                |
-|    | /api, /events, /collaboration proxy                            |
-|    v                                                                |
-|  Express API + WebSocket Server                                     |
-|    | http://localhost:3000                                          |
-|    v                                                                |
-|  PostgreSQL 16                                                      |
-|    | localhost:5432                                                 |
-|    v                                                                |
-|  Local database: ship_dev                                           |
-|                                                                     |
-|  Audit tools: pnpm, TypeScript, Vitest, Playwright, autocannon, axe |
+| Route53 + ACM Certificate                                           |
+|  +- api.example.gov -> ALB -> Elastic Beanstalk (Express + WebSocket)|
+|  +- app.example.gov -> CloudFront -> S3 (React static site)          |
 +---------------------------------------------------------------------+
+         |                                    |
+         |                                    |
++--------v------------------------------------v-----------------------+
+| VPC (10.0.0.0/16)                                                   |
+|  +------------------+         +----------------------------------+   |
+|  | Public Subnets   |         | Private Subnets                  |   |
+|  |  +------------+  |         |  +----------------------------+  |   |
+|  |  |    ALB     |<-+---------+--| Elastic Beanstalk          |  |   |
+|  |  +------------+  |         |  | (Docker: Express + WS)     |  |   |
+|  +------------------+         |  +----------------------------+  |   |
+|                               |  +----------------------------+  |   |
+|                               |  | Aurora Serverless v2       |  |   |
+|                               |  | (PostgreSQL 16)            |  |   |
+|                               |  +----------------------------+  |   |
++---------------------------------------------------------------------+
+                                    |
+                          +---------v--------+
+                          | SSM Parameter    |
+                          | Store (Secrets)  |
+                          +------------------+
 ```
 
-## Goals
+## Cost Estimate
 
-- Run the full app locally without AWS, Render, or GitLab deployment dependency.
-- Make audit measurements repeatable on one workstation.
-- Keep the production architecture out of the critical path for the MVP audit.
-- Use the same application codepaths as production wherever possible: Express API, Vite frontend, PostgreSQL, WebSockets, migrations, and seed data.
-
-## Required Local Services
-
-| Service | Local Role | Default |
-| --- | --- | --- |
-| Node.js | Runtime for API, Vite, tests, scripts | Node 20+ |
-| pnpm | Workspace package manager | `10.27.0` via Corepack |
-| PostgreSQL | Application database | PostgreSQL 16 on `localhost:5432` |
-| Browser | Manual QA, Lighthouse, axe, Network tab tracing | Chrome/Chromium |
-
-## Local URLs
-
-| Component | URL |
-| --- | --- |
-| Web app | `http://localhost:5173` |
-| API | `http://localhost:3000` |
-| WebSocket collaboration | `ws://localhost:3000/collaboration` |
-| Server-sent events | `http://localhost:3000/events` |
-| PostgreSQL | `postgresql://ship:ship_dev_password@localhost:5432/ship_dev` |
+| Resource | Configuration | Monthly Cost |
+| --- | --- | ---: |
+| Elastic Beanstalk | t3.small | ~$15 |
+| Aurora Serverless v2 | 0.5 ACU min | ~$43 |
+| ALB | Minimal traffic | ~$20 |
+| CloudFront | 10GB transfer | ~$1 |
+| S3 | Static hosting | ~$1 |
+| SSM Parameters | Standard | Free |
+| **Total** | | **~$80/month** |
 
 ## Directory Structure
 
 ```text
 ship/
+|-- terraform/                    # Infrastructure (deploy rarely)
+|   |-- versions.tf               # Provider configuration
+|   |-- variables.tf              # Input variables
+|   |-- vpc.tf                    # VPC, subnets, NAT
+|   |-- database.tf               # Aurora Serverless v2
+|   |-- ssm.tf                    # SSM Parameter Store
+|   |-- security-groups.tf        # Network security
+|   |-- s3-cloudfront.tf          # Frontend hosting
+|   `-- outputs.tf                # Values for EB config
+|
 |-- api/
-|   |-- src/
-|   |   |-- index.ts              # API entry point
-|   |   |-- app.ts                # Express app setup
-|   |   |-- db/
-|   |   |   |-- schema.sql        # Database schema
-|   |   |   |-- migrate.ts        # Migration runner
-|   |   |   `-- seed.ts           # Seed data
-|   |   `-- collaboration/        # WebSocket + Yjs collaboration
-|   `-- package.json
+|   |-- Dockerfile                # API container (ECR Public Node.js)
+|   |-- .dockerignore
+|   |-- .platform/                # Elastic Beanstalk config
+|   |   `-- nginx/
+|   |       `-- conf.d/
+|   |           `-- websocket.conf
+|   `-- .ebextensions/
+|       |-- 01-env.config         # Environment variables
+|       `-- 02-cloudwatch.config  # Logging
 |
 |-- web/
-|   |-- src/                      # React frontend
-|   |-- vite.config.ts            # Dev proxy to API
-|   `-- package.json
+|   `-- dist/                     # Build output (deploy to S3)
 |
-|-- shared/
-|   `-- src/                      # Shared TypeScript types/constants
-|
-|-- e2e/                          # Playwright E2E tests
-|-- docker-compose.yml            # Optional local PostgreSQL
-|-- docker-compose.local.yml      # Optional full local stack
 `-- scripts/
-    |-- dev.sh                    # Unix local dev helper
-    |-- audit-type-safety.mjs     # Type-safety audit helper
-    `-- watch-tests.sh            # Test helper
+    |-- deploy-infrastructure.sh  # Terraform deployment
+    |-- deploy-api.sh             # EB CLI deployment
+    `-- deploy-frontend.sh        # S3 + CloudFront deployment
 ```
 
-## Local Setup Order
+## Deployment Order
 
-1. Install Node 20+.
-2. Enable Corepack and install dependencies.
-3. Start PostgreSQL 16 locally.
-4. Create the `ship_dev` database/user if needed.
-5. Run migrations.
-6. Seed realistic audit data.
-7. Start the API.
-8. Start the web app.
-9. Run audit measurements against the local app.
-
-## Commands
-
-### Install Dependencies
-
-```bash
-corepack enable
-corepack pnpm install --frozen-lockfile
-```
-
-### Database
-
-Use native PostgreSQL 16 when possible. Docker is optional if it is available on the workstation.
-
-Native connection target:
-
-```text
-DATABASE_URL=postgresql://ship:ship_dev_password@localhost:5432/ship_dev
-```
-
-Optional Docker database:
-
-```bash
-docker compose up -d postgres
-```
-
-Run migrations and seed data:
-
-```bash
-DATABASE_URL=postgresql://ship:ship_dev_password@localhost:5432/ship_dev corepack pnpm --filter @ship/api db:migrate
-DATABASE_URL=postgresql://ship:ship_dev_password@localhost:5432/ship_dev corepack pnpm --filter @ship/api db:seed
-```
-
-### Start API
-
-```bash
-DATABASE_URL=postgresql://ship:ship_dev_password@localhost:5432/ship_dev \
-SESSION_SECRET=dev-only-secret \
-CORS_ORIGIN=http://localhost:5173 \
-APP_BASE_URL=http://localhost:5173 \
-corepack pnpm --filter @ship/api dev
-```
-
-### Start Web
-
-```bash
-VITE_API_URL= \
-VITE_APP_ENV=development \
-corepack pnpm --filter @ship/web dev
-```
-
-The Vite dev server proxies `/api`, `/events`, and `/collaboration` to the API port configured in `web/vite.config.ts`.
-
-## Audit Measurement Workflow
-
-### Type Safety
-
-```bash
-node scripts/audit-type-safety.mjs
-corepack pnpm --recursive run type-check
-```
-
-### Bundle Size
-
-```bash
-corepack pnpm --filter @ship/shared build
-VITE_API_URL= corepack pnpm --filter @ship/web exec vite build
-```
-
-### API Response Time
-
-1. Use the browser Network tab to identify the endpoints used by the five required flows.
-2. Benchmark each endpoint locally with the seeded database.
-
-```bash
-autocannon -c 10 -d 30 http://localhost:3000/api/<endpoint>
-autocannon -c 25 -d 30 http://localhost:3000/api/<endpoint>
-autocannon -c 50 -d 30 http://localhost:3000/api/<endpoint>
-```
-
-### Database Query Efficiency
-
-Enable PostgreSQL query logging locally, run the five flows, then inspect query counts and slow queries. Run `EXPLAIN ANALYZE` directly against `ship_dev`.
-
-### Tests
-
-```bash
-corepack pnpm --filter @ship/api test
-corepack pnpm --filter @ship/web test
-corepack pnpm test:e2e
-```
-
-### Runtime Error Handling
-
-Use the local app to test:
-
-- Normal usage with console open
-- Network disconnect/reconnect during collaborative editing
-- Empty, long, special-character, and script-like input
-- Concurrent editing from two browser sessions
-- Slow-network behavior through browser throttling
-
-### Accessibility
-
-Run Lighthouse and axe against `http://localhost:5173` pages after the app is seeded and authenticated.
+1. Infrastructure (Terraform) - Deploy once
+2. API (EB CLI/AWS CLI) - Deploy frequently
+3. Frontend (S3 sync + CloudFront invalidation) - Deploy frequently
 
 ## Key Decisions
 
-### Why Workstation-First?
+### Why Elastic Beanstalk for API?
 
-- It removes cloud setup from the MVP critical path.
-- It lets benchmarks run under controlled hardware and data conditions.
-- It makes the audit reproducible without waiting on DNS, certificates, load balancers, or cloud credentials.
-- It keeps the focus on codebase comprehension and measurement, which is the core assignment.
+- Native WebSocket support via ALB + sticky sessions
+- Faster deploys (3-5 min vs 10-15 min with Fargate)
+- Simpler configuration for monolithic Express app
+- Lower cost ($15/month vs $30/month for Fargate)
 
-### Why Native PostgreSQL?
+### Why SSM Parameter Store (not Secrets Manager)?
 
-- The assignment requires realistic data and query logging.
-- Native PostgreSQL makes `log_statement`, `EXPLAIN ANALYZE`, and local inspection straightforward.
-- Docker remains optional, but the audit should not depend on Docker being installed.
+- User requirement (government pattern preference)
+- Sufficient for this use case
+- Standard parameters are free
+- Simpler IAM permissions
 
-### Why Keep Vite Proxying?
+### Why Split Deployment (Terraform + EB CLI/AWS CLI)?
 
-- The app already expects Vite to proxy API, event, and WebSocket routes in development.
-- That preserves the local browser experience while keeping the API and frontend as separate processes.
+- Terraform for infrastructure that rarely changes
+- API deploys are faster as application version updates
+- Frontend deploys are fast S3 syncs plus CloudFront invalidations
+- Avoids CloudFormation doom loops for ordinary code changes
 
-## Cloud Deployment Status
+## Government Compliance
 
-AWS infrastructure remains a future deployment option, but it is no longer the MVP path. The current MVP path is local workstation execution with reproducible local measurements.
+- ECR Public images (Docker Hub blocked)
+- No Alpine images (use `-slim` variants)
+- SSL strict mode disabled in Dockerfile
+- CloudTrail enabled for audit logging
+- VPC Flow Logs for network monitoring
+- Encryption at rest (Aurora, S3)
