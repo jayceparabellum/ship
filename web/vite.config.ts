@@ -84,6 +84,19 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: proxyConfig,
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return undefined;
+            if (id.includes('/react/') || id.includes('/react-dom/')) return 'react-vendor';
+            if (id.includes('@tiptap') || id.includes('/prosemirror-') || id.includes('/yjs/')) return 'editor-vendor';
+            if (id.includes('@radix-ui')) return 'ui-vendor';
+            return undefined;
+          },
+        },
+      },
+    },
     // Preview server config - used by `vite preview` for E2E tests
     // This is MUCH lighter weight than the dev server (no HMR, no watchers)
     preview: {

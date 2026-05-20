@@ -12,6 +12,12 @@ function escapeLikePattern(str: string): string {
   return str.replace(/[%_\\]/g, '\\$&');
 }
 
+function parseSearchLimit(value: unknown, fallback = 10, max = 50): number {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+  return Math.min(parsed, max);
+}
+
 // Search for mentions (people + documents)
 // GET /api/search/mentions?q=:query
 searchRouter.get('/mentions', authMiddleware, async (req: Request, res: Response) => {
@@ -85,7 +91,7 @@ searchRouter.get('/learnings', authMiddleware, async (req: Request, res: Respons
     const programId = req.query.program_id as string | undefined;
     const workspaceId = req.workspaceId!;
     const userId = req.userId!;
-    const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+    const limit = parseSearchLimit(req.query.limit);
 
     // SECURITY: Escape wildcard characters to prevent SQL wildcard injection
     const sanitizedQuery = escapeLikePattern(searchQuery);

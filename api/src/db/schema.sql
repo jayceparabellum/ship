@@ -370,12 +370,21 @@ CREATE INDEX IF NOT EXISTS idx_documents_active ON documents(workspace_id, docum
 CREATE INDEX IF NOT EXISTS idx_documents_converted_to ON documents(converted_to_id) WHERE converted_to_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_documents_converted_from ON documents(converted_from_id) WHERE converted_from_id IS NOT NULL;
 
+-- Search hot path indexes
+CREATE INDEX IF NOT EXISTS idx_documents_active_title
+  ON documents (workspace_id, document_type, title)
+  WHERE archived_at IS NULL AND deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_documents_active_visibility_updated
+  ON documents (workspace_id, document_type, visibility, updated_at DESC)
+  WHERE archived_at IS NULL AND deleted_at IS NULL;
+
 -- Document associations indexes
 CREATE INDEX IF NOT EXISTS idx_document_associations_document_id ON document_associations(document_id);
 CREATE INDEX IF NOT EXISTS idx_document_associations_related_id ON document_associations(related_id);
 CREATE INDEX IF NOT EXISTS idx_document_associations_type ON document_associations(relationship_type);
 CREATE INDEX IF NOT EXISTS idx_document_associations_related_type ON document_associations(related_id, relationship_type);
 CREATE INDEX IF NOT EXISTS idx_document_associations_document_type ON document_associations(document_id, relationship_type);
+CREATE INDEX IF NOT EXISTS idx_document_associations_program_lookup ON document_associations(related_id, relationship_type, document_id);
 
 -- Document history indexes
 CREATE INDEX IF NOT EXISTS idx_document_history_document_created ON document_history(document_id, created_at DESC);

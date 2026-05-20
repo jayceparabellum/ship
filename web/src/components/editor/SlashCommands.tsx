@@ -111,10 +111,17 @@ const CommandList = forwardRef<CommandListRef, CommandListProps>(
     }
 
     return (
-      <div className="z-50 min-w-[200px] overflow-hidden rounded-lg border border-border bg-background shadow-lg">
+      <div
+        className="z-50 min-w-[200px] overflow-hidden rounded-lg border border-border bg-background shadow-lg"
+        role="listbox"
+        aria-label="Editor slash commands"
+      >
         {items.map((item, index) => (
           <button
             key={item.title}
+            type="button"
+            role="option"
+            aria-selected={index === selectedIndex}
             onClick={() => selectItem(index)}
             className={cn(
               'flex w-full items-center gap-3 px-3 py-2 text-left text-sm',

@@ -44,7 +44,7 @@ for f in "$E2E_DIR"/*.spec.ts; do
     in_test && /page\./ {
       has_content = 1
     }
-    in_test && /^\s*}\);/ {
+    in_test && /^  }\);/ {
       if (!has_content) {
         empty_count++
       }

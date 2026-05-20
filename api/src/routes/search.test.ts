@@ -273,4 +273,25 @@ describe('Search Learnings API', () => {
     expect(res.status).toBe(200);
     expect(res.body.learnings.length).toBeLessThanOrEqual(1);
   });
+
+  it('GET /api/search/learnings falls back to default limit for malformed limit', async () => {
+    // Regression guard: malformed or negative limits must not produce LIMIT NaN
+    // SQL errors or a confusing 500 response for users typing/editing URLs.
+    const res = await request(app)
+      .get('/api/search/learnings?limit=-5')
+      .set('Cookie', sessionCookie);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.learnings)).toBe(true);
+    expect(res.body.learnings.length).toBeLessThanOrEqual(10);
+  });
+
+  it('GET /api/search/learnings caps excessive limits', async () => {
+    const res = await request(app)
+      .get('/api/search/learnings?limit=9999')
+      .set('Cookie', sessionCookie);
+
+    expect(res.status).toBe(200);
+    expect(res.body.learnings.length).toBeLessThanOrEqual(50);
+  });
 });
