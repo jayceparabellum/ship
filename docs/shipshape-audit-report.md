@@ -138,7 +138,7 @@ Pending. Local API benchmarks require a running PostgreSQL database and a runnin
 
 ### Findings
 
-The audit cannot honestly report API latency from an empty database or from failed local setup. The next valid measurement point is either a proper local Node 20/PostgreSQL setup or the Render deployment with seeded data.
+The audit cannot honestly report API latency from an empty database or from failed local setup. The next valid measurement point is either a proper local Node 20/PostgreSQL setup or the AWS deployment with seeded Aurora data.
 
 Severity: Measurement blocked; not yet scored.
 
