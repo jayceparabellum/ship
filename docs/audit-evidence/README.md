@@ -1,6 +1,6 @@
 # ShipShape Audit Evidence
 
-This folder contains tracked copies of the raw audit JSON artifacts generated during the May 21, 2026 local baseline run.
+This folder contains tracked copies of the raw audit JSON artifacts generated during the May 21, 2026 local baseline run, plus after-fix evidence for completed improvement slices.
 
 The live working copies are generated under `.audit/`, which is ignored by git because it also contains logs and screenshots. These JSON files are copied here so the final submission includes reproducible raw data.
 
@@ -16,6 +16,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `web-test-run.json` | `.audit/web-test-run.json` | Web Vitest environment failure record |
 | `api-coverage.json` | `.audit/api-coverage.json` | API coverage run metadata |
 | `browser-accessibility.json` | `.audit/browser/browser-accessibility.json` | Browser console/network capture, offline/3G behavior, and axe scan output |
+| `browser-accessibility-after-contrast.json` | `.audit/browser/browser-accessibility.json` after contrast fixes | Category 7 after-fix axe evidence |
 
 ## Reproduction Commands
 
