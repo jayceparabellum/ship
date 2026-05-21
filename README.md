@@ -79,6 +79,48 @@ The goal isn't to check boxes. It's to capture what your team learned so you can
 
 ## Getting Started
 
+### ShipShape Audit Setup
+
+For the ShipShape submission, the audit report and supporting deliverables live in:
+
+- `audit.md`
+- `docs/shipshape-audit-report.md`
+- `docs/shipshape-submission-checklist.md`
+- `docs/shipshape-improvement-documentation.md`
+- `docs/shipshape-discovery-writeup.md`
+- `docs/shipshape-ai-cost-analysis.md`
+- `docs/audit-evidence/`
+
+Local audit setup used for the May 21, 2026 baseline:
+
+```bash
+corepack pnpm install --frozen-lockfile
+
+# Configure api/.env.local with:
+# DATABASE_URL=postgresql://ship:ship_dev_password@127.0.0.1:5432/ship_dev
+# SESSION_SECRET=dev-secret-change-in-production
+# CORS_ORIGIN=http://localhost:5173
+# APP_BASE_URL=http://localhost:5173
+
+corepack pnpm --filter @ship/api db:migrate
+corepack pnpm --filter @ship/api db:seed
+corepack pnpm --filter @ship/api dev
+corepack pnpm --filter @ship/web dev
+```
+
+Audit evidence can be regenerated with:
+
+```bash
+node scripts/audit-type-safety.mjs
+corepack pnpm --filter @ship/shared build
+$env:VITE_API_URL=''; corepack pnpm --filter @ship/web exec vite build --sourcemap
+node scripts/audit-bundle-map.mjs
+$env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
+node scripts/audit-db-query-capture.mjs
+node scripts/audit-browser-accessibility.mjs
+corepack pnpm --filter @ship/api test
+```
+
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20 or newer

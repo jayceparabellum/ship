@@ -1,0 +1,20 @@
+[
+    {
+        "run":  1,
+        "exitCode":  0,
+        "seconds":  46.83,
+        "log":  ".audit\\api-test-run-1.log"
+    },
+    {
+        "run":  2,
+        "exitCode":  0,
+        "seconds":  47.3,
+        "log":  ".audit\\api-test-run-2.log"
+    },
+    {
+        "run":  3,
+        "exitCode":  0,
+        "seconds":  45.56,
+        "log":  ".audit\\api-test-run-3.log"
+    }
+]

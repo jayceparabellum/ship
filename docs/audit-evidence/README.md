@@ -1,0 +1,33 @@
+# ShipShape Audit Evidence
+
+This folder contains tracked copies of the raw audit JSON artifacts generated during the May 21, 2026 local baseline run.
+
+The live working copies are generated under `.audit/`, which is ignored by git because it also contains logs and screenshots. These JSON files are copied here so the final submission includes reproducible raw data.
+
+## Files
+
+| File | Source | Purpose |
+| --- | --- | --- |
+| `type-safety.json` | `.audit/type-safety.json` | AST counts for `any`, assertions, non-null assertions, and TypeScript suppression directives |
+| `bundle-analysis.json` | `.audit/bundle-analysis.json` | Production bundle size, largest assets, and top sourcemap dependency contributors |
+| `api-benchmarks.json` | `.audit/api-benchmarks.json` | P50/P95/P99 API benchmarks for five authenticated endpoints at 10/25/50 concurrency |
+| `db-query-capture.json` | `.audit/db-query-capture.json` | Flow timings and representative `EXPLAIN ANALYZE` plans |
+| `api-test-runs.json` | `.audit/api-test-runs.json` | Three-run API flake check |
+| `web-test-run.json` | `.audit/web-test-run.json` | Web Vitest environment failure record |
+| `api-coverage.json` | `.audit/api-coverage.json` | API coverage run metadata |
+| `browser-accessibility.json` | `.audit/browser/browser-accessibility.json` | Browser console/network capture, offline/3G behavior, and axe scan output |
+
+## Reproduction Commands
+
+```bash
+node scripts/audit-type-safety.mjs
+corepack pnpm --filter @ship/shared build
+$env:VITE_API_URL=''; corepack pnpm --filter @ship/web exec vite build --sourcemap
+node scripts/audit-bundle-map.mjs
+$env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
+node scripts/audit-db-query-capture.mjs
+node scripts/audit-browser-accessibility.mjs
+corepack pnpm --filter @ship/api test
+```
+
+Screenshots from the browser capture are stored locally under `.audit/browser/*.png`; they are intentionally not tracked because the repository ignores generated PNG evidence globally.

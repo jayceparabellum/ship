@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-05-21T15:32:28.768Z",
+  "distDir": "web/dist",
+  "totalBytes": 11990743,
+  "assetCount": 562,
+  "largestAssets": [
+    {
+      "file": "web/dist/assets/index-C2vAyoQ1.js.map",
+      "bytes": 8079404
+    },
+    {
+      "file": "web/dist/assets/index-C2vAyoQ1.js",
+      "bytes": 2073741
+    },
+    {
+      "file": "web/dist/icons/blue/logo-1024.png",
+      "bytes": 275505
+    },
+    {
+      "file": "web/dist/icons/blue/android-chrome-512x512.png",
+      "bytes": 135090
+    },
+    {
+      "file": "web/dist/icons/blue/logo-512.png",
+      "bytes": 135090
+    },
+    {
+      "file": "web/dist/og-image.png",
+      "bytes": 70180
+    },
+    {
+      "file": "web/dist/assets/index-DJeYp5na.css",
+      "bytes": 66512
+    },
+    {
+      "file": "web/dist/icons/blue/logo-256.png",
+      "bytes": 65673
+    },
+    {
+      "file": "web/dist/assets/ProgramWeeksTab-BzbUWlt4.js.map",
+      "bytes": 57460
+    },
+    {
+      "file": "web/dist/icons/blue/android-chrome-192x192.png",
+      "bytes": 47648
+    },
+    {
+      "file": "web/dist/icons/blue/apple-touch-icon.png",
+      "bytes": 44885
+    },
+    {
+      "file": "web/dist/assets/WeekReviewTab-DmxN07T1.js.map",
+      "bytes": 38904
+    },
+    {
+      "file": "web/dist/icons/blue/apple-touch-icon-152x152.png",
+      "bytes": 37732
+    },
+    {
+      "file": "web/dist/icons/blue/mstile-150x150.png",
+      "bytes": 37214
+    },
+    {
+      "file": "web/dist/icons/white/logo-1024.png",
+      "bytes": 35430
+    }
+  ],
+  "topDependenciesBySourceMapBytes": [
+    {
+      "name": "emoji-picker-react",
+      "bytes": 407996
+    },
+    {
+      "name": "highlight.js",
+      "bytes": 385448
+    },
+    {
+      "name": "react-router",
+      "bytes": 355026
+    },
+    {
+      "name": "yjs",
+      "bytes": 299468
+    },
+    {
+      "name": "prosemirror-view",
+      "bytes": 242455
+    },
+    {
+      "name": "@tiptap/core",
+      "bytes": 198734
+    },
+    {
+      "name": "lib0",
+      "bytes": 172588
+    },
+    {
+      "name": "react-dom",
+      "bytes": 133667
+    },
+    {
+      "name": "@uswds/uswds",
+      "bytes": 125897
+    },
+    {
+      "name": "prosemirror-model",
+      "bytes": 124170
+    },
+    {
+      "name": "@dnd-kit/core",
+      "bytes": 104325
+    },
+    {
+      "name": "prosemirror-tables",
+      "bytes": 92246
+    },
+    {
+      "name": "@tanstack/query-core",
+      "bytes": 86501
+    },
+    {
+      "name": "prosemirror-transform",
+      "bytes": 82238
+    },
+    {
+      "name": "@tiptap/extension-code-block-lowlight",
+      "bytes": 82173
+    },
+    {
+      "name": "diff-match-patch",
+      "bytes": 78052
+    },
+    {
+      "name": "tailwind-merge",
+      "bytes": 74233
+    },
+    {
+      "name": "tippy.js",
+      "bytes": 74008
+    },
+    {
+      "name": "@popperjs/core",
+      "bytes": 68947
+    },
+    {
+      "name": "y-prosemirror",
+      "bytes": 68794
+    }
+  ]
+}
