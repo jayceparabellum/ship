@@ -30,14 +30,14 @@ The pass/fail audit gate requires baseline measurements for all seven categories
 | Database query efficiency | `docs/audit-evidence/db-query-capture.json` | Partial: has flow timings and `EXPLAIN ANALYZE`; full Postgres statement counts need `pg_stat_statements` or `log_statement` |
 | Test coverage and quality | `docs/audit-evidence/api-test-runs.json`, `docs/audit-evidence/api-coverage.json`, `docs/audit-evidence/web-test-run.json` | Ready with caveat: web Vitest fails before execution |
 | Runtime errors / edge cases | `docs/audit-evidence/browser-accessibility.json` | Ready with caveat: collaboration-specific disconnect scenario still needs video/manual capture |
-| Accessibility | `docs/audit-evidence/browser-accessibility.json` | Partial: axe complete; Lighthouse still needed |
+| Accessibility | `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/browser-accessibility-after-contrast.json` | Axe baseline and after-fix evidence complete; Lighthouse still needed |
 
 ## Final Readiness Risks
 
 1. **Implementation proof is not complete.** The assignment requires before/after improvements across all seven categories. Current docs have strong baselines, but not all after measurements.
 2. **Deployment is not complete.** AWS CLI and Terraform were prepared locally, but AWS credentials were missing.
 3. **Demo video is separate.** The written script/checklist does not satisfy the video deliverable by itself.
-4. **Lighthouse and full DB query logging remain gaps.** Axe and `EXPLAIN ANALYZE` evidence are good, but the brief explicitly calls for Lighthouse and Postgres query logging.
+4. **Lighthouse and full DB query logging remain gaps.** Axe before/after evidence and `EXPLAIN ANALYZE` evidence are good, but the brief explicitly calls for Lighthouse and Postgres query logging.
 
 ## Suggested Final Packaging Order
 

@@ -179,8 +179,31 @@ Improve the lowest Lighthouse accessibility score by 10+ points, or fix all Crit
 
 Implementation status:
 
-Pending. Recommended first slice is color token remediation on `/my-week`, `/team/allocation`, and `/dashboard`, followed by axe and Lighthouse re-runs.
+Completed first measurable slice on May 21, 2026.
+
+Changed files:
+
+- `web/src/pages/MyWeekPage.tsx`
+- `web/src/pages/TeamMode.tsx`
+- `web/src/components/dashboard/DashboardVariantC.tsx`
+- `web/src/components/DashboardSidebar.tsx`
+
+Implementation notes:
+
+- Replaced low-contrast accent text on dark accent-tinted badges with higher-contrast `text-blue-200` / `text-blue-300` pairings.
+- Removed row-level `opacity-40` from future My Week daily update rows because it lowered contrast for every child text node.
+- Raised muted index and helper labels from `text-muted/50` or `text-muted/60` to `text-muted`.
 
 After measurement:
 
-Pending.
+Evidence: `docs/audit-evidence/browser-accessibility-after-contrast.json`
+
+Same command: `node scripts/audit-browser-accessibility.mjs`
+
+- `/my-week`: 0 axe violations
+- `/docs`: 0 axe violations
+- `/issues`: 0 axe violations
+- `/team/allocation`: 0 axe violations
+- `/dashboard`: 0 axe violations
+
+Result: all Critical/Serious axe violations on the audited authenticated pages were fixed. This satisfies the Category 7 improvement gate through the "fix all Critical/Serious violations on the three most important pages" path.
