@@ -45,11 +45,21 @@ if [ -z "$BUCKET_NAME" ] || [ -z "$DISTRIBUTION_ID" ]; then
 fi
 
 echo "Building shared package..."
-pnpm build:shared
+if command -v pnpm &> /dev/null; then
+  PNPM_CMD="pnpm"
+elif command -v corepack &> /dev/null; then
+  PNPM_CMD="corepack pnpm"
+else
+  echo "Error: pnpm is not installed and corepack is not available"
+  echo "Install with: npm install -g pnpm, or enable Corepack"
+  exit 1
+fi
+
+$PNPM_CMD --filter @ship/shared build
 
 echo ""
 echo "Building frontend..."
-VITE_APP_ENV=production pnpm build:web
+VITE_APP_ENV=production $PNPM_CMD --filter @ship/web build
 
 echo ""
 echo "Deploying to S3 bucket: $BUCKET_NAME"

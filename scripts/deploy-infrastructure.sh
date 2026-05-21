@@ -6,6 +6,17 @@ echo "Ship - Infrastructure Deployment"
 echo "=========================================="
 echo ""
 
+ENV="${1:-dev}"
+if [[ ! "$ENV" =~ ^(dev|shadow|prod)$ ]]; then
+    echo "Usage: $0 [dev|shadow|prod]"
+    echo ""
+    echo "Examples:"
+    echo "  $0 dev     # Deploy dev infrastructure"
+    echo "  $0 shadow  # Deploy shadow/UAT infrastructure"
+    echo "  $0 prod    # Deploy prod infrastructure"
+    exit 1
+fi
+
 # Check if terraform is installed
 if ! command -v terraform &> /dev/null; then
     echo "Error: terraform is not installed"
@@ -16,12 +27,16 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Sync terraform config from SSM (source of truth)
-echo "Syncing Terraform config from SSM..."
-"$SCRIPT_DIR/sync-terraform-config.sh"
+echo "Syncing Terraform config from SSM for $ENV..."
+"$SCRIPT_DIR/sync-terraform-config.sh" "$ENV"
 echo ""
 
-# Navigate to terraform directory
-cd "$SCRIPT_DIR/../terraform"
+# Navigate to environment-specific terraform directory
+if [ "$ENV" = "prod" ]; then
+    cd "$SCRIPT_DIR/../terraform"
+else
+    cd "$SCRIPT_DIR/../terraform/environments/$ENV"
+fi
 
 echo "Step 1: Initializing Terraform..."
 terraform init

@@ -1,0 +1,127 @@
+{
+  "generatedAt": "2026-05-21T15:30:28.654Z",
+  "webBaseUrl": "http://localhost:5173",
+  "pages": [
+    {
+      "name": "my week",
+      "path": "/my-week"
+    },
+    {
+      "name": "docs",
+      "path": "/docs"
+    },
+    {
+      "name": "issues",
+      "path": "/issues"
+    },
+    {
+      "name": "team allocation",
+      "path": "/team/allocation"
+    },
+    {
+      "name": "dashboard",
+      "path": "/dashboard"
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "location": {
+        "url": "http://localhost:3000/api/auth/me",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "failedRequests": [
+    {
+      "url": "http://localhost:5173/docs",
+      "method": "GET",
+      "failure": "net::ERR_INTERNET_DISCONNECTED"
+    }
+  ],
+  "offlineCapture": {
+    "page": "http://localhost:5173/docs",
+    "durationMs": 3009,
+    "urlAfterReload": "chrome-error://chromewebdata/",
+    "visibleTextSample": "",
+    "consoleMessagesDuringRun": 1,
+    "failedRequestsDuringRun": 1
+  },
+  "slow3gCapture": {
+    "path": "/issues",
+    "durationMs": 15167,
+    "visibleTextSample": "Skip to main content\n1 accountability item is due today.\n1\nView items\nS\nD\nIssues\nALL ISSUES\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project stru"
+  },
+  "axeScans": [
+    {
+      "name": "my week",
+      "path": "/my-week",
+      "violationCount": 1,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "nodes": 18,
+          "targets": [
+            ".bg-accent\\/20.py-0\\.5.px-1\\.5",
+            ".items-start.gap-2\\.5.py-1\\.5:nth-child(1) > .text-\\[11px\\].text-muted\\/50.text-right",
+            ".items-start.gap-2\\.5.py-1\\.5:nth-child(2) > .text-\\[11px\\].text-muted\\/50.text-right",
+            ".items-start.gap-2\\.5.py-1\\.5:nth-child(3) > .text-\\[11px\\].text-muted\\/50.text-right",
+            ".items-start.gap-2\\.5.py-1\\.5:nth-child(4) > .text-\\[11px\\].text-muted\\/50.text-right"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "docs",
+      "path": "/docs",
+      "violationCount": 0,
+      "violations": []
+    },
+    {
+      "name": "issues",
+      "path": "/issues",
+      "violationCount": 0,
+      "violations": []
+    },
+    {
+      "name": "team allocation",
+      "path": "/team/allocation",
+      "violationCount": 1,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "nodes": 1,
+          "targets": [
+            ".text-accent.font-medium.text-xs"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dashboard",
+      "path": "/dashboard",
+      "violationCount": 1,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "nodes": 14,
+          "targets": [
+            ".bg-accent\\/10",
+            ".border-border\\/50.last\\:border-r-0.px-3:nth-child(1) > .text-\\[10px\\].mb-1\\.5.tracking-wider",
+            ".border-border\\/50.last\\:border-r-0.px-3:nth-child(2) > .text-\\[10px\\].mb-1\\.5.tracking-wider",
+            ".border-border\\/50.last\\:border-r-0.px-3:nth-child(3) > .text-\\[10px\\].mb-1\\.5.tracking-wider",
+            ".text-accent.text-\\[10px\\].mb-1\\.5"
+          ]
+        }
+      ]
+    }
+  ]
+}
