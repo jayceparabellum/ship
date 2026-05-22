@@ -28,8 +28,9 @@ resource "aws_rds_cluster_parameter_group" "aurora" {
 
   # DDoS protection: Connection and query limits
   parameter {
-    name  = "max_connections"
-    value = "200"
+    name         = "max_connections"
+    value        = "200"
+    apply_method = "pending-reboot"
   }
 
   parameter {
@@ -69,7 +70,7 @@ resource "aws_rds_cluster" "aurora" {
   storage_encrypted               = true
   skip_final_snapshot             = var.environment != "prod"
   final_snapshot_identifier       = var.environment == "prod" ? "${var.project_name}-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}" : null
-  backup_retention_period         = var.environment == "prod" ? 7 : 1
+  backup_retention_period         = 1
   preferred_backup_window         = "03:00-04:00"
   preferred_maintenance_window    = "sun:04:00-sun:05:00"
   enabled_cloudwatch_logs_exports = ["postgresql"]
