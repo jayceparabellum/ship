@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T15:40:00.000Z",
+  "generatedAt": "2026-05-22T16:00:55.5298175Z",
   "environment": "aws-prod",
   "frontendUrl": "https://d9o5hawnpdm4g.cloudfront.net",
   "checks": [
@@ -44,18 +44,19 @@
     },
     {
       "name": "Demo credential login",
-      "status": "blocked",
+      "status": "pass",
       "evidence": {
         "credential": "dev@ship.local / admin123",
         "apiResponse": {
-          "success": false,
-          "error": {
-            "code": "INVALID_CREDENTIALS",
-            "message": "Invalid email or password"
-          }
+          "success": true,
+          "userEmail": "dev@ship.local",
+          "userName": "Dev User",
+          "isSuperAdmin": true,
+          "currentWorkspace": "Ship Workspace",
+          "role": "admin"
         }
       },
-      "nextAction": "Create or seed a production demo account from inside the VPC. Direct workstation seeding is blocked because Aurora is private, which is the intended network posture."
+      "nextAction": "Complete full production workflow smoke now that authenticated access is available."
     },
     {
       "name": "Elastic Beanstalk health",
@@ -75,14 +76,9 @@
   ],
   "followUps": [
     {
-      "name": "Enable VPC-safe operational command path",
-      "status": "in_progress",
-      "detail": "Terraform now attaches AmazonSSMManagedInstanceCore to the EB instance role. The current EB instance has not appeared in SSM managed instances yet, so a platform hook or instance refresh may still be needed if the AMI does not include/register the SSM agent."
-    },
-    {
-      "name": "Seed production demo data",
-      "status": "blocked",
-      "detail": "Running the seed script from the Mac mini timed out against the private Aurora endpoint. This should be run from EB/SSM, a one-off VPC task, or a guarded internal admin path."
+      "name": "Full authenticated production workflow smoke",
+      "status": "ready",
+      "detail": "Demo credential login now works. Next smoke pass should create/edit a document and verify authenticated pages through CloudFront."
     }
   ]
 }
