@@ -102,7 +102,14 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
 
     let query = `
       SELECT id, workspace_id, document_type, title, parent_id, position,
-             ticket_number, properties,
+             ticket_number,
+             properties->>'state' as state,
+             properties->>'priority' as priority,
+             properties->'estimate' as estimate,
+             properties->>'assignee_id' as assignee_id,
+             properties->>'source' as source,
+             properties->>'prefix' as prefix,
+             properties->>'color' as color,
              created_at, updated_at, created_by, visibility
       FROM documents
       WHERE workspace_id = $1
@@ -130,23 +137,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
 
     const result = await pool.query(query, params);
 
-    // Extract properties into flat fields for backwards compatibility
-    const documents = result.rows.map(row => {
-      const props = row.properties || {};
-      return {
-        ...row,
-        // Flatten common properties for backwards compatibility
-        state: props.state,
-        priority: props.priority,
-        estimate: props.estimate,
-        assignee_id: props.assignee_id,
-        source: props.source,
-        prefix: props.prefix,
-        color: props.color,
-      };
-    });
-
-    res.json(documents);
+    res.json(result.rows);
   } catch (err) {
     console.error('List documents error:', err);
     res.status(500).json({ error: 'Internal server error' });

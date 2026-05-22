@@ -154,8 +154,20 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     const { isAdmin } = await getVisibilityContext(userId, workspaceId);
 
     let query = `
-      SELECT d.id, d.title, d.properties, d.ticket_number,
-             d.content,
+      SELECT d.id, d.title,
+             jsonb_build_object(
+               'state', d.properties->>'state',
+               'priority', d.properties->>'priority',
+               'assignee_id', d.properties->>'assignee_id',
+               'estimate', d.properties->'estimate',
+               'source', d.properties->>'source',
+               'rejection_reason', d.properties->>'rejection_reason',
+               'due_date', d.properties->>'due_date',
+               'is_system_generated', COALESCE((d.properties->>'is_system_generated')::boolean, false),
+               'accountability_target_id', d.properties->>'accountability_target_id',
+               'accountability_type', d.properties->>'accountability_type'
+             ) as properties,
+             d.ticket_number,
              d.created_at, d.updated_at, d.created_by,
              d.started_at, d.completed_at, d.cancelled_at, d.reopened_at,
              d.converted_from_id,

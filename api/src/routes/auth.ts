@@ -289,21 +289,28 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
       [req.userId]
     );
 
-    // Get current workspace info
-    let currentWorkspace = null;
-    if (req.workspaceId) {
+    const workspaces = workspacesResult.rows.map(w => ({
+      id: w.id,
+      name: w.name,
+      role: w.role,
+    }));
+
+    // The active workspace is normally already present in the membership list,
+    // so avoid an extra lookup on the high-traffic /me endpoint.
+    let currentWorkspace = req.workspaceId
+      ? workspaces.find(w => w.id === req.workspaceId) || null
+      : null;
+
+    if (!currentWorkspace && req.workspaceId && user.is_super_admin) {
       const currentResult = await pool.query(
-        `SELECT w.id, w.name, wm.role
-         FROM workspaces w
-         LEFT JOIN workspace_memberships wm ON w.id = wm.workspace_id AND wm.user_id = $2
-         WHERE w.id = $1`,
-        [req.workspaceId, req.userId]
+        `SELECT id, name FROM workspaces WHERE id = $1`,
+        [req.workspaceId]
       );
       if (currentResult.rows[0]) {
         currentWorkspace = {
           id: currentResult.rows[0].id,
           name: currentResult.rows[0].name,
-          role: currentResult.rows[0].role || 'admin', // Super-admin without membership
+          role: 'admin',
         };
       }
     }
@@ -321,11 +328,7 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
           isSuperAdmin: user.is_super_admin,
         },
         currentWorkspace,
-        workspaces: workspacesResult.rows.map(w => ({
-          id: w.id,
-          name: w.name,
-          role: w.role,
-        })),
+        workspaces,
         pendingAccountabilityItems,
       },
     });
