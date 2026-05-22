@@ -2,7 +2,7 @@
 
 This document tracks the required before/after improvement proof for all seven assignment categories.
 
-Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Category 7 has completed before/after improvement proof. The remaining implementation categories have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
+Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1 and 7 now have before/after improvement proof. The remaining implementation categories have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
 
 ## Category 1: Type Safety
 
@@ -24,11 +24,43 @@ Eliminate 25% of type-safety violations while preserving behavior.
 
 Implementation status:
 
-Pending. Recommended first slice is to replace `row: any` and repeated `req.userId!` / `req.workspaceId!` route assumptions with narrowed helper types in `issues.ts`, `documents.ts`, and `weeks.ts`.
+Completed first measurable slice on May 22, 2026.
+
+Changed file:
+
+- `api/src/routes/issues.ts`
+
+Implementation notes:
+
+- Replaced `row: any` in the issue response mapper with a typed `IssueRow` interface.
+- Added `getAuthContext(req)` so authenticated route handlers use narrowed `userId` and `workspaceId` values instead of repeated non-null assertions.
+- Replaced `any[]` query parameter arrays in touched update paths with `unknown[]`.
+- Preserved route behavior and kept the recursive TypeScript check passing.
 
 After measurement:
 
-Pending.
+Evidence: `docs/audit-evidence/type-safety-after-issues-route.json`
+
+Command:
+
+```bash
+node scripts/audit-type-safety.mjs > docs/audit-evidence/type-safety-after-issues-route.json
+corepack pnpm --recursive run type-check
+corepack pnpm --filter @ship/api test -- src/routes/issues.test.ts
+```
+
+Results:
+
+- Total type-safety violations: 1,281 -> 1,239
+- Explicit `any`: 260 -> 256
+- Type assertions: 691 -> 690
+- Non-null assertions: 329 -> 292
+- `api/src/routes/issues.ts`: 49 -> 7 total violations
+- `api/src/routes/issues.ts` no longer appears in the production top-10 violation-dense file list
+- Recursive type-check: passed
+- API route regression suite: 451 tests passed
+
+Result: this completes a scoped Category 1 improvement slice by removing the highest-risk issue-route escape hatches. It does not yet satisfy the larger 25% whole-codebase reduction target; the next slices should apply the same pattern to `api/src/routes/weeks.ts` and `api/src/routes/projects.ts`.
 
 ## Category 2: Bundle Size
 

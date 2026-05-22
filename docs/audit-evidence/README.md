@@ -9,6 +9,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | File | Source | Purpose |
 | --- | --- | --- |
 | `type-safety.json` | `.audit/type-safety.json` | AST counts for `any`, assertions, non-null assertions, and TypeScript suppression directives |
+| `type-safety-after-issues-route.json` | `node scripts/audit-type-safety.mjs` after Category 1 slice | After-fix type-safety counts showing the `issues.ts` route cleanup |
 | `bundle-analysis.json` | `.audit/bundle-analysis.json` | Production bundle size, largest assets, and top sourcemap dependency contributors |
 | `api-benchmarks.json` | `.audit/api-benchmarks.json` | P50/P95/P99 API benchmarks for five authenticated endpoints at 10/25/50 concurrency |
 | `db-query-capture.json` | `.audit/db-query-capture.json` | Flow timings and representative `EXPLAIN ANALYZE` plans |

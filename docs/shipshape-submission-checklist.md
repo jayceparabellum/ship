@@ -11,7 +11,7 @@ Deadline: Sunday, May 24, 2026 at 10:59 PM CT
 | Setup guide in README | Ready | `README.md` includes ShipShape audit setup and reproduction commands |
 | Audit report | Ready | Canonical report: `audit.md` |
 | Raw audit data | Ready | `docs/audit-evidence/*.json` |
-| Improvement documentation | Needs final implementation pass | `docs/shipshape-improvement-documentation.md` has Category 7 completed and remaining implementation targets scoped |
+| Improvement documentation | Needs final implementation pass | `docs/shipshape-improvement-documentation.md` has Categories 1 and 7 completed and remaining implementation targets scoped |
 | Discovery write-up | Ready | `docs/shipshape-discovery-writeup.md` |
 | Demo video, 3-5 minutes | Not recorded | Use `docs/shipshape-demo-video-checklist.md`; do not push `docs/mvp-demo-script.md` |
 | AI cost analysis | Ready | `docs/shipshape-ai-cost-analysis.md` |
@@ -34,7 +34,7 @@ The pass/fail audit gate requires baseline measurements for all seven categories
 
 ## Final Readiness Risks
 
-1. **Implementation proof is not complete across all seven categories.** Category 7 has after-fix proof; the remaining categories have baseline evidence and scoped targets but still need final after measurements if the grader expects Phase 2 completion.
+1. **Implementation proof is not complete across all seven categories.** Categories 1 and 7 have after-fix proof; Categories 2-6 have baseline evidence and scoped targets but still need final after measurements if the grader expects Phase 2 completion.
 2. **Demo video is separate.** The written checklist does not satisfy the video deliverable by itself. This remains intentionally out of scope per Jayce's instruction.
 3. **Pre-commit hook is currently blocked by empty Playwright TODO tests.** The hook failure is known and documented; convert those tests to `test.fixme` before future normal commits.
 
