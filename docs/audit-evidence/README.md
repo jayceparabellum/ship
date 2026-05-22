@@ -19,6 +19,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `auth-query-count-after.json` | `scripts/audit-auth-query-count.mjs` after auth middleware query consolidation | After-fix query-count evidence for Category 4 |
 | `api-test-runs.json` | `.audit/api-test-runs.json` | Three-run API flake check |
 | `web-test-run.json` | `.audit/web-test-run.json` | Web Vitest environment failure record |
+| `web-test-run-after-jsdom-pin.json` | `corepack pnpm --filter @ship/web test` after Category 5 fixes | After-fix web Vitest evidence showing 151 passing tests |
 | `api-coverage.json` | `.audit/api-coverage.json` | API coverage run metadata |
 | `browser-accessibility.json` | `.audit/browser/browser-accessibility.json` | Browser console/network capture, offline/3G behavior, and axe scan output |
 | `browser-accessibility-after-contrast.json` | `.audit/browser/browser-accessibility.json` after contrast fixes | Category 7 after-fix axe evidence |
@@ -38,6 +39,7 @@ corepack pnpm --dir api exec tsx ..\scripts\audit-auth-query-count.mjs
 # Production Aurora query-count capture requires the deployed AWS VPC runner and pg_stat_statements.
 node scripts/audit-browser-accessibility.mjs
 corepack pnpm --filter @ship/api test
+corepack pnpm --filter @ship/web test
 corepack pnpm --filter @ship/api test:coverage
 corepack pnpm dlx lighthouse http://localhost:5173/<route> --only-categories=accessibility
 ```

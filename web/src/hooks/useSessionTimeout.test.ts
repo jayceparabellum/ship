@@ -1,6 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSessionTimeout } from './useSessionTimeout';
+import { apiPost } from '@/lib/api';
+
+vi.mock('@/lib/api', () => ({
+  apiPost: vi.fn(),
+}));
 
 /**
  * Unit Tests for useSessionTimeout Hook
@@ -19,12 +24,14 @@ const ACTIVITY_THROTTLE_MS = 30 * 1000; // 30 seconds
 
 // Mock fetch globally
 const mockFetch = vi.fn();
+const mockApiPost = vi.mocked(apiPost);
 
 describe('useSessionTimeout', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     // Reset fetch mock
     mockFetch.mockReset();
+    mockApiPost.mockReset();
     // Default: return successful session info
     mockFetch.mockResolvedValue({
       ok: true,
@@ -38,6 +45,7 @@ describe('useSessionTimeout', () => {
       }),
     });
     global.fetch = mockFetch;
+    mockApiPost.mockResolvedValue({ ok: true } as Response);
     // Mock document event listeners
     vi.spyOn(document, 'addEventListener');
     vi.spyOn(document, 'removeEventListener');
@@ -145,9 +153,6 @@ describe('useSessionTimeout', () => {
 
     it('does NOT call onTimeout if dismissed before 0', async () => {
       const onTimeout = vi.fn();
-      // Mock successful extend-session response
-      mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
-
       const { result } = renderHook(() => useSessionTimeout(onTimeout));
 
       // Advance to warning
@@ -174,8 +179,6 @@ describe('useSessionTimeout', () => {
   describe('Activity Reset', () => {
     it('resetTimer() hides warning modal', async () => {
       const onTimeout = vi.fn();
-      mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
-
       const { result } = renderHook(() => useSessionTimeout(onTimeout));
 
       // Advance to show warning
@@ -195,8 +198,6 @@ describe('useSessionTimeout', () => {
 
     it('resetTimer() resets lastActivity to now', async () => {
       const onTimeout = vi.fn();
-      mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
-
       const { result } = renderHook(() => useSessionTimeout(onTimeout));
       const initialActivity = result.current.lastActivity;
 
@@ -215,8 +216,6 @@ describe('useSessionTimeout', () => {
 
     it('after resetTimer(), warning appears 14 min later (not sooner)', async () => {
       const onTimeout = vi.fn();
-      mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
-
       const { result } = renderHook(() => useSessionTimeout(onTimeout));
 
       // Advance 10 minutes
@@ -249,8 +248,6 @@ describe('useSessionTimeout', () => {
 
     it('resetTimer() clears countdown interval', async () => {
       const onTimeout = vi.fn();
-      mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
-
       const { result } = renderHook(() => useSessionTimeout(onTimeout));
 
       // Advance to show warning
@@ -729,6 +726,8 @@ describe('useSessionTimeout - Edge Cases', () => {
       }),
     });
     global.fetch = mockFetch;
+    mockApiPost.mockReset();
+    mockApiPost.mockResolvedValue({ ok: true } as Response);
   });
 
   afterEach(() => {
@@ -776,7 +775,6 @@ describe('useSessionTimeout - Edge Cases', () => {
 
   it('handles resetTimer called when not showing warning', async () => {
     const onTimeout = vi.fn();
-    (global.fetch as Mock).mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
 
     const { result } = renderHook(() => useSessionTimeout(onTimeout));
 
@@ -792,7 +790,6 @@ describe('useSessionTimeout - Edge Cases', () => {
 
   it('handles multiple resetTimer calls in quick succession', async () => {
     const onTimeout = vi.fn();
-    (global.fetch as Mock).mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
 
     const { result } = renderHook(() => useSessionTimeout(onTimeout));
 
