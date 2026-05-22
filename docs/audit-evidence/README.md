@@ -16,6 +16,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `api-benchmarks-after-list-payload-trim.json` | `scripts/audit-api-benchmark.mjs` after list payload and auth middleware trimming | After-fix P50/P95/P99 API benchmark evidence for Category 3 |
 | `db-query-capture.json` | `.audit/db-query-capture.json` | Flow timings and representative `EXPLAIN ANALYZE` plans |
 | `aurora-query-counts.json` | Aurora PostgreSQL 16 `pg_stat_statements` | Production query-count capture after authenticated CloudFront flows |
+| `auth-query-count-after.json` | `scripts/audit-auth-query-count.mjs` after auth middleware query consolidation | After-fix query-count evidence for Category 4 |
 | `api-test-runs.json` | `.audit/api-test-runs.json` | Three-run API flake check |
 | `web-test-run.json` | `.audit/web-test-run.json` | Web Vitest environment failure record |
 | `api-coverage.json` | `.audit/api-coverage.json` | API coverage run metadata |
@@ -33,6 +34,7 @@ $env:VITE_API_URL=''; corepack pnpm --filter @ship/web exec vite build --sourcem
 node scripts/audit-bundle-map.mjs
 $env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
 node scripts/audit-db-query-capture.mjs
+corepack pnpm --dir api exec tsx ..\scripts\audit-auth-query-count.mjs
 # Production Aurora query-count capture requires the deployed AWS VPC runner and pg_stat_statements.
 node scripts/audit-browser-accessibility.mjs
 corepack pnpm --filter @ship/api test
