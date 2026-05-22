@@ -1,16 +1,16 @@
 # ShipShape Audit Report
 
 Repository: `jayceparabellum/ship`  
-Audit date: May 21, 2026  
+Audit date: May 22, 2026  
 Final deadline: Sunday, May 24, 2026 at 10:59 PM CT
 
 ## Executive Summary
 
-This audit now has live baseline evidence for all seven required categories. The local ShipShape stack was run with a seeded PostgreSQL database, authenticated browser flows, API load tests, source-map bundle analysis, TypeScript AST counts, repeated API test runs, API coverage, runtime capture, and axe accessibility scans.
+This audit now has live baseline evidence for all seven required categories. The local ShipShape stack was run with a seeded PostgreSQL database, authenticated browser flows, API load tests, source-map bundle analysis, TypeScript AST counts, repeated API test runs, API coverage, runtime capture, axe scans, and Lighthouse accessibility reports.
 
-The strongest engineering signals are the strict TypeScript configuration, a stable API suite across three consecutive runs, and fast database plans on the seeded local dataset. The weakest signals are the high concentration of type escape hatches in API route files, the 2.07 MB main frontend chunk, missing frontend unit-test execution due a `jsdom`/ESM environment failure, and serious color-contrast violations on three authenticated pages.
+The strongest engineering signals are the strict TypeScript configuration, a stable API suite across three consecutive runs, fast database plans on the seeded local dataset, and clean axe/Lighthouse results after the contrast remediation. The weakest signals are the high concentration of type escape hatches in API route files, the 2.07 MB main frontend chunk, missing frontend unit-test execution due a `jsdom`/ESM environment failure, and weak offline reload behavior.
 
-Evidence lives under `.audit/`. The most important files are `.audit/api-benchmarks.json`, `.audit/db-query-capture.json`, `.audit/browser/browser-accessibility.json`, `.audit/bundle-analysis.json`, `.audit/type-safety.json`, `.audit/api-test-runs.json`, and `.audit/api-coverage-node24.log`.
+Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries are mirrored under `docs/audit-evidence/`. The most important files are `docs/audit-evidence/api-benchmarks.json`, `docs/audit-evidence/db-query-capture.json`, `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/lighthouse-summary.json`, `docs/audit-evidence/bundle-analysis.json`, `docs/audit-evidence/type-safety.json`, `docs/audit-evidence/api-test-runs.json`, and `docs/audit-evidence/api-coverage.json`.
 
 ## Orientation
 
@@ -56,13 +56,13 @@ The strict compiler posture is real, but the escape hatches cluster at risk boun
 
 1. Strict TypeScript is enabled and recursive type-check passes.
 2. API tests are stable across three runs: 451 tests passed each time.
-3. Seeded local database plans are fast on the tested flows: representative `EXPLAIN ANALYZE` plans completed in 0.039-0.542 ms.
+3. Seeded local database plans are fast on the tested flows: representative `EXPLAIN ANALYZE` plans completed in 0.046-0.736 ms.
 
 ### Three Weakest Areas
 
 1. Type escape pressure is concentrated in high-risk API route handlers.
-2. The web app ships a very large main chunk: `index-C2vAyoQ1.js` is 2,073,741 bytes before gzip.
-3. Accessibility has serious color-contrast violations on `/my-week`, `/team/allocation`, and `/dashboard`.
+2. The web app ships a very large main chunk: `index-BXwX_FdO.js` is 2,073,742 bytes before gzip.
+3. Offline reload behavior falls out to Chrome's network error page instead of a recoverable in-app offline state.
 
 ## Category 1: Type Safety
 
@@ -128,10 +128,10 @@ node scripts/audit-bundle-map.mjs
 
 | Metric | Baseline |
 | --- | ---: |
-| Production `web/dist` excluding source maps | 3,444,935 bytes |
-| JS/CSS asset count | 262 |
-| Largest JS chunk | `assets/index-C2vAyoQ1.js`, 2,073,741 bytes |
-| Main chunk gzip from Vite output | 589.52 KB |
+| Production `web/dist` excluding source maps | 3,445,084 bytes |
+| Non-source-map asset count | 301 |
+| Largest JS chunk | `assets/index-BXwX_FdO.js`, 2,073,742 bytes |
+| Main chunk gzip from Vite output | 589.56 KB |
 | Main sourcemap | 8,079,404 bytes |
 
 Top dependency contributors by source-map source bytes:
@@ -166,21 +166,21 @@ $env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
 
 | Endpoint | Concurrency | RPS | P50 | P95 | P99 | Errors |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `/api/auth/me` | 10 | 3.0 | 21.58 ms | 73.35 ms | 106.83 ms | 0 |
-| `/api/auth/me` | 25 | 7.5 | 27.30 ms | 80.47 ms | 90.97 ms | 0 |
-| `/api/auth/me` | 50 | 15.0 | 31.04 ms | 154.62 ms | 163.85 ms | 0 |
-| `/api/documents` | 10 | 3.0 | 23.85 ms | 99.13 ms | 139.24 ms | 0 |
-| `/api/documents` | 25 | 7.5 | 27.54 ms | 271.04 ms | 351.36 ms | 0 |
-| `/api/documents` | 50 | 15.0 | 28.21 ms | 418.76 ms | 592.18 ms | 0 |
-| `/api/issues` | 10 | 3.0 | 23.92 ms | 80.22 ms | 116.48 ms | 0 |
-| `/api/issues` | 25 | 7.5 | 25.62 ms | 208.91 ms | 250.88 ms | 0 |
-| `/api/issues` | 50 | 15.0 | 22.57 ms | 351.64 ms | 416.76 ms | 0 |
-| `/api/weeks` | 10 | 3.0 | 21.05 ms | 32.97 ms | 40.59 ms | 0 |
-| `/api/weeks` | 25 | 7.5 | 37.43 ms | 90.14 ms | 104.82 ms | 0 |
-| `/api/weeks` | 50 | 15.0 | 25.89 ms | 160.00 ms | 175.77 ms | 0 |
-| `/api/dashboard/my-work` | 10 | 3.0 | 26.88 ms | 54.39 ms | 60.21 ms | 0 |
-| `/api/dashboard/my-work` | 25 | 7.5 | 45.74 ms | 99.20 ms | 114.85 ms | 0 |
-| `/api/dashboard/my-work` | 50 | 15.0 | 72.06 ms | 164.60 ms | 177.09 ms | 0 |
+| `/api/auth/me` | 10 | 3.0 | 25.78 ms | 85.84 ms | 98.38 ms | 0 |
+| `/api/auth/me` | 25 | 7.5 | 23.02 ms | 57.27 ms | 63.17 ms | 0 |
+| `/api/auth/me` | 50 | 15.0 | 53.63 ms | 116.06 ms | 123.32 ms | 0 |
+| `/api/documents` | 10 | 3.0 | 26.47 ms | 85.95 ms | 113.27 ms | 0 |
+| `/api/documents` | 25 | 7.5 | 27.17 ms | 184.81 ms | 247.57 ms | 0 |
+| `/api/documents` | 50 | 15.0 | 28.69 ms | 285.01 ms | 407.15 ms | 0 |
+| `/api/issues` | 10 | 3.0 | 24.80 ms | 61.64 ms | 72.80 ms | 0 |
+| `/api/issues` | 25 | 7.5 | 23.71 ms | 172.36 ms | 212.86 ms | 0 |
+| `/api/issues` | 50 | 15.0 | 28.89 ms | 257.35 ms | 303.44 ms | 0 |
+| `/api/weeks` | 10 | 3.0 | 24.86 ms | 38.19 ms | 42.52 ms | 0 |
+| `/api/weeks` | 25 | 7.5 | 37.76 ms | 65.07 ms | 74.23 ms | 0 |
+| `/api/weeks` | 50 | 15.0 | 24.51 ms | 144.89 ms | 160.59 ms | 0 |
+| `/api/dashboard/my-work` | 10 | 3.0 | 24.89 ms | 36.66 ms | 39.63 ms | 0 |
+| `/api/dashboard/my-work` | 25 | 7.5 | 36.71 ms | 91.60 ms | 98.52 ms | 0 |
+| `/api/dashboard/my-work` | 50 | 15.0 | 47.77 ms | 150.61 ms | 157.33 ms | 0 |
 
 ### Finding
 
@@ -204,19 +204,19 @@ node scripts/audit-db-query-capture.mjs
 
 | Flow | Endpoint | Status | Response time | Response bytes |
 | --- | --- | ---: | ---: | ---: |
-| Document list | `/api/documents` | 200 | 89.48 ms | 151,638 |
-| Issue list | `/api/issues` | 200 | 53.78 ms | 102,132 |
-| Week list | `/api/weeks` | 200 | 18.63 ms | 4,349 |
-| Dashboard my work | `/api/dashboard/my-work` | 200 | 14.97 ms | 6,895 |
-| Mention search | `/api/search/mentions?q=dev` | 200 | 15.79 ms | 373 |
+| Document list | `/api/documents` | 200 | 32.99 ms | 151,633 |
+| Issue list | `/api/issues` | 200 | 16.33 ms | 102,132 |
+| Week list | `/api/weeks` | 200 | 12.62 ms | 4,350 |
+| Dashboard my work | `/api/dashboard/my-work` | 200 | 16.66 ms | 6,895 |
+| Mention search | `/api/search/mentions?q=dev` | 200 | 14.15 ms | 373 |
 
 Representative plans:
 
 | Query | Execution time |
 | --- | ---: |
-| Documents list visibility filter | 0.542 ms |
-| Issue list joins | 0.239 ms |
-| Session auth lookup | 0.039 ms |
+| Documents list visibility filter | 0.736 ms |
+| Issue list joins | 0.325 ms |
+| Session auth lookup | 0.046 ms |
 
 ### Finding
 
@@ -244,9 +244,9 @@ rg "\btest\(" e2e -g "*.spec.ts"
 
 | Metric | Baseline |
 | --- | ---: |
-| API test run 1 | 451 passed, 46.83s |
-| API test run 2 | 451 passed, 47.30s |
-| API test run 3 | 451 passed, 45.56s |
+| API test run 1 | 451 passed, 43.66s |
+| API test run 2 | 451 passed, 43.52s |
+| API test run 3 | 451 passed, 43.97s |
 | API flake signal | 0 failures across 3 runs |
 | API coverage | 40.34% statements, 33.44% branches, 40.90% functions, 40.52% lines |
 | E2E spec files | 71 |
@@ -278,7 +278,7 @@ node scripts/audit-browser-accessibility.mjs
 | Normal authenticated navigation | 1 console warning/error recorded |
 | Failed requests during run | 1 failed request recorded |
 | Offline reload on `/docs` | Browser fell to `chrome-error://chromewebdata/`; no app-level offline state rendered |
-| Slow 3G `/issues` load | Loaded in 15.167s with visible issue content |
+| Slow 3G `/issues` load | Loaded in 15.197s with visible issue content |
 
 ### Finding
 
@@ -290,45 +290,47 @@ Severity: Medium.
 
 ### Methodology
 
-I ran axe scans on five authenticated pages through Playwright. Evidence: `.audit/browser/browser-accessibility.json`.
+I ran axe scans on five authenticated pages through Playwright, then ran Lighthouse accessibility reports against the same authenticated routes. Evidence: `docs/audit-evidence/browser-accessibility.json` and `docs/audit-evidence/lighthouse-summary.json`.
 
 Command:
 
 ```bash
 node scripts/audit-browser-accessibility.mjs
+corepack pnpm dlx lighthouse http://localhost:5173/<route> --only-categories=accessibility
 ```
 
 ### Baseline
 
-| Page | Axe violations | Severity |
-| --- | ---: | --- |
-| `/my-week` | 1 | Serious color contrast; 18 nodes |
-| `/docs` | 0 | None found |
-| `/issues` | 0 | None found |
-| `/team/allocation` | 1 | Serious color contrast; 1 node |
-| `/dashboard` | 1 | Serious color contrast; 14 nodes |
+| Page | Axe violations | Lighthouse accessibility |
+| --- | ---: | ---: |
+| `/my-week` | 0 | 100 |
+| `/docs` | 0 | 100 |
+| `/issues` | 0 | 100 |
+| `/team/allocation` | 0 | 100 |
+| `/dashboard` | 0 | 100 |
 
 ### Finding
 
-The main accessibility issue is color contrast on small muted/accent text. `/docs` and `/issues` passed the axe scan with zero violations, which gives a good comparison point for remediation. Lighthouse was not run in this pass; axe evidence is complete for the scanned pages, and Lighthouse remains a follow-up artifact for the deployed build.
+The prior color-contrast failures have been remediated for the five scanned authenticated pages. Axe reports zero violations on all five routes, and Lighthouse reports a 100 accessibility score on those same routes. Lighthouse still emitted a Windows temp-directory cleanup error after writing JSON output; the generated JSON reports are complete and parsed in `docs/audit-evidence/lighthouse-summary.json`.
 
-Severity: High for WCAG AA compliance on affected pages.
+Severity: Low after remediation; keep these scans in the regression checklist.
 
 ## Evidence Index
 
 | Artifact | Purpose |
 | --- | --- |
-| `.audit/type-safety.json` | Type escape counts by package/file |
+| `docs/audit-evidence/type-safety.json` | Type escape counts by package/file |
 | `.audit/type-check.log` | Recursive strict type-check output |
-| `.audit/bundle-analysis.json` | Dist size, largest assets, top source-map dependency contributors |
-| `.audit/api-benchmarks.json` | API P50/P95/P99 under 10/25/50 concurrent workers |
-| `.audit/db-query-capture.json` | Flow timings and `EXPLAIN ANALYZE` output |
-| `.audit/api-test-runs.json` | Three-run API flake evidence |
-| `.audit/web-test-run.json` | Web Vitest environment failure |
-| `.audit/api-coverage-node24.log` | API coverage table |
-| `.audit/browser/browser-accessibility.json` | Console, failed request, offline, throttled network, and axe scan evidence |
-| `.audit/browser/*.png` | Browser screenshots for scanned pages |
+| `docs/audit-evidence/bundle-analysis.json` | Dist size, largest assets, top source-map dependency contributors |
+| `docs/audit-evidence/api-benchmarks.json` | API P50/P95/P99 under 10/25/50 concurrent workers |
+| `docs/audit-evidence/db-query-capture.json` | Flow timings and `EXPLAIN ANALYZE` output |
+| `docs/audit-evidence/api-test-runs.json` | Three-run API flake evidence |
+| `docs/audit-evidence/web-test-run.json` | Web Vitest environment failure |
+| `docs/audit-evidence/api-coverage.json` | API coverage summary from Node 24 run |
+| `docs/audit-evidence/browser-accessibility.json` | Console, failed request, offline, throttled network, and axe scan evidence |
+| `docs/audit-evidence/lighthouse-summary.json` | Lighthouse accessibility scores for authenticated major pages |
+| `.audit/browser/*.png` | Local browser screenshots for scanned pages |
 
 ## Recommendation
 
-This baseline is now strong enough to pass the measurement side of the audit gate, with two honest caveats: full database query counts need `pg_stat_statements` or Postgres statement logging enabled in the deployed database, and Lighthouse still needs to be added beside axe for the deployed frontend. The first implementation fixes should target color contrast, frontend test environment repair, and bundle splitting around editor/collaboration dependencies.
+This baseline is now strong enough to pass the measurement side of the audit gate, with one honest caveat: full database query counts still need `pg_stat_statements` or Postgres statement logging enabled in the deployed database. The first implementation fixes should target frontend test environment repair, bundle splitting around editor/collaboration dependencies, and an app-level offline recovery state for document reloads.
