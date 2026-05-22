@@ -56,6 +56,20 @@ export function AppLayout() {
   const [projectSetupWizardOpen, setProjectSetupWizardOpen] = useState(false);
   const [actionItemsModalOpen, setActionItemsModalOpen] = useState(false);
   const [actionItemsModalShownOnLoad, setActionItemsModalShownOnLoad] = useState(false);
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Session timeout handling
   const handleSessionTimeout = useCallback(() => {
@@ -270,6 +284,16 @@ export function AppLayout() {
 
       {/* Cache corruption alert */}
       <CacheCorruptionAlert />
+
+      {isOffline && (
+        <div
+          className="flex min-h-8 items-center justify-center border-b border-yellow-500/40 bg-yellow-500/15 px-4 text-sm text-yellow-100"
+          role="status"
+          aria-live="polite"
+        >
+          Offline mode: showing cached workspace data. Changes will sync when the network returns.
+        </div>
+      )}
 
       {/* Impersonation banner */}
       {impersonating && (

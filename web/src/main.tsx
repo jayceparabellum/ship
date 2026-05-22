@@ -23,6 +23,14 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { MutationErrorToast } from '@/components/MutationErrorToast';
 import './index.css';
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/offline-sw.js').catch((error) => {
+      console.warn('[Offline] Service worker registration failed:', error);
+    });
+  });
+}
+
 function lazyPage<T extends React.ComponentType<object>>(
   loader: () => Promise<Record<string, T>>,
   exportName: string

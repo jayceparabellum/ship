@@ -22,6 +22,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `web-test-run-after-jsdom-pin.json` | `corepack pnpm --filter @ship/web test` after Category 5 fixes | After-fix web Vitest evidence showing 151 passing tests |
 | `api-coverage.json` | `.audit/api-coverage.json` | API coverage run metadata |
 | `browser-accessibility.json` | `.audit/browser/browser-accessibility.json` | Browser console/network capture, offline/3G behavior, and axe scan output |
+| `browser-runtime-after-offline-shell.json` | `scripts/audit-browser-accessibility.mjs` after offline shell recovery | Category 6 after-fix evidence showing offline `/docs` reload stays in app and displays cached workspace data |
 | `browser-accessibility-after-contrast.json` | `.audit/browser/browser-accessibility.json` after contrast fixes | Category 7 after-fix axe evidence |
 | `lighthouse-summary.json` | `.audit/lighthouse-*.json` | Lighthouse accessibility scores for the authenticated major pages |
 | `production-smoke-test.json` | AWS production smoke test | CloudFront, API proxy, EB health, login-page, and demo-credential status |
@@ -38,6 +39,7 @@ node scripts/audit-db-query-capture.mjs
 corepack pnpm --dir api exec tsx ..\scripts\audit-auth-query-count.mjs
 # Production Aurora query-count capture requires the deployed AWS VPC runner and pg_stat_statements.
 node scripts/audit-browser-accessibility.mjs
+$env:AUDIT_BROWSER_DIR='docs\audit-evidence\browser-category6-after'; node scripts\audit-browser-accessibility.mjs
 corepack pnpm --filter @ship/api test
 corepack pnpm --filter @ship/web test
 corepack pnpm --filter @ship/api test:coverage

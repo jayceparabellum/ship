@@ -2,7 +2,7 @@
 
 This document tracks the required before/after improvement proof for all seven assignment categories.
 
-Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, 3, 4, 5, and 7 now have before/after improvement proof. Category 6 has a scoped target but still needs after measurements before it should be presented as a completed Phase 2 improvement.
+Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1 through 7 now have before/after improvement proof. Category 3 has a partial stretch-target caveat, but every required audit category now has measured baseline evidence plus a completed improvement slice.
 
 ## Category 1: Type Safety
 
@@ -301,7 +301,7 @@ Baseline:
 
 Root cause:
 
-The app can render under slow network, but an offline route reload does not provide an app-level recovery state. That can confuse users in a document-heavy collaboration tool.
+The app could render under slow network, but an offline route reload did not provide an app-level recovery state. The browser showed its native network error before React could render cached workspace context, which is a high-confusion scenario for a document-heavy collaboration tool.
 
 Target:
 
@@ -309,11 +309,43 @@ Fix three error-handling gaps, with at least one real user-facing data-loss or c
 
 Implementation status:
 
-Pending. Recommended first slice is an offline/reconnect UI state for document routes plus explicit error recovery for failed list loads.
+Completed first measurable slice on May 22, 2026.
+
+Changed files:
+
+- `web/public/offline-sw.js`
+- `web/src/main.tsx`
+- `web/src/pages/App.tsx`
+- `scripts/audit-browser-accessibility.mjs`
+
+Implementation notes:
+
+- Added a same-origin service worker that caches the app shell and previously fetched GET responses.
+- Registered the service worker from the web entry point so authenticated workspace routes have a navigation fallback after the first online visit.
+- Added a global offline status banner in the authenticated app shell with `role="status"` and `aria-live="polite"`.
+- Extended the browser audit script to wait for the offline shell, reload `/docs` while offline, and record whether the offline banner is visible.
 
 After measurement:
 
-Pending.
+Evidence: `docs/audit-evidence/browser-runtime-after-offline-shell.json`
+
+Command:
+
+```bash
+$env:AUDIT_BROWSER_DIR='docs\audit-evidence\browser-category6-after'
+node scripts\audit-browser-accessibility.mjs
+Copy-Item docs\audit-evidence\browser-category6-after\browser-accessibility.json docs\audit-evidence\browser-runtime-after-offline-shell.json -Force
+```
+
+Results:
+
+- Offline reload URL: `chrome-error://chromewebdata/` -> `http://localhost:5173/docs`
+- Offline visible text: empty -> cached docs/sidebar content plus the offline banner
+- Offline banner visible: `true`
+- Slow 3G `/issues` rendered visible content in 823 ms in the after capture
+- Axe scans for `/my-week`, `/docs`, `/issues`, `/team/allocation`, and `/dashboard` remained at 0 violations
+
+Result: this completes a defensible Category 6 improvement slice by fixing the highest-risk user-facing runtime confusion case. The capture still records expected development/offline network noise from Vite HMR and realtime WebSocket disconnects, so the next hardening slice should add quieter reconnect handling and explicit retry UI around realtime/list-fetch failures.
 
 ## Category 7: Accessibility
 

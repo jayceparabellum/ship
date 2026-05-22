@@ -28,6 +28,20 @@ async function login(page) {
   await page.waitForLoadState('networkidle').catch(() => {});
 }
 
+async function waitForOfflineShell(page) {
+  await page.evaluate(async () => {
+    if (!('serviceWorker' in navigator)) return { ready: false };
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) {
+      await new Promise((resolve) => {
+        navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
+        setTimeout(resolve, 3000);
+      });
+    }
+    return { ready: Boolean(navigator.serviceWorker.controller) };
+  }).catch(() => ({ ready: false }));
+}
+
 function summarizeViolations(scan) {
   return scan.violations.map((violation) => ({
     id: violation.id,
@@ -78,6 +92,9 @@ async function main() {
   }
 
   await page.goto(`${webBaseUrl}/docs`, { waitUntil: 'networkidle' });
+  await waitForOfflineShell(page);
+  await page.reload({ waitUntil: 'networkidle' }).catch(() => {});
+  await waitForOfflineShell(page);
   const beforeOfflineUrl = page.url();
   await context.setOffline(true);
   const offlineStarted = Date.now();
@@ -88,6 +105,7 @@ async function main() {
     durationMs: Date.now() - offlineStarted,
     urlAfterReload: page.url(),
     visibleTextSample: (await page.locator('body').innerText().catch(() => '')).slice(0, 500),
+    offlineBannerVisible: await page.getByText('Offline mode:', { exact: false }).isVisible().catch(() => false),
     consoleMessagesDuringRun: consoleMessages.length,
     failedRequestsDuringRun: failedRequests.length,
   };
