@@ -2,7 +2,7 @@
 
 This document tracks the required before/after improvement proof for all seven assignment categories.
 
-Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, and 7 now have before/after improvement proof. The remaining implementation categories have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
+Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, 3, and 7 now have before/after improvement proof. Categories 4-6 have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
 
 ## Category 1: Type Safety
 
@@ -121,17 +121,17 @@ Result: this satisfies the Category 2 target through the initial-load bundle pat
 
 Baseline:
 
-Slowest local seeded P95 values at 50 concurrent workers:
+Local seeded P95 values at 50 concurrent workers:
 
-- `/api/documents`: 418.76 ms
-- `/api/issues`: 351.64 ms
-- `/api/dashboard/my-work`: 164.60 ms
-- `/api/weeks`: 160.00 ms
-- `/api/auth/me`: 154.62 ms
+- `/api/documents`: 285.01 ms
+- `/api/issues`: 257.35 ms
+- `/api/dashboard/my-work`: 150.61 ms
+- `/api/weeks`: 144.89 ms
+- `/api/auth/me`: 116.06 ms
 
 Root cause:
 
-`/api/documents` and `/api/issues` return larger payloads and run more route-level transformation work than the other measured endpoints. Representative SQL plans were fast locally, so the first hypothesis is payload size and route serialization rather than raw query execution.
+List routes were returning more data than the first screen needs, especially full JSONB properties and issue content. Authenticated requests also paid for a separate workspace-membership lookup in middleware before each route handler ran. Representative SQL plans were fast locally, so the first implementation slice targeted payload size, route serialization, and repeated middleware round trips rather than raw query execution.
 
 Target:
 
@@ -139,11 +139,43 @@ Reduce P95 by 20% on at least two endpoints under identical benchmark conditions
 
 Implementation status:
 
-Pending. Recommended first slice is response-shape pruning or pagination for list endpoints.
+Completed first measurable slice on May 22, 2026.
+
+Changed files:
+
+- `api/src/routes/documents.ts`
+- `api/src/routes/issues.ts`
+- `api/src/routes/auth.ts`
+- `api/src/middleware/auth.ts`
+
+Implementation notes:
+
+- Changed the document list query to select only the common scalar property fields used by list views instead of returning the full `properties` JSONB blob and remapping it in JavaScript.
+- Removed full `content` from the issue list response and built a narrowed issue property object in SQL.
+- Derived `/api/auth/me` `currentWorkspace` from the already-loaded workspace membership list instead of issuing a separate current-workspace query.
+- Folded the workspace-membership validation in `authMiddleware` into the session lookup query, removing one database round trip from every authenticated request.
 
 After measurement:
 
-Pending.
+Evidence: `docs/audit-evidence/api-benchmarks-after-list-payload-trim.json`
+
+Command:
+
+```bash
+$env:AUDIT_REQUEST_DELAY_MS='3500'
+$env:AUDIT_BENCH_OUT='docs\audit-evidence\api-benchmarks-after-list-payload-trim.json'
+node scripts\audit-api-benchmark.mjs
+```
+
+Results at 50 concurrent workers:
+
+- `/api/weeks` P95: 144.89 ms -> 113.83 ms, 21.4% faster
+- `/api/documents` P95: 285.01 ms -> 242.16 ms, 15.0% faster; P99: 407.15 ms -> 331.59 ms, 18.6% faster
+- `/api/dashboard/my-work` P95: 150.61 ms -> 140.65 ms, 6.6% faster
+- `/api/issues` P95: 257.35 ms -> 244.84 ms, 4.9% faster
+- `/api/auth/me` P50: 53.63 ms -> 19.77 ms, 63.1% faster; P95 stayed effectively flat at 116.06 ms -> 113.62 ms
+
+Result: this completes a defensible Category 3 improvement slice with real P50/P95/P99 after evidence. It does not fully satisfy the original two-endpoint 20% P95 stretch target; the next slice should add pagination or server-side summary endpoints for `/api/documents` and `/api/issues` to make the remaining gains less sensitive to benchmark variance.
 
 ## Category 4: Database Query Efficiency
 

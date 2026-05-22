@@ -125,9 +125,12 @@ export async function authMiddleware(
     // Get session and check if it's valid
     const result = await pool.query(
       `SELECT s.id, s.user_id, s.workspace_id, s.expires_at, s.last_activity, s.created_at,
-              u.is_super_admin
+              u.is_super_admin,
+              wm.id as membership_id
        FROM sessions s
        JOIN users u ON s.user_id = u.id
+       LEFT JOIN workspace_memberships wm
+         ON wm.workspace_id = s.workspace_id AND wm.user_id = s.user_id
        WHERE s.id = $1`,
       [sessionId]
     );
@@ -179,26 +182,31 @@ export async function authMiddleware(
       return;
     }
 
-    // Verify user still has access to the workspace (unless super-admin)
+    let hasWorkspaceAccess = true;
     if (session.workspace_id && !session.is_super_admin) {
-      const membershipResult = await pool.query(
-        'SELECT id FROM workspace_memberships WHERE workspace_id = $1 AND user_id = $2',
-        [session.workspace_id, session.user_id]
-      );
-
-      if (!membershipResult.rows[0]) {
-        // User no longer has access - delete session
-        await pool.query('DELETE FROM sessions WHERE id = $1', [sessionId]);
-
-        res.status(HTTP_STATUS.FORBIDDEN).json({
-          success: false,
-          error: {
-            code: ERROR_CODES.FORBIDDEN,
-            message: 'Access to this workspace has been revoked',
-          },
-        });
-        return;
+      if ('membership_id' in session) {
+        hasWorkspaceAccess = Boolean(session.membership_id);
+      } else {
+        const membershipResult = await pool.query(
+          'SELECT id FROM workspace_memberships WHERE workspace_id = $1 AND user_id = $2',
+          [session.workspace_id, session.user_id]
+        );
+        hasWorkspaceAccess = Boolean(membershipResult.rows[0]);
       }
+    }
+
+    // Verify user still has access to the workspace (unless super-admin).
+    if (!hasWorkspaceAccess) {
+      await pool.query('DELETE FROM sessions WHERE id = $1', [sessionId]);
+
+      res.status(HTTP_STATUS.FORBIDDEN).json({
+        success: false,
+        error: {
+          code: ERROR_CODES.FORBIDDEN,
+          message: 'Access to this workspace has been revoked',
+        },
+      });
+      return;
     }
 
     // Update last activity

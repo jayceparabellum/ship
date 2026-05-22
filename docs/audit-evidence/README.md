@@ -13,6 +13,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `bundle-analysis.json` | `.audit/bundle-analysis.json` | Production bundle size, largest assets, and top sourcemap dependency contributors |
 | `bundle-analysis-after-route-splitting.json` | Vite production build after route lazy-loading | Before/after initial chunk size evidence for Category 2 |
 | `api-benchmarks.json` | `.audit/api-benchmarks.json` | P50/P95/P99 API benchmarks for five authenticated endpoints at 10/25/50 concurrency |
+| `api-benchmarks-after-list-payload-trim.json` | `scripts/audit-api-benchmark.mjs` after list payload and auth middleware trimming | After-fix P50/P95/P99 API benchmark evidence for Category 3 |
 | `db-query-capture.json` | `.audit/db-query-capture.json` | Flow timings and representative `EXPLAIN ANALYZE` plans |
 | `aurora-query-counts.json` | Aurora PostgreSQL 16 `pg_stat_statements` | Production query-count capture after authenticated CloudFront flows |
 | `api-test-runs.json` | `.audit/api-test-runs.json` | Three-run API flake check |
