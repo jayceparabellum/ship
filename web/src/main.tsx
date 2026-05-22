@@ -16,34 +16,53 @@ import { ProjectsProvider } from '@/contexts/ProjectsContext';
 import { ArchivedPersonsProvider } from '@/contexts/ArchivedPersonsContext';
 import { CurrentDocumentProvider } from '@/contexts/CurrentDocumentContext';
 import { UploadProvider } from '@/contexts/UploadContext';
-import { LoginPage } from '@/pages/Login';
 import { AppLayout } from '@/pages/App';
-import { DocumentsPage } from '@/pages/Documents';
-import { IssuesPage } from '@/pages/Issues';
-import { ProgramsPage } from '@/pages/Programs';
-import { TeamModePage } from '@/pages/TeamMode';
-import { TeamDirectoryPage } from '@/pages/TeamDirectory';
-import { PersonEditorPage } from '@/pages/PersonEditor';
-import { FeedbackEditorPage } from '@/pages/FeedbackEditor';
-import { PublicFeedbackPage } from '@/pages/PublicFeedback';
-import { ProjectsPage } from '@/pages/Projects';
-import { DashboardPage } from '@/pages/Dashboard';
-import { MyWeekPage } from '@/pages/MyWeekPage';
-import { AdminDashboardPage } from '@/pages/AdminDashboard';
-import { AdminWorkspaceDetailPage } from '@/pages/AdminWorkspaceDetail';
-import { WorkspaceSettingsPage } from '@/pages/WorkspaceSettings';
-import { ConvertedDocumentsPage } from '@/pages/ConvertedDocuments';
-import { UnifiedDocumentPage } from '@/pages/UnifiedDocumentPage';
-import { StatusOverviewPage } from '@/pages/StatusOverviewPage';
-import { ReviewsPage } from '@/pages/ReviewsPage';
-import { OrgChartPage } from '@/pages/OrgChartPage';
 import { ReviewQueueProvider } from '@/contexts/ReviewQueueContext';
 
-import { InviteAcceptPage } from '@/pages/InviteAccept';
-import { SetupPage } from '@/pages/Setup';
 import { ToastProvider } from '@/components/ui/Toast';
 import { MutationErrorToast } from '@/components/MutationErrorToast';
 import './index.css';
+
+function lazyPage<T extends React.ComponentType<object>>(
+  loader: () => Promise<Record<string, T>>,
+  exportName: string
+) {
+  return React.lazy(async () => {
+    const module = await loader();
+    return { default: module[exportName] };
+  });
+}
+
+const LoginPage = lazyPage(() => import('@/pages/Login'), 'LoginPage');
+const DocumentsPage = lazyPage(() => import('@/pages/Documents'), 'DocumentsPage');
+const IssuesPage = lazyPage(() => import('@/pages/Issues'), 'IssuesPage');
+const ProgramsPage = lazyPage(() => import('@/pages/Programs'), 'ProgramsPage');
+const TeamModePage = lazyPage(() => import('@/pages/TeamMode'), 'TeamModePage');
+const TeamDirectoryPage = lazyPage(() => import('@/pages/TeamDirectory'), 'TeamDirectoryPage');
+const PersonEditorPage = lazyPage(() => import('@/pages/PersonEditor'), 'PersonEditorPage');
+const FeedbackEditorPage = lazyPage(() => import('@/pages/FeedbackEditor'), 'FeedbackEditorPage');
+const PublicFeedbackPage = lazyPage(() => import('@/pages/PublicFeedback'), 'PublicFeedbackPage');
+const ProjectsPage = lazyPage(() => import('@/pages/Projects'), 'ProjectsPage');
+const DashboardPage = lazyPage(() => import('@/pages/Dashboard'), 'DashboardPage');
+const MyWeekPage = lazyPage(() => import('@/pages/MyWeekPage'), 'MyWeekPage');
+const AdminDashboardPage = lazyPage(() => import('@/pages/AdminDashboard'), 'AdminDashboardPage');
+const AdminWorkspaceDetailPage = lazyPage(() => import('@/pages/AdminWorkspaceDetail'), 'AdminWorkspaceDetailPage');
+const WorkspaceSettingsPage = lazyPage(() => import('@/pages/WorkspaceSettings'), 'WorkspaceSettingsPage');
+const ConvertedDocumentsPage = lazyPage(() => import('@/pages/ConvertedDocuments'), 'ConvertedDocumentsPage');
+const UnifiedDocumentPage = lazyPage(() => import('@/pages/UnifiedDocumentPage'), 'UnifiedDocumentPage');
+const StatusOverviewPage = lazyPage(() => import('@/pages/StatusOverviewPage'), 'StatusOverviewPage');
+const ReviewsPage = lazyPage(() => import('@/pages/ReviewsPage'), 'ReviewsPage');
+const OrgChartPage = lazyPage(() => import('@/pages/OrgChartPage'), 'OrgChartPage');
+const InviteAcceptPage = lazyPage(() => import('@/pages/InviteAccept'), 'InviteAcceptPage');
+const SetupPage = lazyPage(() => import('@/pages/Setup'), 'SetupPage');
+
+function RouteFallback() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <div className="text-muted">Loading...</div>
+    </div>
+  );
+}
 
 /**
  * Redirect component for type-specific routes to canonical /documents/:id
@@ -258,7 +277,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <MutationErrorToast />
         <BrowserRouter>
           <ReviewQueueProvider>
-            <App />
+            <React.Suspense fallback={<RouteFallback />}>
+              <App />
+            </React.Suspense>
           </ReviewQueueProvider>
         </BrowserRouter>
       </ToastProvider>

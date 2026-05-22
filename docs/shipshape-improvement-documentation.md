@@ -2,7 +2,7 @@
 
 This document tracks the required before/after improvement proof for all seven assignment categories.
 
-Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1 and 7 now have before/after improvement proof. The remaining implementation categories have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
+Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, and 7 now have before/after improvement proof. The remaining implementation categories have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
 
 ## Category 1: Type Safety
 
@@ -81,11 +81,41 @@ Reduce total production bundle by 15%, or reduce initial-load bundle by 20% thro
 
 Implementation status:
 
-Pending. Recommended first slice is route/editor-level code splitting and removal of static imports that defeat lazy loading.
+Completed first measurable slice on May 22, 2026.
+
+Changed file:
+
+- `web/src/main.tsx`
+
+Implementation notes:
+
+- Replaced static route-page imports in the app entry with `React.lazy` named-export imports.
+- Added a single `React.Suspense` route boundary so page bundles load on demand.
+- Moved heavy document/editor paths, including Tiptap/Yjs/prosemirror dependencies, out of the initial app chunk.
 
 After measurement:
 
-Pending.
+Evidence: `docs/audit-evidence/bundle-analysis-after-route-splitting.json`
+
+Commands:
+
+```bash
+corepack pnpm --filter @ship/web type-check
+$env:VITE_API_URL=''; corepack pnpm --filter @ship/web exec vite build --sourcemap
+node scripts/audit-bundle-map.mjs
+```
+
+Results:
+
+- Initial `index` JS chunk: 2,073,742 bytes -> 470,513 bytes
+- Initial chunk reduction: 1,603,229 bytes
+- Initial chunk reduction percentage: 77.31%
+- After-build largest JS chunk: `web/dist/assets/PropertyRow-C9gvJHDl.js`, 836,487 bytes
+- After-build route/editor chunk: `web/dist/assets/UnifiedDocumentPage-EG3dQtKb.js`, 403,802 bytes
+- Web type-check: passed
+- Production preview smoke: `/login` rendered sign-in UI and `/docs` rendered a route shell from the built preview server
+
+Result: this satisfies the Category 2 target through the initial-load bundle path. Total `dist` including sourcemaps stayed roughly flat because the same application code moved into lazy chunks rather than being deleted.
 
 ## Category 3: API Response Time
 

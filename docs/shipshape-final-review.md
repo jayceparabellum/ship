@@ -51,7 +51,7 @@ Latest health check during review:
 
 ## Remaining Risks
 
-The audit gate is complete. The main remaining risk is Phase 2 implementation depth: `docs/shipshape-improvement-documentation.md` has Categories 1 and 7 completed with after-fix proof, while Categories 2-6 have baseline evidence and scoped targets but still need final after measurements before they should be presented as completed improvements.
+The audit gate is complete. The main remaining risk is Phase 2 implementation depth: `docs/shipshape-improvement-documentation.md` has Categories 1, 2, and 7 completed with after-fix proof, while Categories 3-6 have baseline evidence and scoped targets but still need final after measurements before they should be presented as completed improvements.
 
 The demo video is also a separate required final-submission item, but it remains intentionally out of scope for this pass per Jayce's instruction.
 
