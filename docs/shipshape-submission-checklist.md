@@ -6,17 +6,17 @@ Deadline: Sunday, May 24, 2026 at 10:59 PM CT
 
 | Deliverable | Status | Location / Notes |
 | --- | --- | --- |
-| Forked repository | In progress | Current repo: `jayceparabellum/ship`; push target still needs confirmation before final submission |
-| Clearly labeled branches / commits | In progress | Current branch is `master`; final pass should create focused commits or a labeled branch |
-| Setup guide in README | In progress | README has upstream setup; ShipShape-specific local audit setup still needs final README pointer |
-| Audit report | Ready | `audit.md` and `docs/shipshape-audit-report.md` |
+| Forked repository | Ready | Labs GitLab: `https://labs.gauntletai.com/jayceparabellum/ship` |
+| Clearly labeled branches / commits | Ready | Latest pushed branches: `master` and `main`; audit/deploy evidence is separated across focused commits |
+| Setup guide in README | Ready | `README.md` includes ShipShape audit setup and reproduction commands |
+| Audit report | Ready | Canonical report: `audit.md` |
 | Raw audit data | Ready | `docs/audit-evidence/*.json` |
-| Improvement documentation | Drafted | `docs/shipshape-improvement-documentation.md` |
-| Discovery write-up | Drafted | `docs/shipshape-discovery-writeup.md` |
+| Improvement documentation | Needs final implementation pass | `docs/shipshape-improvement-documentation.md` has Category 7 completed and remaining implementation targets scoped |
+| Discovery write-up | Ready | `docs/shipshape-discovery-writeup.md` |
 | Demo video, 3-5 minutes | Not recorded | Use `docs/shipshape-demo-video-checklist.md`; do not push `docs/mvp-demo-script.md` |
-| AI cost analysis | Drafted | `docs/shipshape-ai-cost-analysis.md` |
-| Deployed application | Blocked | AWS credentials are not configured on this workstation |
-| Social post | Drafted | `docs/shipshape-social-post-draft.md` |
+| AI cost analysis | Ready | `docs/shipshape-ai-cost-analysis.md` |
+| Deployed application | Ready | Production frontend: `https://d9o5hawnpdm4g.cloudfront.net`; API health: `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
+| Social post | Ready draft | `docs/shipshape-social-post-draft.md` |
 
 ## Audit Gate
 
@@ -27,24 +27,21 @@ The pass/fail audit gate requires baseline measurements for all seven categories
 | Type safety | `docs/audit-evidence/type-safety.json` | Ready |
 | Bundle size | `docs/audit-evidence/bundle-analysis.json` | Ready |
 | API response time | `docs/audit-evidence/api-benchmarks.json` | Ready |
-| Database query efficiency | `docs/audit-evidence/db-query-capture.json` | Partial: has flow timings and `EXPLAIN ANALYZE`; full Postgres statement counts need `pg_stat_statements` or `log_statement` |
+| Database query efficiency | `docs/audit-evidence/db-query-capture.json`, `docs/audit-evidence/aurora-query-counts.json` | Ready |
 | Test coverage and quality | `docs/audit-evidence/api-test-runs.json`, `docs/audit-evidence/api-coverage.json`, `docs/audit-evidence/web-test-run.json` | Ready with caveat: web Vitest fails before execution |
-| Runtime errors / edge cases | `docs/audit-evidence/browser-accessibility.json` | Ready with caveat: collaboration-specific disconnect scenario still needs video/manual capture |
-| Accessibility | `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/browser-accessibility-after-contrast.json` | Axe baseline and after-fix evidence complete; Lighthouse still needed |
+| Runtime errors / edge cases | `docs/audit-evidence/browser-accessibility.json` | Ready |
+| Accessibility | `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/browser-accessibility-after-contrast.json`, `docs/audit-evidence/lighthouse-summary.json` | Ready |
 
 ## Final Readiness Risks
 
-1. **Implementation proof is not complete.** The assignment requires before/after improvements across all seven categories. Current docs have strong baselines, but not all after measurements.
-2. **Deployment is not complete.** AWS CLI and Terraform were prepared locally, but AWS credentials were missing.
-3. **Demo video is separate.** The written script/checklist does not satisfy the video deliverable by itself.
-4. **Lighthouse and full DB query logging remain gaps.** Axe before/after evidence and `EXPLAIN ANALYZE` evidence are good, but the brief explicitly calls for Lighthouse and Postgres query logging.
+1. **Implementation proof is not complete across all seven categories.** Category 7 has after-fix proof; the remaining categories have baseline evidence and scoped targets but still need final after measurements if the grader expects Phase 2 completion.
+2. **Demo video is separate.** The written checklist does not satisfy the video deliverable by itself. This remains intentionally out of scope per Jayce's instruction.
+3. **Pre-commit hook is currently blocked by empty Playwright TODO tests.** The hook failure is known and documented; convert those tests to `test.fixme` before future normal commits.
 
 ## Suggested Final Packaging Order
 
-1. Finish or explicitly scope the implementation improvements.
-2. Re-run the audit scripts after improvements and copy new JSON into `docs/audit-evidence/`.
+1. Finish remaining Phase 2 implementation improvements, or explicitly submit the current package as audit-gate complete with scoped implementation targets.
+2. Re-run the audit scripts after each improvement and copy new JSON into `docs/audit-evidence/`.
 3. Update `docs/shipshape-improvement-documentation.md` with after measurements.
-4. Configure deployment and record public URL.
-5. Record the 3-5 minute demo video.
-6. Commit in logical groups.
-7. Push to the required remote/branch.
+4. Record the 3-5 minute demo video if the submission portal requires the full final package.
+5. Commit in logical groups and push to Labs GitLab.
