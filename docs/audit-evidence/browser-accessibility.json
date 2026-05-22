@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-21T15:30:28.654Z",
+  "generatedAt": "2026-05-22T14:50:30.917Z",
   "webBaseUrl": "http://localhost:5173",
   "pages": [
     {
@@ -43,7 +43,7 @@
   ],
   "offlineCapture": {
     "page": "http://localhost:5173/docs",
-    "durationMs": 3009,
+    "durationMs": 3018,
     "urlAfterReload": "chrome-error://chromewebdata/",
     "visibleTextSample": "",
     "consoleMessagesDuringRun": 1,
@@ -51,29 +51,15 @@
   },
   "slow3gCapture": {
     "path": "/issues",
-    "durationMs": 15167,
-    "visibleTextSample": "Skip to main content\n1 accountability item is due today.\n1\nView items\nS\nD\nIssues\nALL ISSUES\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project stru"
+    "durationMs": 15197,
+    "visibleTextSample": "Skip to main content\n2 accountability items are due today.\n2\nView items\nS\nD\nIssues\nALL ISSUES\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project st"
   },
   "axeScans": [
     {
       "name": "my week",
       "path": "/my-week",
-      "violationCount": 1,
-      "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
-          "nodes": 18,
-          "targets": [
-            ".bg-accent\\/20.py-0\\.5.px-1\\.5",
-            ".items-start.gap-2\\.5.py-1\\.5:nth-child(1) > .text-\\[11px\\].text-muted\\/50.text-right",
-            ".items-start.gap-2\\.5.py-1\\.5:nth-child(2) > .text-\\[11px\\].text-muted\\/50.text-right",
-            ".items-start.gap-2\\.5.py-1\\.5:nth-child(3) > .text-\\[11px\\].text-muted\\/50.text-right",
-            ".items-start.gap-2\\.5.py-1\\.5:nth-child(4) > .text-\\[11px\\].text-muted\\/50.text-right"
-          ]
-        }
-      ]
+      "violationCount": 0,
+      "violations": []
     },
     {
       "name": "docs",
@@ -90,38 +76,14 @@
     {
       "name": "team allocation",
       "path": "/team/allocation",
-      "violationCount": 1,
-      "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
-          "nodes": 1,
-          "targets": [
-            ".text-accent.font-medium.text-xs"
-          ]
-        }
-      ]
+      "violationCount": 0,
+      "violations": []
     },
     {
       "name": "dashboard",
       "path": "/dashboard",
-      "violationCount": 1,
-      "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
-          "nodes": 14,
-          "targets": [
-            ".bg-accent\\/10",
-            ".border-border\\/50.last\\:border-r-0.px-3:nth-child(1) > .text-\\[10px\\].mb-1\\.5.tracking-wider",
-            ".border-border\\/50.last\\:border-r-0.px-3:nth-child(2) > .text-\\[10px\\].mb-1\\.5.tracking-wider",
-            ".border-border\\/50.last\\:border-r-0.px-3:nth-child(3) > .text-\\[10px\\].mb-1\\.5.tracking-wider",
-            ".text-accent.text-\\[10px\\].mb-1\\.5"
-          ]
-        }
-      ]
+      "violationCount": 0,
+      "violations": []
     }
   ]
 }

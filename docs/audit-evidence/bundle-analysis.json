@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-05-21T15:32:28.768Z",
+  "generatedAt": "2026-05-22T14:41:40.247Z",
   "distDir": "web/dist",
-  "totalBytes": 11990743,
+  "totalBytes": 11990895,
   "assetCount": 562,
   "largestAssets": [
     {
-      "file": "web/dist/assets/index-C2vAyoQ1.js.map",
-      "bytes": 8079404
+      "file": "web/dist/assets/index-BXwX_FdO.js.map",
+      "bytes": 8079407
     },
     {
-      "file": "web/dist/assets/index-C2vAyoQ1.js",
-      "bytes": 2073741
+      "file": "web/dist/assets/index-BXwX_FdO.js",
+      "bytes": 2073742
     },
     {
       "file": "web/dist/icons/blue/logo-1024.png",
@@ -29,15 +29,15 @@
       "bytes": 70180
     },
     {
-      "file": "web/dist/assets/index-DJeYp5na.css",
-      "bytes": 66512
+      "file": "web/dist/assets/index-Bl33ovya.css",
+      "bytes": 66660
     },
     {
       "file": "web/dist/icons/blue/logo-256.png",
       "bytes": 65673
     },
     {
-      "file": "web/dist/assets/ProgramWeeksTab-BzbUWlt4.js.map",
+      "file": "web/dist/assets/ProgramWeeksTab-DfYirKWh.js.map",
       "bytes": 57460
     },
     {
@@ -49,7 +49,7 @@
       "bytes": 44885
     },
     {
-      "file": "web/dist/assets/WeekReviewTab-DmxN07T1.js.map",
+      "file": "web/dist/assets/WeekReviewTab-i421vOkR.js.map",
       "bytes": 38904
     },
     {

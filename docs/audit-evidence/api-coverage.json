@@ -1,5 +1,13 @@
 {
-    "exitCode":  0,
-    "seconds":  70.04,
-    "log":  ".audit\\api-coverage-node24.log"
+  "generatedAt": "2026-05-22T14:59:37.8145643Z",
+  "command": "corepack pnpm --filter @ship/api test:coverage",
+  "node": "v24.14.0",
+  "exitCode": 0,
+  "statements": 40.34,
+  "branches": 33.44,
+  "functions": 40.9,
+  "lines": 40.52,
+  "testFiles": "28 passed",
+  "tests": "451 passed",
+  "log": ".audit/api-coverage.log"
 }

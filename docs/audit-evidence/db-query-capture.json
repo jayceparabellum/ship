@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-21T15:47:17.235Z",
+  "generatedAt": "2026-05-22T14:49:58.006Z",
   "apiBaseUrl": "http://localhost:3000",
   "note": "pg_stat_statements was not available in this local Postgres. Flow-level API timings and EXPLAIN ANALYZE plans are included instead.",
   "flows": [
@@ -8,7 +8,7 @@
       "path": "/api/documents",
       "status": 200,
       "ok": true,
-      "responseMs": 53.7,
+      "responseMs": 32.99,
       "responseBytes": 151633
     },
     {
@@ -16,7 +16,7 @@
       "path": "/api/issues",
       "status": 200,
       "ok": true,
-      "responseMs": 40.24,
+      "responseMs": 16.33,
       "responseBytes": 102132
     },
     {
@@ -24,7 +24,7 @@
       "path": "/api/weeks",
       "status": 200,
       "ok": true,
-      "responseMs": 11.85,
+      "responseMs": 12.62,
       "responseBytes": 4350
     },
     {
@@ -32,7 +32,7 @@
       "path": "/api/dashboard/my-work",
       "status": 200,
       "ok": true,
-      "responseMs": 12.23,
+      "responseMs": 16.66,
       "responseBytes": 6895
     },
     {
@@ -40,7 +40,7 @@
       "path": "/api/search/mentions?q=dev",
       "status": 200,
       "ok": true,
-      "responseMs": 11.32,
+      "responseMs": 14.15,
       "responseBytes": 373
     }
   ],
@@ -50,71 +50,80 @@
     {
       "name": "documents list visibility filter",
       "plan": [
-        "Sort  (cost=44.64..45.28 rows=257 width=332) (actual time=0.472..0.484 rows=257 loops=1)",
+        "Sort  (cost=44.65..45.29 rows=257 width=332) (actual time=0.571..0.583 rows=257 loops=1)",
         "  Sort Key: documents.\"position\", documents.created_at DESC",
         "  Sort Method: quicksort  Memory: 112kB",
         "  Buffers: shared hit=31",
         "  InitPlan 1 (returns $0)",
-        "    ->  Index Scan using sessions_pkey on sessions  (cost=0.12..8.14 rows=1 width=16) (actual time=0.014..0.014 rows=1 loops=1)",
-        "          Index Cond: (id = '845b9d357ad57ed869cca1939fe02dc714c6979fb5a410b249f672a7eee3b7f9'::text)",
+        "    ->  Bitmap Heap Scan on sessions  (cost=4.14..8.15 rows=1 width=16) (actual time=0.023..0.024 rows=1 loops=1)",
+        "          Recheck Cond: (id = 'a554094e7e740e4cb217e56b51269105b2747f0e4db358aec083b813282521ac'::text)",
+        "          Heap Blocks: exact=1",
         "          Buffers: shared hit=2",
-        "  ->  Seq Scan on documents  (cost=0.00..26.21 rows=257 width=332) (actual time=0.029..0.171 rows=257 loops=1)",
+        "          ->  Bitmap Index Scan on sessions_pkey  (cost=0.00..4.14 rows=1 width=0) (actual time=0.008..0.009 rows=1 loops=1)",
+        "                Index Cond: (id = 'a554094e7e740e4cb217e56b51269105b2747f0e4db358aec083b813282521ac'::text)",
+        "                Buffers: shared hit=1",
+        "  ->  Seq Scan on documents  (cost=0.00..26.21 rows=257 width=332) (actual time=0.041..0.202 rows=257 loops=1)",
         "        Filter: ((archived_at IS NULL) AND (deleted_at IS NULL) AND (workspace_id = $0))",
         "        Buffers: shared hit=25",
         "Planning:",
         "  Buffers: shared hit=459",
-        "Planning Time: 0.851 ms",
-        "Execution Time: 0.542 ms"
+        "Planning Time: 1.777 ms",
+        "Execution Time: 0.736 ms"
       ]
     },
     {
       "name": "issue list joins",
       "plan": [
-        "Sort  (cost=40.35..40.61 rows=104 width=290) (actual time=0.194..0.199 rows=104 loops=1)",
+        "Sort  (cost=40.36..40.62 rows=104 width=290) (actual time=0.279..0.285 rows=104 loops=1)",
         "  Sort Key: d.updated_at DESC",
         "  Sort Method: quicksort  Memory: 54kB",
         "  Buffers: shared hit=26",
         "  InitPlan 1 (returns $0)",
-        "    ->  Index Scan using sessions_pkey on sessions  (cost=0.12..8.14 rows=1 width=16) (actual time=0.007..0.007 rows=1 loops=1)",
-        "          Index Cond: (id = '845b9d357ad57ed869cca1939fe02dc714c6979fb5a410b249f672a7eee3b7f9'::text)",
+        "    ->  Bitmap Heap Scan on sessions  (cost=4.14..8.15 rows=1 width=16) (actual time=0.010..0.011 rows=1 loops=1)",
+        "          Recheck Cond: (id = 'a554094e7e740e4cb217e56b51269105b2747f0e4db358aec083b813282521ac'::text)",
+        "          Heap Blocks: exact=1",
         "          Buffers: shared hit=2",
-        "  ->  Hash Left Join  (cost=1.54..28.72 rows=104 width=290) (actual time=0.050..0.167 rows=104 loops=1)",
+        "          ->  Bitmap Index Scan on sessions_pkey  (cost=0.00..4.14 rows=1 width=0) (actual time=0.006..0.007 rows=1 loops=1)",
+        "                Index Cond: (id = 'a554094e7e740e4cb217e56b51269105b2747f0e4db358aec083b813282521ac'::text)",
+        "                Buffers: shared hit=1",
+        "  ->  Hash Left Join  (cost=1.54..28.72 rows=104 width=290) (actual time=0.120..0.247 rows=104 loops=1)",
         "        Hash Cond: (((d.properties ->> 'assignee_id'::text))::uuid = u.id)",
         "        Buffers: shared hit=26",
-        "        ->  Seq Scan on documents d  (cost=0.00..26.86 rows=104 width=258) (actual time=0.018..0.075 rows=104 loops=1)",
+        "        ->  Seq Scan on documents d  (cost=0.00..26.86 rows=104 width=258) (actual time=0.022..0.088 rows=104 loops=1)",
         "              Filter: ((archived_at IS NULL) AND (deleted_at IS NULL) AND (workspace_id = $0) AND (document_type = 'issue'::document_type))",
         "              Rows Removed by Filter: 153",
         "              Buffers: shared hit=25",
-        "        ->  Hash  (cost=1.24..1.24 rows=24 width=48) (actual time=0.015..0.015 rows=11 loops=1)",
+        "        ->  Hash  (cost=1.24..1.24 rows=24 width=48) (actual time=0.020..0.020 rows=11 loops=1)",
         "              Buckets: 1024  Batches: 1  Memory Usage: 9kB",
         "              Buffers: shared hit=1",
-        "              ->  Seq Scan on users u  (cost=0.00..1.24 rows=24 width=48) (actual time=0.009..0.011 rows=11 loops=1)",
+        "              ->  Seq Scan on users u  (cost=0.00..1.24 rows=24 width=48) (actual time=0.012..0.014 rows=11 loops=1)",
         "                    Buffers: shared hit=1",
         "Planning:",
         "  Buffers: shared hit=226",
-        "Planning Time: 0.664 ms",
-        "Execution Time: 0.239 ms"
+        "Planning Time: 0.757 ms",
+        "Execution Time: 0.325 ms"
       ]
     },
     {
       "name": "session auth lookup",
       "plan": [
-        "Hash Join  (cost=8.16..9.47 rows=1 width=169) (actual time=0.023..0.025 rows=1 loops=1)",
+        "Hash Join  (cost=8.17..9.48 rows=1 width=169) (actual time=0.028..0.029 rows=1 loops=1)",
         "  Hash Cond: (u.id = s.user_id)",
-        "  Buffers: shared hit=4",
-        "  ->  Seq Scan on users u  (cost=0.00..1.24 rows=24 width=80) (actual time=0.002..0.003 rows=11 loops=1)",
+        "  Buffers: shared hit=11",
+        "  ->  Seq Scan on users u  (cost=0.00..1.24 rows=24 width=80) (actual time=0.003..0.004 rows=11 loops=1)",
         "        Buffers: shared hit=1",
-        "  ->  Hash  (cost=8.15..8.15 rows=1 width=105) (actual time=0.013..0.013 rows=1 loops=1)",
+        "  ->  Hash  (cost=8.15..8.15 rows=1 width=105) (actual time=0.019..0.020 rows=1 loops=1)",
         "        Buckets: 1024  Batches: 1  Memory Usage: 9kB",
-        "        Buffers: shared hit=3",
-        "        ->  Index Scan using idx_sessions_user_id on sessions s  (cost=0.12..8.15 rows=1 width=105) (actual time=0.005..0.011 rows=1 loops=1)",
-        "              Filter: ((id = '845b9d357ad57ed869cca1939fe02dc714c6979fb5a410b249f672a7eee3b7f9'::text) AND (expires_at > now()))",
+        "        Buffers: shared hit=10",
+        "        ->  Index Scan using idx_sessions_expires_at on sessions s  (cost=0.14..8.15 rows=1 width=105) (actual time=0.015..0.016 rows=1 loops=1)",
+        "              Index Cond: (expires_at > now())",
+        "              Filter: (id = 'a554094e7e740e4cb217e56b51269105b2747f0e4db358aec083b813282521ac'::text)",
         "              Rows Removed by Filter: 1",
-        "              Buffers: shared hit=3",
+        "              Buffers: shared hit=10",
         "Planning:",
-        "  Buffers: shared hit=14",
-        "Planning Time: 0.142 ms",
-        "Execution Time: 0.039 ms"
+        "  Buffers: shared hit=22",
+        "Planning Time: 0.204 ms",
+        "Execution Time: 0.046 ms"
       ]
     }
   ]

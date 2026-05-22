@@ -1,6 +1,6 @@
 # ShipShape Audit Evidence
 
-This folder contains tracked copies of the raw audit JSON artifacts generated during the May 21, 2026 local baseline run, plus after-fix evidence for completed improvement slices.
+This folder contains tracked copies of the raw audit JSON artifacts generated during the May 22, 2026 local baseline refresh, plus after-fix evidence for completed improvement slices.
 
 The live working copies are generated under `.audit/`, which is ignored by git because it also contains logs and screenshots. These JSON files are copied here so the final submission includes reproducible raw data.
 
@@ -17,6 +17,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `api-coverage.json` | `.audit/api-coverage.json` | API coverage run metadata |
 | `browser-accessibility.json` | `.audit/browser/browser-accessibility.json` | Browser console/network capture, offline/3G behavior, and axe scan output |
 | `browser-accessibility-after-contrast.json` | `.audit/browser/browser-accessibility.json` after contrast fixes | Category 7 after-fix axe evidence |
+| `lighthouse-summary.json` | `.audit/lighthouse-*.json` | Lighthouse accessibility scores for the authenticated major pages |
 
 ## Reproduction Commands
 
@@ -29,6 +30,8 @@ $env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
 node scripts/audit-db-query-capture.mjs
 node scripts/audit-browser-accessibility.mjs
 corepack pnpm --filter @ship/api test
+corepack pnpm --filter @ship/api test:coverage
+corepack pnpm dlx lighthouse http://localhost:5173/<route> --only-categories=accessibility
 ```
 
 Screenshots from the browser capture are stored locally under `.audit/browser/*.png`; they are intentionally not tracked because the repository ignores generated PNG evidence globally.

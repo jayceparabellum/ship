@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-05-22T14:58:15.173Z",
+  "out": [
+    {
+      "page": "my-week",
+      "requestedUrl": "http://localhost:5173/my-week",
+      "finalUrl": "http://localhost:5173/my-week",
+      "accessibilityScore": 100,
+      "failed": []
+    },
+    {
+      "page": "docs",
+      "requestedUrl": "http://localhost:5173/docs",
+      "finalUrl": "http://localhost:5173/docs",
+      "accessibilityScore": 100,
+      "failed": []
+    },
+    {
+      "page": "issues",
+      "requestedUrl": "http://localhost:5173/issues",
+      "finalUrl": "http://localhost:5173/issues",
+      "accessibilityScore": 100,
+      "failed": []
+    },
+    {
+      "page": "team-allocation",
+      "requestedUrl": "http://localhost:5173/team/allocation",
+      "finalUrl": "http://localhost:5173/team/allocation",
+      "accessibilityScore": 100,
+      "failed": []
+    },
+    {
+      "page": "dashboard",
+      "requestedUrl": "http://localhost:5173/dashboard",
+      "finalUrl": "http://localhost:5173/dashboard",
+      "accessibilityScore": 100,
+      "failed": []
+    },
+    {
+      "page": "login",
+      "requestedUrl": "http://localhost:5173/login",
+      "finalUrl": "http://localhost:5173/setup",
+      "accessibilityScore": 98,
+      "failed": []
+    }
+  ]
+}
