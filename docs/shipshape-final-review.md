@@ -51,7 +51,7 @@ Latest health check during review:
 
 ## Remaining Risks
 
-The audit gate is complete. The main remaining risk is Phase 2 implementation depth: `docs/shipshape-improvement-documentation.md` has Categories 1, 2, 3, and 7 completed with after-fix proof, while Categories 4-6 have baseline evidence and scoped targets but still need final after measurements before they should be presented as completed improvements. Category 3 has real benchmark evidence, but only one endpoint cleared the original 20% P95 stretch target at 50 concurrency.
+The audit gate is complete. The main remaining risk is Phase 2 implementation depth: `docs/shipshape-improvement-documentation.md` has Categories 1, 2, 3, 4, and 7 completed with after-fix proof, while Categories 5-6 have baseline evidence and scoped targets but still need final after measurements before they should be presented as completed improvements. Category 3 has real benchmark evidence, but only one endpoint cleared the original 20% P95 stretch target at 50 concurrency.
 
 The demo video is also a separate required final-submission item, but it remains intentionally out of scope for this pass per Jayce's instruction.
 

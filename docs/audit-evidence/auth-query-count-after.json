@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-05-22T21:56:06.047Z",
+  "source": "Direct authMiddleware invocation with pool.query instrumentation after auth/session middleware optimization",
+  "baselineSource": "Pre-fix authMiddleware issued three queries for a valid non-admin session: session lookup, workspace membership validation, and session activity update.",
+  "targetFlow": "authenticated request session validation",
+  "beforeQueryCount": 3,
+  "afterQueryCount": 2,
+  "reduction": {
+    "queriesRemoved": 1,
+    "percent": 33.33
+  },
+  "result": {
+    "flow": "authMiddleware valid session",
+    "status": 200,
+    "ok": true,
+    "nextCalled": true,
+    "userIdAttached": true,
+    "workspaceIdAttached": true,
+    "queryCount": 2,
+    "categoryCounts": {
+      "auth.session_with_membership_lookup": 1,
+      "auth.session_activity_update": 1
+    },
+    "queries": [
+      {
+        "sql": "SELECT s.id, s.user_id, s.workspace_id, s.expires_at, s.last_activity, s.created_at, u.is_super_admin, wm.id as membership_id FROM sessions s JOIN users u ON s.user_id = u.id LEFT JOIN workspace_memberships wm ON wm.workspace_id = s.workspace_id AND wm.user_id = s.user_id WHERE s.id = $1",
+        "category": "auth.session_with_membership_lookup",
+        "paramCount": 1
+      },
+      {
+        "sql": "UPDATE sessions SET last_activity = $1 WHERE id = $2",
+        "category": "auth.session_activity_update",
+        "paramCount": 2
+      }
+    ]
+  }
+}

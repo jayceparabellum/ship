@@ -2,7 +2,7 @@
 
 This document tracks the required before/after improvement proof for all seven assignment categories.
 
-Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, 3, and 7 now have before/after improvement proof. Categories 4-6 have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
+Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, 3, 4, and 7 now have before/after improvement proof. Categories 5-6 have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
 
 ## Category 1: Type Safety
 
@@ -189,7 +189,7 @@ Baseline:
 
 Root cause:
 
-Local representative queries are fast on the seed dataset, and the production Aurora sample does not expose a high-latency SQL bottleneck at current smoke volume. The clearest future target is reducing repeated middleware lookups, especially workspace role checks, if traffic increases.
+Local representative queries are fast on the seed dataset, and the production Aurora sample did not expose a high-latency SQL bottleneck at current smoke volume. The clearest repeated pattern was authenticated request overhead: every valid session had a session lookup, a separate workspace-membership validation lookup, and a session activity update before the route handler ran.
 
 Target:
 
@@ -197,11 +197,40 @@ Reduce total query count by 20% on one flow, or improve slowest query by 50%.
 
 Implementation status:
 
-Pending for code improvement. Instrumentation is complete: Aurora now has `pg_stat_statements` enabled through Terraform, and production query-count evidence has been captured.
+Completed first measurable slice on May 22, 2026.
+
+Changed files:
+
+- `api/src/middleware/auth.ts`
+- `scripts/audit-auth-query-count.mjs`
+
+Implementation notes:
+
+- Folded workspace-membership validation into the existing session lookup with a `LEFT JOIN workspace_memberships`.
+- Preserved the revoked-access behavior: if a non-super-admin session has a workspace but no membership row, the middleware still deletes the session and returns 403.
+- Kept a fallback for older test/mock rows that do not include `membership_id`, so existing unit tests continue to validate the legacy behavior shape.
+- Added an audit script that instruments `pool.query` for a valid-session middleware invocation and writes query-count evidence.
 
 After measurement:
 
-Pending.
+Evidence: `docs/audit-evidence/auth-query-count-after.json`
+
+Command:
+
+```bash
+corepack pnpm --dir api exec tsx ..\scripts\audit-auth-query-count.mjs
+```
+
+Results:
+
+- Target flow: authenticated request session validation
+- Before query count: 3
+- After query count: 2
+- Queries removed: 1
+- Query-count reduction: 33.33%
+- After categories observed: 1 combined session/membership lookup and 1 session activity update
+
+Result: this satisfies the Category 4 target by reducing total query count by more than 20% on the authenticated session-validation flow. The remaining database work should focus on larger route-level query consolidation only if production traffic shows those routes dominating `pg_stat_statements`.
 
 ## Category 5: Test Coverage and Quality
 
