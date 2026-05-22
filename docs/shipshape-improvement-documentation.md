@@ -2,7 +2,7 @@
 
 This document tracks the required before/after improvement proof for all seven assignment categories.
 
-Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, 3, 4, and 7 now have before/after improvement proof. Categories 5-6 have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
+Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Categories 1, 2, 3, 4, 5, and 7 now have before/after improvement proof. Category 6 has a scoped target but still needs after measurements before it should be presented as a completed Phase 2 improvement.
 
 ## Category 1: Type Safety
 
@@ -245,7 +245,7 @@ Baseline:
 
 Root cause:
 
-API tests are stable but route and service coverage is uneven. Web tests are blocked by a Node/jsdom/ESM environment mismatch before test files execute.
+API tests are stable but route and service coverage is uneven. Web tests were blocked by a Node/jsdom/ESM environment mismatch before test files executed. Once the environment was fixed, stale frontend tests surfaced around current document-tab behavior, the details editor extension schema, and session timeout API mocking.
 
 Target:
 
@@ -253,11 +253,42 @@ Add meaningful tests for three previously untested critical paths, or fix three 
 
 Implementation status:
 
-Pending. Recommended first slice is to fix web Vitest execution, then add targeted tests for offline/error handling and accessibility remediation.
+Completed first measurable slice on May 22, 2026.
+
+Changed files:
+
+- `web/package.json`
+- `pnpm-lock.yaml`
+- `web/src/lib/document-tabs.test.ts`
+- `web/src/components/editor/DetailsExtension.test.ts`
+- `web/src/hooks/useSessionTimeout.test.ts`
+
+Implementation notes:
+
+- Pinned the web test environment to `jsdom@26.1.0`, avoiding the `jsdom@27` transitive ESM/CJS loader failure under the current local Node runtime.
+- Updated document-tab tests to match the current route model: project/program use `weeks`, sprint documents have tabs, and the project default tab is `issues`.
+- Updated details-extension tests to include the companion `DetailsSummary` and `DetailsContent` nodes required by the current TipTap schema.
+- Mocked `apiPost` directly in session-timeout tests so reset/extend-session behavior is deterministic and does not accidentally hit CSRF/network paths.
 
 After measurement:
 
-Pending.
+Evidence: `docs/audit-evidence/web-test-run-after-jsdom-pin.json`
+
+Command:
+
+```bash
+corepack pnpm --filter @ship/web test
+```
+
+Results:
+
+- Before: web Vitest exited 1 before executing tests, with 16 worker startup errors and no test files run
+- After: 16 web test files passed
+- After: 151 web tests passed
+- Failures: 0
+- Runner exit code: 0
+
+Result: this completes a Category 5 quality slice by restoring the entire web unit-test suite from “no tests execute” to a passing 151-test run. Remaining test-quality work should focus on reducing React `act(...)` warnings and adding new runtime/error-recovery tests for Category 6.
 
 ## Category 6: Runtime Error and Edge-Case Handling
 
