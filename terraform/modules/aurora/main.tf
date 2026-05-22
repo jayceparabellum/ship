@@ -26,6 +26,12 @@ resource "aws_rds_cluster_parameter_group" "aurora" {
     value = "1000" # Log queries taking > 1s
   }
 
+  parameter {
+    name         = "shared_preload_libraries"
+    value        = "pg_stat_statements"
+    apply_method = "pending-reboot"
+  }
+
   # DDoS protection: Connection and query limits
   parameter {
     name         = "max_connections"

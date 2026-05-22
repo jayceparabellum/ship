@@ -10,7 +10,7 @@ This audit now has live baseline evidence for all seven required categories. The
 
 The strongest engineering signals are the strict TypeScript configuration, a stable API suite across three consecutive runs, fast database plans on the seeded local dataset, and clean axe/Lighthouse results after the contrast remediation. The weakest signals are the high concentration of type escape hatches in API route files, the 2.07 MB main frontend chunk, missing frontend unit-test execution due a `jsdom`/ESM environment failure, and weak offline reload behavior.
 
-Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries are mirrored under `docs/audit-evidence/`. The most important files are `docs/audit-evidence/api-benchmarks.json`, `docs/audit-evidence/db-query-capture.json`, `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/lighthouse-summary.json`, `docs/audit-evidence/bundle-analysis.json`, `docs/audit-evidence/type-safety.json`, `docs/audit-evidence/api-test-runs.json`, and `docs/audit-evidence/api-coverage.json`.
+Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries are mirrored under `docs/audit-evidence/`. The most important files are `docs/audit-evidence/api-benchmarks.json`, `docs/audit-evidence/db-query-capture.json`, `docs/audit-evidence/aurora-query-counts.json`, `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/lighthouse-summary.json`, `docs/audit-evidence/bundle-analysis.json`, `docs/audit-evidence/type-safety.json`, `docs/audit-evidence/api-test-runs.json`, and `docs/audit-evidence/api-coverage.json`.
 
 ## Orientation
 
@@ -192,7 +192,7 @@ Severity: Medium on seeded local data; re-test on AWS/Aurora.
 
 ### Methodology
 
-I ran five authenticated flows and captured response timing plus representative `EXPLAIN (ANALYZE, BUFFERS)` plans with `scripts/audit-db-query-capture.mjs`. Local `pg_stat_statements` was not enabled, so the report uses flow-level evidence and explicit plans instead of claiming server-side statement totals.
+I ran five authenticated local flows and captured response timing plus representative `EXPLAIN (ANALYZE, BUFFERS)` plans with `scripts/audit-db-query-capture.mjs`. I then enabled `pg_stat_statements` on the deployed Aurora PostgreSQL 16 cluster, reset the counters, exercised six authenticated production flows through CloudFront, and captured the top server-side statement counts from inside the VPC.
 
 Command:
 
@@ -218,11 +218,24 @@ Representative plans:
 | Issue list joins | 0.325 ms |
 | Session auth lookup | 0.046 ms |
 
+Production Aurora `pg_stat_statements` sample:
+
+| Statement family | Calls | Rows | Total exec time |
+| --- | ---: | ---: | ---: |
+| Session activity update | 153 | 153 | 8.684 ms |
+| Session auth lookup | 153 | 153 | 5.848 ms |
+| Mention document search | 25 | 25 | 3.453 ms |
+| Workspace role lookup | 125 | 125 | 2.040 ms |
+| Sprint/project inference query | 6 | 0 | 1.406 ms |
+| Document list visibility filter | 25 | 50 | 0.718 ms |
+
+Production flow coverage: `/api/auth/me`, `/api/documents`, `/api/issues`, `/api/weeks`, `/api/dashboard/my-work`, and `/api/search/mentions?q=dev`, each returning 25/25 HTTP 200 responses with the temporary audit session.
+
 ### Finding
 
-On the seeded local dataset, the representative plans are fast and do not expose an obvious slow query. The higher API latency for `/api/documents` appears more related to route work and payload size than raw SQL execution time. The next audit iteration should enable `pg_stat_statements` or Postgres `log_statement` in the deployed database for full query-count-per-flow evidence.
+On the seeded local dataset and the deployed Aurora production environment, the representative plans and statement totals are fast. The highest-call statements are expected session middleware work: one auth lookup and one `last_activity` update per authenticated request. The production sample also shows repeated workspace role lookups, which is not urgent at this data size but is the clearest future optimization target if traffic increases.
 
-Severity: Low on local seed; instrumentation gap remains for production-grade query counts.
+Severity: Low on current seed and production smoke volume.
 
 ## Category 5: Test Coverage and Quality
 
@@ -324,6 +337,7 @@ Severity: Low after remediation; keep these scans in the regression checklist.
 | `docs/audit-evidence/bundle-analysis.json` | Dist size, largest assets, top source-map dependency contributors |
 | `docs/audit-evidence/api-benchmarks.json` | API P50/P95/P99 under 10/25/50 concurrent workers |
 | `docs/audit-evidence/db-query-capture.json` | Flow timings and `EXPLAIN ANALYZE` output |
+| `docs/audit-evidence/aurora-query-counts.json` | Production Aurora `pg_stat_statements` query-count output |
 | `docs/audit-evidence/api-test-runs.json` | Three-run API flake evidence |
 | `docs/audit-evidence/web-test-run.json` | Web Vitest environment failure |
 | `docs/audit-evidence/api-coverage.json` | API coverage summary from Node 24 run |
@@ -333,4 +347,4 @@ Severity: Low after remediation; keep these scans in the regression checklist.
 
 ## Recommendation
 
-This baseline is now strong enough to pass the measurement side of the audit gate, with one honest caveat: full database query counts still need `pg_stat_statements` or Postgres statement logging enabled in the deployed database. The first implementation fixes should target frontend test environment repair, bundle splitting around editor/collaboration dependencies, and an app-level offline recovery state for document reloads.
+This baseline is now strong enough to pass the measurement side of the audit gate. The first implementation fixes should target frontend test environment repair, bundle splitting around editor/collaboration dependencies, and an app-level offline recovery state for document reloads.

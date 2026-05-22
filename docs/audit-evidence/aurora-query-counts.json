@@ -1,0 +1,148 @@
+{
+    "run_id": "20260522112357-auth",
+    "source": "Aurora PostgreSQL 16 pg_stat_statements after authenticated CloudFront production flows with direct audit session",
+    "database": "ship_main",
+    "captured_at": "2026-05-22T16:33:22Z",
+    "top_queries": [
+        {
+            "rows": 153,
+            "calls": 153,
+            "query": "UPDATE sessions SET last_activity = $1 WHERE id = $2",
+            "mean_exec_time_ms": 0.057,
+            "total_exec_time_ms": 8.684
+        },
+        {
+            "rows": 153,
+            "calls": 153,
+            "query": "SELECT s.id, s.user_id, s.workspace_id, s.expires_at, s.last_activity, s.created_at, u.is_super_admin FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.id = $1",
+            "mean_exec_time_ms": 0.038,
+            "total_exec_time_ms": 5.848
+        },
+        {
+            "rows": 25,
+            "calls": 25,
+            "query": "SELECT d.id::text as id, d.title as name, $3 as document_type FROM documents d WHERE d.workspace_id = $1 AND d.document_type = $4 AND d.archived_at IS NULL AND d.deleted_at IS NULL AND d.title ILIKE $2 ORDER BY d.title ASC LIMIT $5",
+            "mean_exec_time_ms": 0.138,
+            "total_exec_time_ms": 3.453
+        },
+        {
+            "rows": 125,
+            "calls": 125,
+            "query": "SELECT role FROM workspace_memberships WHERE workspace_id = $1 AND user_id = $2",
+            "mean_exec_time_ms": 0.016,
+            "total_exec_time_ms": 2.040
+        },
+        {
+            "rows": 0,
+            "calls": 6,
+            "query": "SELECT DISTINCT ON (project_id) project_id, project_name FROM ( -- Explicit sprint assignee_ids SELECT (s.properties->>$5)::uuid as project_id, proj.title as project_name FROM documents s JOIN documents proj ON (s.properties->>$6)::uuid = proj.id WHERE s.workspace_id = $1 AND s.document_type = $7 AND (s.properties->>$8)::int = $3 AND s.properties->$9 @> to_jsonb($2::text) AND s.deleted_at IS NULL AND proj.deleted_at IS NULL UNION -- Issue-based inference SELECT proj_da.related_id as project_id, proj.title as project_name FROM documents i JOIN document_associations sprint_da ON sprint_da.docume",
+            "mean_exec_time_ms": 0.234,
+            "total_exec_time_ms": 1.406
+        },
+        {
+            "rows": 3,
+            "calls": 3,
+            "query": "SELECT id FROM documents WHERE workspace_id = $1 AND document_type = $3 AND (properties->>$4)::uuid = $2",
+            "mean_exec_time_ms": 0.342,
+            "total_exec_time_ms": 1.025
+        },
+        {
+            "rows": 50,
+            "calls": 25,
+            "query": "SELECT id, workspace_id, document_type, title, parent_id, position, ticket_number, properties, created_at, updated_at, created_by, visibility FROM documents WHERE workspace_id = $1 AND archived_at IS NULL AND deleted_at IS NULL AND (visibility = $4 OR created_by = $2 OR $3 = $5) ORDER BY position ASC, created_at DESC",
+            "mean_exec_time_ms": 0.029,
+            "total_exec_time_ms": 0.718
+        },
+        {
+            "rows": 25,
+            "calls": 25,
+            "query": "SELECT w.id, w.name, wm.role FROM workspaces w JOIN workspace_memberships wm ON w.id = wm.workspace_id WHERE wm.user_id = $1 AND w.archived_at IS NULL ORDER BY w.name",
+            "mean_exec_time_ms": 0.027,
+            "total_exec_time_ms": 0.680
+        },
+        {
+            "rows": 53,
+            "calls": 53,
+            "query": "SELECT sprint_start_date FROM workspaces WHERE id = $1",
+            "mean_exec_time_ms": 0.008,
+            "total_exec_time_ms": 0.450
+        },
+        {
+            "rows": 25,
+            "calls": 25,
+            "query": "SELECT id, email, name, is_super_admin FROM users WHERE id = $1",
+            "mean_exec_time_ms": 0.016,
+            "total_exec_time_ms": 0.393
+        },
+        {
+            "rows": 25,
+            "calls": 25,
+            "query": "SELECT w.id, w.name, wm.role FROM workspaces w LEFT JOIN workspace_memberships wm ON w.id = wm.workspace_id AND wm.user_id = $2 WHERE w.id = $1",
+            "mean_exec_time_ms": 0.014,
+            "total_exec_time_ms": 0.349
+        },
+        {
+            "rows": 0,
+            "calls": 25,
+            "query": "SELECT d.id, d.title, d.properties, prog_da.related_id as program_id, p.title as program_name, p.properties->>$6 as program_prefix, p.properties->>$7 as program_accountable_id, (SELECT op.properties->>$8 FROM documents op WHERE d.properties->>$9 IS NOT NULL AND op.id = (d.properties->>$10)::uuid AND op.document_type = $11 AND op.workspace_id = d.workspace_id) as owner_reports_to, $5::timestamp as workspace_sprint_start_date, u.id as owner_id, u.name as owner_name, u.email as owner_email, (SELECT COUNT(*) FROM documents i JOIN document_associations ida ON ida.document_id = i.id AND ida.related_",
+            "mean_exec_time_ms": 0.013,
+            "total_exec_time_ms": 0.328
+        },
+        {
+            "rows": 0,
+            "calls": 25,
+            "query": "SELECT id, title, document_type, visibility FROM documents WHERE workspace_id = $1 AND document_type IN ($5, $6, $7, $8) AND deleted_at IS NULL AND title ILIKE $2 AND (visibility = $9 OR created_by = $3 OR $4 = $10) ORDER BY CASE document_type WHEN $11 THEN $12 WHEN $13 THEN $14 WHEN $15 THEN $16 WHEN $17 THEN $18 ELSE $19 END, updated_at DESC LIMIT $20",
+            "mean_exec_time_ms": 0.013,
+            "total_exec_time_ms": 0.321
+        },
+        {
+            "rows": 0,
+            "calls": 25,
+            "query": "SELECT d.id, d.title, d.properties, d.ticket_number, d.content, d.created_at, d.updated_at, d.created_by, d.started_at, d.completed_at, d.cancelled_at, d.reopened_at, d.converted_from_id, u.name as assignee_name, CASE WHEN person_doc.archived_at IS NOT NULL THEN $4 ELSE $5 END as assignee_archived FROM documents d LEFT JOIN users u ON (d.properties->>$6)::uuid = u.id LEFT JOIN documents person_doc ON person_doc.workspace_id = d.workspace_id AND person_doc.document_type = $7 AND person_doc.properties->>$8 = d.properties->>$9 WHERE d.workspace_id = $1 AND d.document_type = $10 AND (d.visibility ",
+            "mean_exec_time_ms": 0.011,
+            "total_exec_time_ms": 0.270
+        },
+        {
+            "rows": 0,
+            "calls": 25,
+            "query": "SELECT d.id, d.title, d.properties, d.ticket_number, sprint_assoc.related_id as sprint_id, sprint.title as sprint_name, (sprint.properties->>$5)::int as sprint_number, p.title as program_name FROM documents d LEFT JOIN document_associations sprint_assoc ON sprint_assoc.document_id = d.id AND sprint_assoc.relationship_type = $6 LEFT JOIN documents sprint ON sprint.id = sprint_assoc.related_id AND sprint.document_type = $7 LEFT JOIN document_associations prog_da ON d.id = prog_da.document_id AND prog_da.relationship_type = $8 LEFT JOIN documents p ON prog_da.related_id = p.id AND p.document_type",
+            "mean_exec_time_ms": 0.009,
+            "total_exec_time_ms": 0.237
+        },
+        {
+            "rows": 0,
+            "calls": 25,
+            "query": "SELECT d.id, d.title, d.properties, p.title as program_name, CASE WHEN d.archived_at IS NOT NULL THEN $5 ELSE COALESCE( ( SELECT CASE MAX( CASE WHEN CURRENT_DATE BETWEEN (w.sprint_start_date + ((sprint.properties->>$6)::int - $7) * $8) AND (w.sprint_start_date + ((sprint.properties->>$9)::int - $10) * $11 + $12) THEN $13 WHEN CURRENT_DATE < (w.sprint_start_date + ((sprint.properties->>$14)::int - $15) * $16) THEN $17 ELSE $18 END ) WHEN $19 THEN $20 WHEN $21 THEN $22 WHEN $23 THEN $24 ELSE $25 END FROM documents issue JOIN document_associations sprint_assoc ON sprint_assoc.document_id = issue.",
+            "mean_exec_time_ms": 0.009,
+            "total_exec_time_ms": 0.231
+        },
+        {
+            "rows": 0,
+            "calls": 25,
+            "query": "SELECT d.id, d.title, d.properties, p.title as program_name, (d.properties->>$6)::int as sprint_number FROM documents d JOIN document_associations prog_da ON d.id = prog_da.document_id AND prog_da.relationship_type = $7 JOIN documents p ON prog_da.related_id = p.id AND p.document_type = $8 WHERE d.workspace_id = $1 AND d.document_type = $9 AND (d.properties->>$10)::uuid = $2 AND (d.properties->>$11)::int = $3 AND (d.visibility = $12 OR d.created_by = $4 OR $5 = $13) ORDER BY p.title",
+            "mean_exec_time_ms": 0.008,
+            "total_exec_time_ms": 0.189
+        },
+        {
+            "rows": 0,
+            "calls": 3,
+            "query": "SELECT s.id, s.title, s.properties, COUNT(i.id) as issue_count FROM documents i JOIN document_associations da ON da.document_id = i.id AND da.relationship_type = $4 JOIN documents s ON s.id = da.related_id AND s.document_type = $5 WHERE i.workspace_id = $1 AND i.document_type = $6 AND (i.properties->>$7)::uuid = $2 AND (s.properties->>$8)::int = $3 AND s.deleted_at IS NULL GROUP BY s.id, s.title, s.properties",
+            "mean_exec_time_ms": 0.017,
+            "total_exec_time_ms": 0.050
+        },
+        {
+            "rows": 0,
+            "calls": 3,
+            "query": "SELECT s.id, s.title, s.properties, da.related_id as project_id FROM documents s LEFT JOIN document_associations da ON da.document_id = s.id AND da.relationship_type = $3 WHERE s.workspace_id = $1 AND s.document_type = $4 AND (s.properties->>$5)::uuid = $2 AND s.deleted_at IS NULL AND s.archived_at IS NULL",
+            "mean_exec_time_ms": 0.005,
+            "total_exec_time_ms": 0.014
+        },
+        {
+            "rows": 0,
+            "calls": 3,
+            "query": "SELECT s.id as sprint_id, (s.properties->>$3)::int as sprint_number, s.properties->$4 as plan_approval, s.properties->$5 as review_approval, s.title as sprint_title, da.related_id as project_id FROM documents s LEFT JOIN document_associations da ON da.document_id = s.id AND da.relationship_type = $6 WHERE s.workspace_id = $1 AND s.document_type = $7 AND s.deleted_at IS NULL AND $2 = ANY( SELECT jsonb_array_elements_text(s.properties->$8) ) AND ( s.properties->$9->>$10 = $11 OR s.properties->$12->>$13 = $14 )",
+            "mean_exec_time_ms": 0.003,
+            "total_exec_time_ms": 0.010
+        }
+    ]
+}

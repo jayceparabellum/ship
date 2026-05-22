@@ -12,6 +12,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `bundle-analysis.json` | `.audit/bundle-analysis.json` | Production bundle size, largest assets, and top sourcemap dependency contributors |
 | `api-benchmarks.json` | `.audit/api-benchmarks.json` | P50/P95/P99 API benchmarks for five authenticated endpoints at 10/25/50 concurrency |
 | `db-query-capture.json` | `.audit/db-query-capture.json` | Flow timings and representative `EXPLAIN ANALYZE` plans |
+| `aurora-query-counts.json` | Aurora PostgreSQL 16 `pg_stat_statements` | Production query-count capture after authenticated CloudFront flows |
 | `api-test-runs.json` | `.audit/api-test-runs.json` | Three-run API flake check |
 | `web-test-run.json` | `.audit/web-test-run.json` | Web Vitest environment failure record |
 | `api-coverage.json` | `.audit/api-coverage.json` | API coverage run metadata |
@@ -29,6 +30,7 @@ $env:VITE_API_URL=''; corepack pnpm --filter @ship/web exec vite build --sourcem
 node scripts/audit-bundle-map.mjs
 $env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
 node scripts/audit-db-query-capture.mjs
+# Production Aurora query-count capture requires the deployed AWS VPC runner and pg_stat_statements.
 node scripts/audit-browser-accessibility.mjs
 corepack pnpm --filter @ship/api test
 corepack pnpm --filter @ship/api test:coverage
