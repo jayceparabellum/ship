@@ -2,7 +2,7 @@
 
 This document tracks the required before/after improvement proof for all seven assignment categories.
 
-Current state: baseline measurements are complete enough for the audit gate, but not every implementation category has an after measurement yet. Do not present rows marked "Pending" as completed improvements.
+Current state: baseline measurements are complete for the audit gate, including production Aurora query-count evidence. Category 7 has completed before/after improvement proof. The remaining implementation categories have scoped targets but still need after measurements before they should be presented as completed Phase 2 improvements.
 
 ## Category 1: Type Safety
 
@@ -90,10 +90,12 @@ Baseline:
 - Document list flow: 89.48 ms API response, 151,638 bytes
 - Issue list flow: 53.78 ms API response, 102,132 bytes
 - Representative `EXPLAIN ANALYZE` plans completed in 0.039-0.542 ms locally
+- Production Aurora `pg_stat_statements` capture after authenticated CloudFront flows is stored in `docs/audit-evidence/aurora-query-counts.json`
+- Highest production statement counts were expected session middleware work: 153 session activity updates and 153 session auth lookups
 
 Root cause:
 
-Local representative queries are fast on the seed dataset. The remaining weakness is instrumentation: local Postgres did not have `pg_stat_statements` enabled, so full query-count-per-flow evidence is not complete yet.
+Local representative queries are fast on the seed dataset, and the production Aurora sample does not expose a high-latency SQL bottleneck at current smoke volume. The clearest future target is reducing repeated middleware lookups, especially workspace role checks, if traffic increases.
 
 Target:
 
@@ -101,7 +103,7 @@ Reduce total query count by 20% on one flow, or improve slowest query by 50%.
 
 Implementation status:
 
-Pending. Before code changes, enable `pg_stat_statements` or `log_statement = 'all'` in the deployed database to identify the true target.
+Pending for code improvement. Instrumentation is complete: Aurora now has `pg_stat_statements` enabled through Terraform, and production query-count evidence has been captured.
 
 After measurement:
 

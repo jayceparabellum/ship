@@ -12,7 +12,7 @@ AI assistance was most useful for codebase orientation, audit harness creation, 
 | Codebase orientation | Helped map packages, routes, request flow, and TypeScript risk areas | Verified with `rg`, source reads, and existing docs |
 | Audit scripts | Generated repeatable scripts for type safety, bundle analysis, API benchmarks, DB plans, and browser/axe capture | Ran each script locally and inspected outputs |
 | Report writing | Turned raw results into polished audit language | Checked that claims point to raw evidence files |
-| Debugging | Helped diagnose rate limiter effects, missing Playwright browsers, missing coverage provider, and local seed cleanup | Re-ran commands after fixes |
+| Debugging | Helped diagnose rate limiter effects, missing Playwright browsers, missing coverage provider, AWS/VPC access, Aurora instrumentation, and local seed cleanup | Re-ran commands after fixes |
 
 ## Estimated Dev Spend
 
@@ -22,8 +22,9 @@ AI assistance was most useful for codebase orientation, audit harness creation, 
 | Local environment verification and seed recovery | 1.0 hour |
 | Audit harness creation and debugging | 2.0 hours |
 | Running benchmarks/scans/tests/coverage | 2.5 hours |
-| Report and deliverable packaging | 1.5 hours |
-| Total | 7.5 hours |
+| AWS deployment and production smoke checks | 2.0 hours |
+| Report and deliverable packaging | 2.0 hours |
+| Total | 10.0 hours |
 
 ## What AI Accelerated
 
@@ -47,6 +48,7 @@ The assignment rewards measured proof, not plausible prose. AI could not replace
 - Running tests three times
 - Recording the required demo video
 - Deploying the app with real AWS credentials
+- Capturing production Aurora query counts from inside the VPC
 
 ## Reflection
 
