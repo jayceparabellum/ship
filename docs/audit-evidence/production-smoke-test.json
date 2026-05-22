@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T16:00:55.5298175Z",
+  "generatedAt": "2026-05-22T16:09:04.7226114Z",
   "environment": "aws-prod",
   "frontendUrl": "https://d9o5hawnpdm4g.cloudfront.net",
   "checks": [
@@ -72,13 +72,52 @@
       "evidence": {
         "status": "Deployed"
       }
+    },
+    {
+      "name": "Authenticated API routes through CloudFront",
+      "status": "pass",
+      "evidence": {
+        "routes": [
+          "/api/auth/me",
+          "/api/documents",
+          "/api/issues",
+          "/api/dashboard/my-work",
+          "/api/weeks"
+        ],
+        "allStatusCode": 200,
+        "note": "All checked with authenticated session cookie"
+      }
+    },
+    {
+      "name": "Create wiki document through CloudFront API",
+      "status": "pass",
+      "evidence": {
+        "documentId": "aa499993-4c7a-48be-8984-0b1f0d0c1f57",
+        "title": "Production Smoke Test 2026-05-22 11:08:20",
+        "documentType": "wiki",
+        "visibleInDocumentList": true
+      }
+    },
+    {
+      "name": "Authenticated browser pages render",
+      "status": "pass",
+      "evidence": {
+        "pages": [
+          "/docs",
+          "/issues",
+          "/dashboard",
+          "/my-week"
+        ],
+        "consoleWarningOrErrorCount": 0,
+        "docsPageIncludesCreatedDocument": true
+      }
     }
   ],
   "followUps": [
     {
-      "name": "Full authenticated production workflow smoke",
-      "status": "ready",
-      "detail": "Demo credential login now works. Next smoke pass should create/edit a document and verify authenticated pages through CloudFront."
+      "name": "Close database query-count caveat",
+      "status": "next",
+      "detail": "Production smoke is now passing. Remaining assignment caveat is richer Aurora query-count instrumentation via pg_stat_statements or statement logging."
     }
   ]
 }
