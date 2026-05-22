@@ -46,6 +46,11 @@ resource "aws_iam_role_policy_attachment" "eb_multicontainer_docker" {
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker"
 }
 
+resource "aws_iam_role_policy_attachment" "eb_ssm_managed_instance" {
+  role       = aws_iam_role.eb_instance.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 # Instance Profile
 resource "aws_iam_instance_profile" "eb" {
   name = "${var.project_name}-${var.environment}-eb-instance-profile"

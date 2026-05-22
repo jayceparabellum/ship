@@ -18,6 +18,7 @@ The live working copies are generated under `.audit/`, which is ignored by git b
 | `browser-accessibility.json` | `.audit/browser/browser-accessibility.json` | Browser console/network capture, offline/3G behavior, and axe scan output |
 | `browser-accessibility-after-contrast.json` | `.audit/browser/browser-accessibility.json` after contrast fixes | Category 7 after-fix axe evidence |
 | `lighthouse-summary.json` | `.audit/lighthouse-*.json` | Lighthouse accessibility scores for the authenticated major pages |
+| `production-smoke-test.json` | AWS production smoke test | CloudFront, API proxy, EB health, login-page, and demo-credential status |
 
 ## Reproduction Commands
 

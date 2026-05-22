@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-05-22T15:40:00.000Z",
+  "environment": "aws-prod",
+  "frontendUrl": "https://d9o5hawnpdm4g.cloudfront.net",
+  "checks": [
+    {
+      "name": "CloudFront frontend loads",
+      "status": "pass",
+      "evidence": {
+        "statusCode": 200,
+        "title": "Ship - Project Management & Documentation"
+      }
+    },
+    {
+      "name": "CloudFront health route proxies to Elastic Beanstalk",
+      "status": "pass",
+      "evidence": {
+        "statusCode": 200,
+        "body": "{\"status\":\"ok\"}"
+      }
+    },
+    {
+      "name": "CloudFront API route proxies to Elastic Beanstalk",
+      "status": "pass",
+      "evidence": {
+        "path": "/api/csrf-token",
+        "statusCode": 200,
+        "bodyShape": "JSON token response"
+      }
+    },
+    {
+      "name": "Login page renders",
+      "status": "pass",
+      "evidence": {
+        "route": "/login",
+        "visibleUi": [
+          "Sign in to Ship",
+          "Email address",
+          "Password",
+          "Sign in"
+        ],
+        "consoleWarningOrErrorCount": 0
+      }
+    },
+    {
+      "name": "Demo credential login",
+      "status": "blocked",
+      "evidence": {
+        "credential": "dev@ship.local / admin123",
+        "apiResponse": {
+          "success": false,
+          "error": {
+            "code": "INVALID_CREDENTIALS",
+            "message": "Invalid email or password"
+          }
+        }
+      },
+      "nextAction": "Create or seed a production demo account from inside the VPC. Direct workstation seeding is blocked because Aurora is private, which is the intended network posture."
+    },
+    {
+      "name": "Elastic Beanstalk health",
+      "status": "pass",
+      "evidence": {
+        "status": "Ready",
+        "color": "Green"
+      }
+    },
+    {
+      "name": "CloudFront distribution status",
+      "status": "pass",
+      "evidence": {
+        "status": "Deployed"
+      }
+    }
+  ],
+  "followUps": [
+    {
+      "name": "Enable VPC-safe operational command path",
+      "status": "in_progress",
+      "detail": "Terraform now attaches AmazonSSMManagedInstanceCore to the EB instance role. The current EB instance has not appeared in SSM managed instances yet, so a platform hook or instance refresh may still be needed if the AMI does not include/register the SSM agent."
+    },
+    {
+      "name": "Seed production demo data",
+      "status": "blocked",
+      "detail": "Running the seed script from the Mac mini timed out against the private Aurora endpoint. This should be run from EB/SSM, a one-off VPC task, or a guarded internal admin path."
+    }
+  ]
+}
