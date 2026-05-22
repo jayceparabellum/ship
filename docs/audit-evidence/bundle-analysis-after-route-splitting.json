@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-05-22T18:50:10.064Z",
+  "change": "Lazy-load route pages from web/src/main.tsx so editor and page modules move out of the initial application chunk.",
+  "before": {
+    "source": "docs/audit-evidence/bundle-analysis.json",
+    "totalDistBytesIncludingMaps": 11990895,
+    "assetCount": 562,
+    "initialIndexJsBytes": 2073742,
+    "largestJsBytes": 2073742,
+    "largestJsFile": "web/dist/assets/index-BXwX_FdO.js"
+  },
+  "after": {
+    "source": ".audit/bundle-analysis.json after production Vite build with sourcemaps",
+    "totalDistBytesIncludingMaps": 12045864,
+    "assetCount": 627,
+    "initialIndexJsBytes": 470513,
+    "initialIndexJsGzipBytes": 140658,
+    "largestJsBytes": 836487,
+    "largestJsGzipBytes": 261886,
+    "largestJsFile": "web/dist/assets/PropertyRow-C9gvJHDl.js",
+    "jsChunkCount": 293,
+    "topJsChunks": [
+      {
+        "file": "web/dist/assets/PropertyRow-C9gvJHDl.js",
+        "bytes": 836487,
+        "gzipBytes": 261886
+      },
+      {
+        "file": "web/dist/assets/index-zCVXrwCd.js",
+        "bytes": 470513,
+        "gzipBytes": 140658
+      },
+      {
+        "file": "web/dist/assets/UnifiedDocumentPage-EG3dQtKb.js",
+        "bytes": 403802,
+        "gzipBytes": 99725
+      },
+      {
+        "file": "web/dist/assets/IssuesList-CHtV1qwD.js",
+        "bytes": 54004,
+        "gzipBytes": 15850
+      },
+      {
+        "file": "web/dist/assets/Login-D7WZ_IhJ.js",
+        "bytes": 52046,
+        "gzipBytes": 10647
+      },
+      {
+        "file": "web/dist/assets/core.esm-DRTrqNaB.js",
+        "bytes": 43738,
+        "gzipBytes": 14539
+      },
+      {
+        "file": "web/dist/assets/ReviewsPage-wydxj8hc.js",
+        "bytes": 28441,
+        "gzipBytes": 7246
+      },
+      {
+        "file": "web/dist/assets/TeamMode-BSH0mYuF.js",
+        "bytes": 21814,
+        "gzipBytes": 6594
+      },
+      {
+        "file": "web/dist/assets/WorkspaceSettings-B1PTOqPQ.js",
+        "bytes": 17567,
+        "gzipBytes": 4411
+      },
+      {
+        "file": "web/dist/assets/ProgramWeeksTab-BcsAT55f.js",
+        "bytes": 17169,
+        "gzipBytes": 5751
+      }
+    ]
+  },
+  "improvement": {
+    "initialIndexJsReductionBytes": 1603229,
+    "initialIndexJsReductionPercent": 77.31,
+    "note": "Total dist including sourcemaps is roughly flat because code moved into lazy chunks; initial-load JS is the target metric improved here."
+  }
+}
