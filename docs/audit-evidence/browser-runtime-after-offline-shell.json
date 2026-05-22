@@ -1,0 +1,135 @@
+{
+  "generatedAt": "2026-05-22T22:12:28.951Z",
+  "webBaseUrl": "http://localhost:5173",
+  "pages": [
+    {
+      "name": "my week",
+      "path": "/my-week"
+    },
+    {
+      "name": "docs",
+      "path": "/docs"
+    },
+    {
+      "name": "issues",
+      "path": "/issues"
+    },
+    {
+      "name": "team allocation",
+      "path": "/team/allocation"
+    },
+    {
+      "name": "dashboard",
+      "path": "/dashboard"
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "location": {
+        "url": "http://localhost:5173/api/auth/me",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "WebSocket connection to 'ws://localhost:5173/?token=UHwHkFyeBYyd' failed: Error in connection establishment: net::ERR_INTERNET_DISCONNECTED",
+      "location": {
+        "url": "http://localhost:5173/@vite/client",
+        "lineNumber": 801,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "WebSocket connection to 'ws://localhost:5173/?token=UHwHkFyeBYyd' failed: Error in connection establishment: net::ERR_INTERNET_DISCONNECTED",
+      "location": {
+        "url": "http://localhost:5173/@vite/client",
+        "lineNumber": 814,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "[vite] failed to connect to websocket.\nyour current setup:\n  (browser) localhost:5173/ <--[HTTP]--> localhost:5173/ (server)\n  (browser) localhost:5173/ <--[WebSocket (failing)]--> localhost:5173/ (server)\nCheck out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .",
+      "location": {
+        "url": "http://localhost:5173/@vite/client",
+        "lineNumber": 829,
+        "columnNumber": 24
+      }
+    },
+    {
+      "type": "error",
+      "text": "WebSocket connection to 'ws://localhost:5173/events' failed: Error in connection establishment: net::ERR_INTERNET_DISCONNECTED",
+      "location": {
+        "url": "http://localhost:5173/src/hooks/useRealtimeEvents.tsx",
+        "lineNumber": 56,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "[RealtimeEvents] Error: Event",
+      "location": {
+        "url": "http://localhost:5173/src/hooks/useRealtimeEvents.tsx",
+        "lineNumber": 88,
+        "columnNumber": 14
+      }
+    }
+  ],
+  "failedRequests": [
+    {
+      "url": "http://localhost:5173/src/pages/Documents.tsx",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    }
+  ],
+  "offlineCapture": {
+    "page": "http://localhost:5173/docs",
+    "durationMs": 3053,
+    "urlAfterReload": "http://localhost:5173/docs",
+    "visibleTextSample": "Skip to main content\nOffline mode: showing cached workspace data. Changes will sync when the network returns.\n2 accountability items are due today.\n2\nView items\nS\nD\nDocs\nWORKSPACE\nWelcome to Ship\nProject Overview\nArchitecture Guide\nAPI Reference\nDevelopment Setup\nDocuments\nTitle\nNew Document\nAll\nWorkspace\nPrivate\nWelcome to Ship\nProject Overview\nArchitecture Guide\nAPI Reference\nDevelopment Setup\nAction Items\n\nYou have 2 pending items (2 overdue)\n\nPOST STANDUP\n\nPost standup for Week 14 (5 issues ",
+    "offlineBannerVisible": true,
+    "consoleMessagesDuringRun": 6,
+    "failedRequestsDuringRun": 1
+  },
+  "slow3gCapture": {
+    "path": "/issues",
+    "durationMs": 823,
+    "visibleTextSample": "Skip to main content\n2 accountability items are due today.\n2\nView items\nS\nD\nIssues\nALL ISSUES\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project structure\nSecurity audit fixes\nCreate error handling\nAdd input validation\nImplement core features\nConfigure CI/CD pipeline\nSet up project st"
+  },
+  "axeScans": [
+    {
+      "name": "my week",
+      "path": "/my-week",
+      "violationCount": 0,
+      "violations": []
+    },
+    {
+      "name": "docs",
+      "path": "/docs",
+      "violationCount": 0,
+      "violations": []
+    },
+    {
+      "name": "issues",
+      "path": "/issues",
+      "violationCount": 0,
+      "violations": []
+    },
+    {
+      "name": "team allocation",
+      "path": "/team/allocation",
+      "violationCount": 0,
+      "violations": []
+    },
+    {
+      "name": "dashboard",
+      "path": "/dashboard",
+      "violationCount": 0,
+      "violations": []
+    }
+  ]
+}
