@@ -1,0 +1,274 @@
+{
+  "generatedAt": "2026-05-23T20:43:14.952Z",
+  "tool": "shipshape-security-audit",
+  "outDir": "docs/security-tool",
+  "git": {
+    "branch": "ShipShape-Security-Tool",
+    "commit": "281642a"
+  },
+  "summary": {
+    "totalChecks": 13,
+    "passed": 8,
+    "failed": 5,
+    "critical": 1,
+    "high": 3,
+    "medium": 1,
+    "low": 0
+  },
+  "dependencyAudit": {
+    "skipped": false,
+    "exitCode": 1,
+    "vulnerabilitySummary": {
+      "critical": 2,
+      "high": 30,
+      "moderate": 39,
+      "low": 4,
+      "info": 0
+    }
+  },
+  "checks": [
+    {
+      "severity": "critical",
+      "category": "secrets",
+      "id": "secrets.no-hardcoded-secrets",
+      "title": "No hardcoded secrets or private keys",
+      "passed": false,
+      "evidence": [
+        {
+          "file": "api/scripts/create-test-user.ts",
+          "line": 20,
+          "rule": "generic-secret-assignment",
+          "text": "password: '!Musicfun1$$',"
+        }
+      ],
+      "remediation": "Move secrets to SSM/CI variables, rotate exposed credentials, and remove committed values from history when needed."
+    },
+    {
+      "severity": "high",
+      "category": "api-hardening",
+      "id": "express.helmet-enabled",
+      "title": "Helmet security headers are enabled",
+      "passed": true,
+      "evidence": [
+        "api/src/app.ts uses helmet middleware"
+      ],
+      "remediation": "Install and apply helmet before API routes."
+    },
+    {
+      "severity": "high",
+      "category": "api-hardening",
+      "id": "express.csrf-enabled",
+      "title": "Session-authenticated routes use CSRF protection",
+      "passed": true,
+      "evidence": [
+        "api/src/app.ts defines conditionalCsrf and applies it to state-changing route groups"
+      ],
+      "remediation": "Apply CSRF protection to cookie-authenticated state-changing routes."
+    },
+    {
+      "severity": "medium",
+      "category": "api-hardening",
+      "id": "express.rate-limit-enabled",
+      "title": "Login and API rate limiting are enabled",
+      "passed": true,
+      "evidence": [
+        "api/src/app.ts defines loginLimiter and apiLimiter"
+      ],
+      "remediation": "Add brute-force protection on login and a general API request limiter."
+    },
+    {
+      "severity": "high",
+      "category": "session",
+      "id": "session.cookie-flags",
+      "title": "Session cookies use httpOnly, secure-in-production, and sameSite",
+      "passed": true,
+      "evidence": [
+        "api/src/app.ts session cookie includes httpOnly, secure, and sameSite"
+      ],
+      "remediation": "Set httpOnly, secure in production, and strict or lax sameSite on session cookies."
+    },
+    {
+      "severity": "high",
+      "category": "session",
+      "id": "session.production-secret-required",
+      "title": "SESSION_SECRET is required in production",
+      "passed": true,
+      "evidence": [
+        "api/src/app.ts throws when SESSION_SECRET is absent in production"
+      ],
+      "remediation": "Fail startup in production when SESSION_SECRET is missing."
+    },
+    {
+      "severity": "medium",
+      "category": "browser-hardening",
+      "id": "csp.no-unsafe-inline",
+      "title": "CSP avoids unsafe-inline",
+      "passed": false,
+      "evidence": [
+        {
+          "file": "api/src/app.ts",
+          "line": 117,
+          "rule": "csp-unsafe-inline",
+          "text": "scriptSrc: [\"'self'\", \"'unsafe-inline'\"], // Admin credentials page uses inline scripts"
+        },
+        {
+          "file": "api/src/app.ts",
+          "line": 118,
+          "rule": "csp-unsafe-inline",
+          "text": "styleSrc: [\"'self'\", \"'unsafe-inline'\"], // TipTap editor needs inline styles"
+        }
+      ],
+      "remediation": "Replace inline scripts/styles with nonce or hashed CSP entries where practical."
+    },
+    {
+      "severity": "high",
+      "category": "browser-hardening",
+      "id": "xss.no-unsafe-dom-sinks",
+      "title": "No unsafe DOM injection sinks",
+      "passed": false,
+      "evidence": [
+        {
+          "file": "api/src/routes/admin-credentials.ts",
+          "line": 310,
+          "rule": "innerHTML-assignment",
+          "text": "badge.innerHTML = '<span>✓ Configured</span>';"
+        },
+        {
+          "file": "api/src/routes/admin-credentials.ts",
+          "line": 313,
+          "rule": "innerHTML-assignment",
+          "text": "badge.innerHTML = '<span>○ Not Configured</span>';"
+        },
+        {
+          "file": "api/src/routes/admin-credentials.ts",
+          "line": 322,
+          "rule": "innerHTML-assignment",
+          "text": "btn.innerHTML = '<span class=\"spinner\"></span>Saving...';"
+        },
+        {
+          "file": "api/src/routes/admin-credentials.ts",
+          "line": 390,
+          "rule": "innerHTML-assignment",
+          "text": "btn.innerHTML = '<span class=\"spinner\"></span>Testing...';"
+        },
+        {
+          "file": "web/src/components/editor/AIScoringDisplay.tsx",
+          "line": 181,
+          "rule": "innerHTML-assignment",
+          "text": "container.innerHTML = `"
+        },
+        {
+          "file": "web/src/components/editor/AIScoringDisplay.tsx",
+          "line": 206,
+          "rule": "innerHTML-assignment",
+          "text": "container.innerHTML = `"
+        },
+        {
+          "file": "web/src/components/editor/CommentDisplay.tsx",
+          "line": 85,
+          "rule": "innerHTML-assignment",
+          "text": "container.innerHTML = `"
+        },
+        {
+          "file": "web/src/components/editor/CommentDisplay.tsx",
+          "line": 110,
+          "rule": "innerHTML-assignment",
+          "text": "container.innerHTML = `"
+        },
+        {
+          "file": "web/src/components/editor/CommentDisplay.tsx",
+          "line": 179,
+          "rule": "innerHTML-assignment",
+          "text": "container.innerHTML = `"
+        }
+      ],
+      "remediation": "Replace innerHTML/eval-style sinks with React rendering, DOM textContent, or a sanitizer with explicit allowlists."
+    },
+    {
+      "severity": "medium",
+      "category": "browser-hardening",
+      "id": "browser.no-auth-cache-localstorage",
+      "title": "Authentication/session data is not cached in localStorage",
+      "passed": true,
+      "evidence": [],
+      "remediation": "Prefer httpOnly cookies for session state and avoid caching identity/session details in localStorage."
+    },
+    {
+      "severity": "high",
+      "category": "transport-security",
+      "id": "tls.no-reject-unauthorized-false",
+      "title": "TLS verification is not disabled",
+      "passed": false,
+      "evidence": [
+        {
+          "file": "api/scripts/check-db-user.ts",
+          "line": 10,
+          "rule": "rejectUnauthorized-false",
+          "text": "ssl: { rejectUnauthorized: false }"
+        },
+        {
+          "file": "api/scripts/check-db-user.ts",
+          "line": 19,
+          "rule": "rejectUnauthorized-false",
+          "text": "ssl: { rejectUnauthorized: false }"
+        },
+        {
+          "file": "api/scripts/create-test-user.ts",
+          "line": 35,
+          "rule": "rejectUnauthorized-false",
+          "text": "ssl: { rejectUnauthorized: false },"
+        },
+        {
+          "file": "api/scripts/migrate-shadow.ts",
+          "line": 32,
+          "rule": "rejectUnauthorized-false",
+          "text": "ssl: { rejectUnauthorized: false },"
+        },
+        {
+          "file": "api/src/db/migrate.ts",
+          "line": 32,
+          "rule": "rejectUnauthorized-false",
+          "text": "ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,"
+        },
+        {
+          "file": "api/src/db/seed.ts",
+          "line": 44,
+          "rule": "rejectUnauthorized-false",
+          "text": "ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,"
+        }
+      ],
+      "remediation": "Use trusted CA bundles or managed certificates instead of disabling TLS verification."
+    },
+    {
+      "severity": "medium",
+      "category": "container",
+      "id": "container.non-root-pinned-base",
+      "title": "Dockerfiles avoid latest tags and declare a runtime user",
+      "passed": true,
+      "evidence": [],
+      "remediation": "Pin base image tags and run containers as a non-root user."
+    },
+    {
+      "severity": "medium",
+      "category": "infrastructure",
+      "id": "terraform.encryption-signals",
+      "title": "Terraform includes encryption-at-rest signals",
+      "passed": true,
+      "evidence": [
+        "Terraform should include Aurora storage encryption and S3/KMS encryption configuration"
+      ],
+      "remediation": "Enable Aurora storage encryption and S3 server-side encryption with KMS where possible."
+    },
+    {
+      "severity": "high",
+      "category": "dependencies",
+      "id": "dependencies.no-high-critical-advisories",
+      "title": "Dependency audit has no high or critical advisories",
+      "passed": false,
+      "evidence": [
+        "pnpm audit vulnerability summary: {\"critical\":2,\"high\":30,\"moderate\":39,\"low\":4,\"info\":0}"
+      ],
+      "remediation": "Run pnpm audit, upgrade affected packages, or document accepted risk with a patch plan."
+    }
+  ]
+}
