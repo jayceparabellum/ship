@@ -24,7 +24,6 @@ The local command `corepack pnpm security:audit` remains the source of truth. AW
 flowchart TD
   EventBridge["EventBridge schedule"] --> Lambda["Lambda trigger"]
   Lambda --> CodeBuild["CodeBuild security runner"]
-  CodeBuild --> GitLab["Labs GitLab ShipShape-Security-Tool branch"]
   CodeBuild --> Audit["corepack pnpm security:audit"]
   Audit --> S3Runs["S3 reports: runs/<run-id>/"]
   Audit --> S3Latest["S3 reports: latest/"]
