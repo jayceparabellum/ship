@@ -58,9 +58,16 @@ const belongsToEntrySchema = z.object({
 // Accountability types enum for validation
 const accountabilityTypes = ['standup', 'weekly_plan', 'weekly_review', 'week_start', 'week_issues', 'project_plan', 'project_retro'] as const;
 
+const safeUserTitle = z.string()
+  .min(1)
+  .max(500)
+  .refine((value) => !/[<>]/.test(value), {
+    message: 'Title cannot contain HTML tag characters',
+  });
+
 // Validation schemas
 const createIssueSchema = z.object({
-  title: z.string().min(1).max(500),
+  title: safeUserTitle,
   state: z.enum(['triage', 'backlog', 'todo', 'in_progress', 'in_review', 'done', 'cancelled']).optional().default('backlog'),
   priority: z.enum(['urgent', 'high', 'medium', 'low', 'none']).optional().default('medium'),
   assignee_id: z.string().uuid().optional().nullable(),
@@ -77,7 +84,7 @@ const createIssueSchema = z.object({
 });
 
 const updateIssueSchema = z.object({
-  title: z.string().min(1).max(500).optional(),
+  title: safeUserTitle.optional(),
   state: z.enum(['triage', 'backlog', 'todo', 'in_progress', 'in_review', 'done', 'cancelled']).optional(),
   priority: z.enum(['urgent', 'high', 'medium', 'low', 'none']).optional(),
   assignee_id: z.string().uuid().optional().nullable(),

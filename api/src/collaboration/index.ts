@@ -684,6 +684,10 @@ export function setupCollaboration(server: Server) {
     const doc = await getOrCreateDoc(docName);
     const aw = getAwareness(docName, doc);
 
+    ws.on('error', (error) => {
+      console.warn(`[Collaboration] WebSocket error for ${docName}:`, error.message);
+    });
+
     // Track this connection with user info for visibility change handling
     const clientId = doc.clientID;
     conns.set(ws, { docName, awarenessClientId: clientId, userId: sessionData.userId, workspaceId: sessionData.workspaceId });
@@ -789,6 +793,10 @@ export function setupCollaboration(server: Server) {
   eventsWss.on('connection', (ws: WebSocket, sessionData: { userId: string; workspaceId: string }) => {
     eventConns.set(ws, { userId: sessionData.userId, workspaceId: sessionData.workspaceId });
     console.log(`[Events] User ${sessionData.userId} connected (${eventConns.size} total connections)`);
+
+    ws.on('error', (error) => {
+      console.warn(`[Events] WebSocket error for user ${sessionData.userId}:`, error.message);
+    });
 
     // Send initial connected message
     ws.send(JSON.stringify({ type: 'connected', data: {} }));

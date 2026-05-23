@@ -298,6 +298,20 @@ describe('Issues API', () => {
       expect(res.status).toBe(201)
       expect(res.body.belongs_to).toEqual([])
     })
+
+    it('should reject issue titles with HTML tag characters', async () => {
+      const res = await request(app)
+        .post('/api/issues')
+        .set('Cookie', sessionCookie)
+        .set('x-csrf-token', csrfToken)
+        .send({
+          title: "Security probe <img src=x onerror=alert('xss')>",
+        })
+
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe('Invalid input')
+      expect(JSON.stringify(res.body.details)).toContain('Title cannot contain HTML tag characters')
+    })
   })
 
   describe('PATCH /api/issues/:id', () => {

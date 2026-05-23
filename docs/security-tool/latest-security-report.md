@@ -1,20 +1,20 @@
 # ShipShape Security Tool Report
 
-Generated: 2026-05-23T22:40:31.781Z
+Generated: 2026-05-23T22:47:21.866Z
 
 Branch: `ShipShape-Security-Tool`
 
-Commit: `6c9ff5f`
+Commit: `93ae088`
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | totalChecks | 13 |
-| passed | 8 |
-| failed | 5 |
+| passed | 9 |
+| failed | 4 |
 | critical | 1 |
-| high | 3 |
+| high | 2 |
 | medium | 1 |
 | low | 0 |
 
@@ -31,18 +31,6 @@ Evidence:
 - `api/scripts/create-test-user.ts:20` - password: '!Musicfun1$$',
 
 Remediation: Move secrets to SSM/CI variables, rotate exposed credentials, and remove committed values from history when needed.
-
-### HIGH - Dependency audit has no high or critical advisories
-
-Category: dependencies
-
-Rule: `dependencies.no-high-critical-advisories`
-
-Evidence:
-
-- pnpm audit vulnerability summary: {"critical":2,"high":30,"moderate":39,"low":4,"info":0}
-
-Remediation: Run pnpm audit, upgrade affected packages, or document accepted risk with a patch plan.
 
 ### HIGH - TLS verification is not disabled
 

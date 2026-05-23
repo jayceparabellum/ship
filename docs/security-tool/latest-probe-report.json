@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-23T22:39:44.761Z",
+  "generatedAt": "2026-05-23T22:47:14.958Z",
   "tool": "shipshape-active-security-probe",
   "target": {
     "apiUrl": "http://127.0.0.1:3000",
@@ -8,24 +8,20 @@
   },
   "summary": {
     "totalChecks": 17,
-    "passed": 14,
-    "failed": 3,
+    "passed": 17,
+    "failed": 0,
     "critical": 0,
-    "high": 2,
-    "medium": 1,
+    "high": 0,
+    "medium": 0,
     "low": 0,
     "info": 0
   },
   "category8Metrics": {
     "securityProbeToolRunnable": true,
     "authSessionVulnerabilitiesFound": [],
-    "websocketValidationFailures": [
-      "high: Oversized WebSocket message is rejected without taking down API health"
-    ],
-    "inputSanitizationFailures": [
-      "medium: Stored XSS payload handling on issue title"
-    ],
-    "highCriticalDependencyCves": 33,
+    "websocketValidationFailures": [],
+    "inputSanitizationFailures": [],
+    "highCriticalDependencyCves": 0,
     "corsCspMisconfiguration": [],
     "secretsExposureRisk": "Covered by static security:audit scanner; active client-bundle secret probing is a follow-up.",
     "rateLimitingAbsentOnEndpoints": [],
@@ -240,17 +236,15 @@
     {
       "id": "input.stored-xss-payload-handling",
       "surface": "input sanitization",
-      "severity": "medium",
+      "severity": "info",
       "title": "Stored XSS payload handling on issue title",
-      "passed": false,
-      "details": "Issue title accepted an HTML event-handler payload with HTTP 201; verify frontend escaping/sanitization.",
+      "passed": true,
+      "details": "Issue title rejected an HTML event-handler payload.",
       "reproductionSteps": [
         "Log in and POST /api/issues with a title containing `<img src=x onerror=alert(...)>`."
       ],
       "evidence": {
-        "status": 201,
-        "createdIssueId": "c6e71c33-0c98-482c-a81c-8f08481c96a0",
-        "responseTitle": "security-probe-xss <img src=x onerror=alert('shipshape-probe')>"
+        "status": 400
       },
       "remediation": "Reject or sanitize HTML-bearing user text at trust boundaries, and keep React output escaped."
     },
@@ -340,8 +334,8 @@
       "surface": "WebSocket message validation",
       "severity": "high",
       "title": "Oversized WebSocket message is rejected without taking down API health",
-      "passed": false,
-      "details": "Sent an 11MB payload to authenticated /events socket; follow-up /health returned HTTP 0.",
+      "passed": true,
+      "details": "Sent an 11MB payload to authenticated /events socket; follow-up /health returned HTTP 200.",
       "reproductionSteps": [
         "Log in, connect to /events, send an 11MB message, then request /health."
       ],
@@ -364,11 +358,11 @@
           ]
         },
         "postOversizedHealth": {
-          "status": 0,
+          "status": 200,
           "body": {
-            "error": "fetch failed"
+            "status": "ok"
           },
-          "networkError": "fetch failed"
+          "networkError": null
         }
       },
       "remediation": "Set maxPayload and close oversized WebSocket messages with code 1009 without crashing the HTTP server."
@@ -376,234 +370,23 @@
     {
       "id": "dependencies.high-critical-cves",
       "surface": "dependency vulnerabilities",
-      "severity": "high",
+      "severity": "info",
       "title": "Dependency audit high/critical CVE count",
-      "passed": false,
-      "details": "pnpm audit reported 2 critical and 31 high advisories.",
+      "passed": true,
+      "details": "pnpm audit reported 0 critical and 0 high advisories.",
       "reproductionSteps": [
         "Run `corepack pnpm audit --json` from the repository root."
       ],
       "evidence": {
         "vulnerabilities": {
           "info": 0,
-          "low": 4,
-          "moderate": 40,
-          "high": 31,
-          "critical": 2
+          "low": 0,
+          "moderate": 1,
+          "high": 0,
+          "critical": 0
         },
-        "highCritical": 33,
-        "packages": [
-          {
-            "module": "minimatch",
-            "severity": "high",
-            "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
-            "vulnerableVersions": ">=5.0.0 <5.1.7",
-            "recommendation": "Upgrade to version 5.1.7 or later"
-          },
-          {
-            "module": "minimatch",
-            "severity": "high",
-            "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
-            "vulnerableVersions": ">=9.0.0 <9.0.6",
-            "recommendation": "Upgrade to version 9.0.6 or later"
-          },
-          {
-            "module": "rollup",
-            "severity": "high",
-            "title": "Rollup 4 has Arbitrary File Write via Path Traversal",
-            "vulnerableVersions": ">=4.0.0 <4.59.0",
-            "recommendation": "Upgrade to version 4.59.0 or later"
-          },
-          {
-            "module": "minimatch",
-            "severity": "high",
-            "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
-            "vulnerableVersions": ">=5.0.0 <5.1.8",
-            "recommendation": "Upgrade to version 5.1.8 or later"
-          },
-          {
-            "module": "minimatch",
-            "severity": "high",
-            "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
-            "vulnerableVersions": ">=9.0.0 <9.0.7",
-            "recommendation": "Upgrade to version 9.0.7 or later"
-          },
-          {
-            "module": "minimatch",
-            "severity": "high",
-            "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
-            "vulnerableVersions": ">=5.0.0 <5.1.8",
-            "recommendation": "Upgrade to version 5.1.8 or later"
-          },
-          {
-            "module": "minimatch",
-            "severity": "high",
-            "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
-            "vulnerableVersions": ">=9.0.0 <9.0.7",
-            "recommendation": "Upgrade to version 9.0.7 or later"
-          },
-          {
-            "module": "fast-xml-parser",
-            "severity": "critical",
-            "title": "fast-xml-parser has an entity encoding bypass via regex injection in DOCTYPE entity names",
-            "vulnerableVersions": ">=5.0.0 <5.3.5",
-            "recommendation": "Upgrade to version 5.3.5 or later"
-          },
-          {
-            "module": "fast-xml-parser",
-            "severity": "high",
-            "title": "fast-xml-parser affected by DoS through entity expansion in DOCTYPE (no expansion limit)",
-            "vulnerableVersions": ">=5.0.0 <5.3.6",
-            "recommendation": "Upgrade to version 5.3.6 or later"
-          },
-          {
-            "module": "hono",
-            "severity": "high",
-            "title": "Hono vulnerable to arbitrary file access via serveStatic vulnerability ",
-            "vulnerableVersions": "<4.12.4",
-            "recommendation": "Upgrade to version 4.12.4 or later"
-          },
-          {
-            "module": "svgo",
-            "severity": "high",
-            "title": "SVGO DoS through entity expansion in DOCTYPE (Billion Laughs)",
-            "vulnerableVersions": ">=3.0.0 <3.3.3",
-            "recommendation": "Upgrade to version 3.3.3 or later"
-          },
-          {
-            "module": "@hono/node-server",
-            "severity": "high",
-            "title": "@hono/node-server has authorization bypass for protected static paths via encoded slashes in Serve Static Middleware",
-            "vulnerableVersions": "<1.19.10",
-            "recommendation": "Upgrade to version 1.19.10 or later"
-          },
-          {
-            "module": "express-rate-limit",
-            "severity": "high",
-            "title": "express-rate-limit: IPv4-mapped IPv6 addresses bypass per-client rate limiting on servers with dual-stack network",
-            "vulnerableVersions": ">=8.2.0 <8.2.2",
-            "recommendation": "Upgrade to version 8.2.2 or later"
-          },
-          {
-            "module": "flatted",
-            "severity": "high",
-            "title": "flatted vulnerable to unbounded recursion DoS in parse() revive phase",
-            "vulnerableVersions": "<3.4.0",
-            "recommendation": "Upgrade to version 3.4.0 or later"
-          },
-          {
-            "module": "undici",
-            "severity": "high",
-            "title": "Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client",
-            "vulnerableVersions": ">=7.0.0 <7.24.0",
-            "recommendation": "Upgrade to version 7.24.0 or later"
-          },
-          {
-            "module": "undici",
-            "severity": "high",
-            "title": "Undici has Unbounded Memory Consumption in WebSocket permessage-deflate Decompression",
-            "vulnerableVersions": ">=7.0.0 <7.24.0",
-            "recommendation": "Upgrade to version 7.24.0 or later"
-          },
-          {
-            "module": "undici",
-            "severity": "high",
-            "title": "Undici has Unhandled Exception in WebSocket Client Due to Invalid server_max_window_bits Validation",
-            "vulnerableVersions": ">=7.0.0 <7.24.0",
-            "recommendation": "Upgrade to version 7.24.0 or later"
-          },
-          {
-            "module": "fast-xml-parser",
-            "severity": "high",
-            "title": "fast-xml-parser affected by numeric entity expansion bypassing all entity expansion limits (incomplete fix for CVE-2026-26278)",
-            "vulnerableVersions": ">=5.0.0 <5.5.6",
-            "recommendation": "Upgrade to version 5.5.6 or later"
-          },
-          {
-            "module": "flatted",
-            "severity": "high",
-            "title": "Prototype Pollution via parse() in NodeJS flatted",
-            "vulnerableVersions": "<=3.4.1",
-            "recommendation": "Upgrade to version 3.4.2 or later"
-          },
-          {
-            "module": "path-to-regexp",
-            "severity": "high",
-            "title": "path-to-regexp vulnerable to Regular Expression Denial of Service via multiple route parameters",
-            "vulnerableVersions": "<0.1.13",
-            "recommendation": "Upgrade to version 0.1.13 or later"
-          },
-          {
-            "module": "picomatch",
-            "severity": "high",
-            "title": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
-            "vulnerableVersions": "<2.3.2",
-            "recommendation": "Upgrade to version 2.3.2 or later"
-          },
-          {
-            "module": "picomatch",
-            "severity": "high",
-            "title": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
-            "vulnerableVersions": ">=4.0.0 <4.0.4",
-            "recommendation": "Upgrade to version 4.0.4 or later"
-          },
-          {
-            "module": "path-to-regexp",
-            "severity": "high",
-            "title": "path-to-regexp vulnerable to Denial of Service via sequential optional groups",
-            "vulnerableVersions": ">=8.0.0 <8.4.0",
-            "recommendation": "Upgrade to version 8.4.0 or later"
-          },
-          {
-            "module": "lodash",
-            "severity": "high",
-            "title": "lodash vulnerable to Code Injection via `_.template` imports key names",
-            "vulnerableVersions": ">=4.0.0 <=4.17.23",
-            "recommendation": "Upgrade to version 4.18.0 or later"
-          },
-          {
-            "module": "vite",
-            "severity": "high",
-            "title": "Vite Vulnerable to Arbitrary File Read via Vite Dev Server WebSocket",
-            "vulnerableVersions": ">=6.0.0 <=6.4.1",
-            "recommendation": "Upgrade to version 6.4.2 or later"
-          },
-          {
-            "module": "protobufjs",
-            "severity": "critical",
-            "title": "Arbitrary code execution in protobufjs",
-            "vulnerableVersions": "<7.5.5",
-            "recommendation": "Upgrade to version 7.5.5 or later"
-          },
-          {
-            "module": "fast-uri",
-            "severity": "high",
-            "title": "fast-uri vulnerable to path traversal via percent-encoded dot segments",
-            "vulnerableVersions": "<=3.1.0",
-            "recommendation": "Upgrade to version 3.1.1 or later"
-          },
-          {
-            "module": "fast-uri",
-            "severity": "high",
-            "title": "fast-uri vulnerable to host confusion via percent-encoded authority delimiters",
-            "vulnerableVersions": "<=3.1.1",
-            "recommendation": "Upgrade to version 3.1.2 or later"
-          },
-          {
-            "module": "protobufjs",
-            "severity": "high",
-            "title": "protobuf.js: Code injection through bytes field defaults in generated toObject code",
-            "vulnerableVersions": "<=7.5.5",
-            "recommendation": "Upgrade to version 7.5.6 or later"
-          },
-          {
-            "module": "protobufjs",
-            "severity": "high",
-            "title": "protobuf.js: Code generation gadget after prototype pollution",
-            "vulnerableVersions": "<=7.5.5",
-            "recommendation": "Upgrade to version 7.5.6 or later"
-          }
-        ]
+        "highCritical": 0,
+        "packages": []
       },
       "remediation": "Upgrade vulnerable packages or document accepted risk with feature impact and mitigation."
     }

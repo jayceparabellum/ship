@@ -1,6 +1,6 @@
 # ShipShape Active Security Probe Report
 
-Generated: 2026-05-23T22:39:44.761Z
+Generated: 2026-05-23T22:47:14.958Z
 
 Target API: http://127.0.0.1:3000
 
@@ -11,11 +11,11 @@ Target Web: http://127.0.0.1:5173
 | Metric | Count |
 | --- | ---: |
 | totalChecks | 17 |
-| passed | 14 |
-| failed | 3 |
+| passed | 17 |
+| failed | 0 |
 | critical | 0 |
-| high | 2 |
-| medium | 1 |
+| high | 0 |
+| medium | 0 |
 | low | 0 |
 | info | 0 |
 
@@ -25,57 +25,15 @@ Target Web: http://127.0.0.1:5173
 | --- | --- |
 | securityProbeToolRunnable | true |
 | authSessionVulnerabilitiesFound | None |
-| websocketValidationFailures | high: Oversized WebSocket message is rejected without taking down API health |
-| inputSanitizationFailures | medium: Stored XSS payload handling on issue title |
-| highCriticalDependencyCves | 33 |
+| websocketValidationFailures | None |
+| inputSanitizationFailures | None |
+| highCriticalDependencyCves | 0 |
 | corsCspMisconfiguration | None |
 | secretsExposureRisk | Covered by static security:audit scanner; active client-bundle secret probing is a follow-up. |
 | rateLimitingAbsentOnEndpoints | None |
 | verboseErrorLeakage | false |
 
 ## Findings
-
-### HIGH - Oversized WebSocket message is rejected without taking down API health
-
-Surface: WebSocket message validation
-
-Rule: `websocket.oversized-message-rejected`
-
-Details: Sent an 11MB payload to authenticated /events socket; follow-up /health returned HTTP 0.
-
-Reproduction:
-
-- Log in, connect to /events, send an 11MB message, then request /health.
-
-Remediation: Set maxPayload and close oversized WebSocket messages with code 1009 without crashing the HTTP server.
-
-### HIGH - Dependency audit high/critical CVE count
-
-Surface: dependency vulnerabilities
-
-Rule: `dependencies.high-critical-cves`
-
-Details: pnpm audit reported 2 critical and 31 high advisories.
-
-Reproduction:
-
-- Run `corepack pnpm audit --json` from the repository root.
-
-Remediation: Upgrade vulnerable packages or document accepted risk with feature impact and mitigation.
-
-### MEDIUM - Stored XSS payload handling on issue title
-
-Surface: input sanitization
-
-Rule: `input.stored-xss-payload-handling`
-
-Details: Issue title accepted an HTML event-handler payload with HTTP 201; verify frontend escaping/sanitization.
-
-Reproduction:
-
-- Log in and POST /api/issues with a title containing `<img src=x onerror=alert(...)>`.
-
-Remediation: Reject or sanitize HTML-bearing user text at trust boundaries, and keep React output escaped.
 
 ### PASS - Unauthenticated session endpoint is rejected
 
@@ -189,6 +147,20 @@ Reproduction:
 
 Remediation: Use parameterized SQL and schema validation for all query filters.
 
+### PASS - Oversized WebSocket message is rejected without taking down API health
+
+Surface: WebSocket message validation
+
+Rule: `websocket.oversized-message-rejected`
+
+Details: Sent an 11MB payload to authenticated /events socket; follow-up /health returned HTTP 200.
+
+Reproduction:
+
+- Log in, connect to /events, send an 11MB message, then request /health.
+
+Remediation: Set maxPayload and close oversized WebSocket messages with code 1009 without crashing the HTTP server.
+
 ### PASS - Events WebSocket survives malformed and unexpected message types
 
 Surface: WebSocket message validation
@@ -272,3 +244,31 @@ Reproduction:
 - Log in, then request /api/auth/me with the returned session cookie.
 
 Remediation: Investigate login/session middleware if this fails.
+
+### PASS - Stored XSS payload handling on issue title
+
+Surface: input sanitization
+
+Rule: `input.stored-xss-payload-handling`
+
+Details: Issue title rejected an HTML event-handler payload.
+
+Reproduction:
+
+- Log in and POST /api/issues with a title containing `<img src=x onerror=alert(...)>`.
+
+Remediation: Reject or sanitize HTML-bearing user text at trust boundaries, and keep React output escaped.
+
+### PASS - Dependency audit high/critical CVE count
+
+Surface: dependency vulnerabilities
+
+Rule: `dependencies.high-critical-cves`
+
+Details: pnpm audit reported 0 critical and 0 high advisories.
+
+Reproduction:
+
+- Run `corepack pnpm audit --json` from the repository root.
+
+Remediation: Upgrade vulnerable packages or document accepted risk with feature impact and mitigation.
