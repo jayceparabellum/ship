@@ -123,3 +123,27 @@ variable "security_tool_compute_type" {
   type        = string
   default     = "BUILD_GENERAL1_SMALL"
 }
+
+variable "security_probe_api_url" {
+  description = "Optional live API URL for the active Category 8 security probe"
+  type        = string
+  default     = ""
+}
+
+variable "security_probe_web_url" {
+  description = "Optional live web URL for the active Category 8 security probe"
+  type        = string
+  default     = ""
+}
+
+variable "security_probe_email_parameter_name" {
+  description = "Optional SSM SecureString/String parameter containing the active security probe login email"
+  type        = string
+  default     = ""
+}
+
+variable "security_probe_password_parameter_name" {
+  description = "Optional SSM SecureString parameter containing the active security probe login password"
+  type        = string
+  default     = ""
+}

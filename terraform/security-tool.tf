@@ -207,6 +207,26 @@ resource "aws_codebuild_project" "security_tool" {
       name  = "SECURITY_TOOL_GIT_TOKEN_PARAMETER_NAME"
       value = var.security_tool_git_token_parameter_name
     }
+
+    environment_variable {
+      name  = "SECURITY_PROBE_API_URL"
+      value = var.security_probe_api_url
+    }
+
+    environment_variable {
+      name  = "SECURITY_PROBE_WEB_URL"
+      value = var.security_probe_web_url
+    }
+
+    environment_variable {
+      name  = "SECURITY_PROBE_EMAIL_PARAMETER_NAME"
+      value = var.security_probe_email_parameter_name
+    }
+
+    environment_variable {
+      name  = "SECURITY_PROBE_PASSWORD_PARAMETER_NAME"
+      value = var.security_probe_password_parameter_name
+    }
   }
 
   logs_config {
@@ -244,6 +264,22 @@ resource "aws_codebuild_project" "security_tool" {
             - cd repo
             - corepack pnpm install --frozen-lockfile
             - SECURITY_AUDIT_OUT_DIR=".security-tool-output" corepack pnpm security:audit
+            - |
+              if [ -n "$SECURITY_PROBE_API_URL" ]; then
+                if [ -z "$SECURITY_PROBE_WEB_URL" ]; then
+                  echo "SECURITY_PROBE_WEB_URL is required when SECURITY_PROBE_API_URL is set"
+                  exit 1
+                fi
+                if [ -z "$SECURITY_PROBE_EMAIL_PARAMETER_NAME" ] || [ -z "$SECURITY_PROBE_PASSWORD_PARAMETER_NAME" ]; then
+                  echo "Probe credential SSM parameter names are required when SECURITY_PROBE_API_URL is set"
+                  exit 1
+                fi
+                PROBE_EMAIL="$(aws ssm get-parameter --name "$SECURITY_PROBE_EMAIL_PARAMETER_NAME" --with-decryption --query Parameter.Value --output text)"
+                PROBE_PASSWORD="$(aws ssm get-parameter --name "$SECURITY_PROBE_PASSWORD_PARAMETER_NAME" --with-decryption --query Parameter.Value --output text)"
+                SECURITY_PROBE_OUT_DIR=".security-tool-output" corepack pnpm security:probe -- --api-url "$SECURITY_PROBE_API_URL" --web-url "$SECURITY_PROBE_WEB_URL" --email "$PROBE_EMAIL" --password "$PROBE_PASSWORD"
+              else
+                echo "SECURITY_PROBE_API_URL not set; skipping active live-app probe"
+              fi
         post_build:
           commands:
             - cd "$CODEBUILD_SRC_DIR/repo"
@@ -251,6 +287,13 @@ resource "aws_codebuild_project" "security_tool" {
             - aws s3 cp .security-tool-output/latest-security-report.md "s3://$SECURITY_TOOL_REPORT_BUCKET/runs/$RUN_ID/latest-security-report.md"
             - aws s3 cp .security-tool-output/latest-security-report.json "s3://$SECURITY_TOOL_REPORT_BUCKET/latest/latest-security-report.json"
             - aws s3 cp .security-tool-output/latest-security-report.md "s3://$SECURITY_TOOL_REPORT_BUCKET/latest/latest-security-report.md"
+            - |
+              if [ -f .security-tool-output/latest-probe-report.json ]; then
+                aws s3 cp .security-tool-output/latest-probe-report.json "s3://$SECURITY_TOOL_REPORT_BUCKET/runs/$RUN_ID/latest-probe-report.json"
+                aws s3 cp .security-tool-output/latest-probe-report.md "s3://$SECURITY_TOOL_REPORT_BUCKET/runs/$RUN_ID/latest-probe-report.md"
+                aws s3 cp .security-tool-output/latest-probe-report.json "s3://$SECURITY_TOOL_REPORT_BUCKET/latest/latest-probe-report.json"
+                aws s3 cp .security-tool-output/latest-probe-report.md "s3://$SECURITY_TOOL_REPORT_BUCKET/latest/latest-probe-report.md"
+              fi
             - echo "Security report uploaded to s3://$SECURITY_TOOL_REPORT_BUCKET/runs/$RUN_ID/"
     BUILDSPEC
   }

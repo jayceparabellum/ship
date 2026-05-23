@@ -11,7 +11,7 @@ The local command `corepack pnpm security:audit` remains the source of truth. AW
 | Service | Purpose |
 | --- | --- |
 | Lambda | Scheduled control-plane function that starts the security audit run |
-| CodeBuild | Clones the `ShipShape-Security-Tool` branch and runs `corepack pnpm security:audit` |
+| CodeBuild | Clones the `ShipShape-Security-Tool` branch and runs `corepack pnpm security:audit`; optionally runs `corepack pnpm security:probe` against a live app |
 | S3 | Stores JSON and Markdown security reports under `runs/<run-id>/` and `latest/` |
 | CloudWatch Logs | Captures CodeBuild execution logs |
 | EventBridge | Invokes Lambda on a schedule |
@@ -46,6 +46,12 @@ security_tool_git_branch   = "ShipShape-Security-Tool"
 # Optional, only needed if CodeBuild cannot clone the repository anonymously.
 security_tool_git_token_parameter_name = "/ship/prod/SECURITY_TOOL_GIT_TOKEN"
 
+# Optional active probe target. Leave blank to run static/config/dependency audit only.
+security_probe_api_url = "http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com"
+security_probe_web_url = "https://d9o5hawnpdm4g.cloudfront.net"
+security_probe_email_parameter_name    = "/ship/prod/SECURITY_PROBE_EMAIL"
+security_probe_password_parameter_name = "/ship/prod/SECURITY_PROBE_PASSWORD"
+
 # Keep discovery non-blocking at first. Change to true once findings are triaged.
 security_tool_fail_on_findings = false
 ```
@@ -68,6 +74,22 @@ Then set:
 security_tool_git_token_parameter_name = "/ship/prod/SECURITY_TOOL_GIT_TOKEN"
 ```
 
+Active probe credentials should also be stored in SSM, not Terraform:
+
+```bash
+aws ssm put-parameter \
+  --name /ship/prod/SECURITY_PROBE_EMAIL \
+  --type SecureString \
+  --value "dev@ship.local" \
+  --overwrite
+
+aws ssm put-parameter \
+  --name /ship/prod/SECURITY_PROBE_PASSWORD \
+  --type SecureString \
+  --value "<probe-account-password>" \
+  --overwrite
+```
+
 ## Report Locations
 
 Terraform outputs:
@@ -82,8 +104,12 @@ Reports are written to:
 ```text
 s3://<security-tool-report-bucket>/runs/<run-id>/latest-security-report.json
 s3://<security-tool-report-bucket>/runs/<run-id>/latest-security-report.md
+s3://<security-tool-report-bucket>/runs/<run-id>/latest-probe-report.json
+s3://<security-tool-report-bucket>/runs/<run-id>/latest-probe-report.md
 s3://<security-tool-report-bucket>/latest/latest-security-report.json
 s3://<security-tool-report-bucket>/latest/latest-security-report.md
+s3://<security-tool-report-bucket>/latest/latest-probe-report.json
+s3://<security-tool-report-bucket>/latest/latest-probe-report.md
 ```
 
 ## Review Before Applying

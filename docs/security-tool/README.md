@@ -13,6 +13,27 @@ Outputs:
 - `docs/security-tool/latest-security-report.json`
 - `docs/security-tool/latest-security-report.md`
 
+## Active Probe
+
+Run against a live local or deployed app:
+
+```bash
+corepack pnpm security:probe -- --api-url http://127.0.0.1:3000 --web-url http://127.0.0.1:5173 --email dev@ship.local --password admin123
+```
+
+Environment variable equivalents:
+
+- `SECURITY_PROBE_API_URL`
+- `SECURITY_PROBE_WEB_URL`
+- `SECURITY_PROBE_EMAIL`
+- `SECURITY_PROBE_PASSWORD`
+- `SECURITY_PROBE_FAIL_ON_FINDINGS=1`
+
+Outputs:
+
+- `docs/security-tool/latest-probe-report.json`
+- `docs/security-tool/latest-probe-report.md`
+
 AWS deployment design:
 
 - `docs/security-tool/aws-architecture.md`

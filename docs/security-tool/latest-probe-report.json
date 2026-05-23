@@ -1,0 +1,611 @@
+{
+  "generatedAt": "2026-05-23T22:39:44.761Z",
+  "tool": "shipshape-active-security-probe",
+  "target": {
+    "apiUrl": "http://127.0.0.1:3000",
+    "webUrl": "http://127.0.0.1:5173",
+    "email": "dev@ship.local"
+  },
+  "summary": {
+    "totalChecks": 17,
+    "passed": 14,
+    "failed": 3,
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 0,
+    "info": 0
+  },
+  "category8Metrics": {
+    "securityProbeToolRunnable": true,
+    "authSessionVulnerabilitiesFound": [],
+    "websocketValidationFailures": [
+      "high: Oversized WebSocket message is rejected without taking down API health"
+    ],
+    "inputSanitizationFailures": [
+      "medium: Stored XSS payload handling on issue title"
+    ],
+    "highCriticalDependencyCves": 33,
+    "corsCspMisconfiguration": [],
+    "secretsExposureRisk": "Covered by static security:audit scanner; active client-bundle secret probing is a follow-up.",
+    "rateLimitingAbsentOnEndpoints": [],
+    "verboseErrorLeakage": false
+  },
+  "findings": [
+    {
+      "id": "probe.api-health",
+      "surface": "setup",
+      "severity": "info",
+      "title": "Probe can reach live API health endpoint",
+      "passed": true,
+      "details": "GET /health returned HTTP 200",
+      "reproductionSteps": [
+        "curl http://127.0.0.1:3000/health"
+      ],
+      "evidence": {
+        "status": 200,
+        "body": {
+          "status": "ok"
+        }
+      },
+      "remediation": "Start the API or set SECURITY_PROBE_API_URL / --api-url to a reachable app instance."
+    },
+    {
+      "id": "auth.unauthenticated-me-rejected",
+      "surface": "authentication and session handling",
+      "severity": "high",
+      "title": "Unauthenticated session endpoint is rejected",
+      "passed": true,
+      "details": "GET /api/auth/me without cookies returned HTTP 401",
+      "reproductionSteps": [
+        "curl -i http://127.0.0.1:3000/api/auth/me"
+      ],
+      "evidence": {
+        "status": 401,
+        "body": {
+          "success": false,
+          "error": {
+            "code": "UNAUTHORIZED",
+            "message": "No session found"
+          }
+        }
+      },
+      "remediation": "Require auth middleware on session/user endpoints."
+    },
+    {
+      "id": "auth.invalid-session-rejected",
+      "surface": "authentication and session handling",
+      "severity": "high",
+      "title": "Invalid session cookie is rejected",
+      "passed": true,
+      "details": "GET /api/auth/me with fake session_id returned HTTP 401",
+      "reproductionSteps": [
+        "curl -i -H \"Cookie: session_id=security-probe-invalid-session\" http://127.0.0.1:3000/api/auth/me"
+      ],
+      "evidence": {
+        "status": 401,
+        "body": {
+          "success": false,
+          "error": {
+            "code": "UNAUTHORIZED",
+            "message": "Invalid session"
+          }
+        }
+      },
+      "remediation": "Reject unknown or expired session identifiers."
+    },
+    {
+      "id": "auth.session-token-entropy-shape",
+      "surface": "authentication and session handling",
+      "severity": "high",
+      "title": "Session token has expected high-entropy shape",
+      "passed": true,
+      "details": "session_id length is 64; expected 64 hex characters",
+      "reproductionSteps": [
+        "Log in through /api/auth/login and inspect the Set-Cookie session_id value shape."
+      ],
+      "evidence": {
+        "length": 64,
+        "hex64": true
+      },
+      "remediation": "Use cryptographically random 256-bit session identifiers."
+    },
+    {
+      "id": "auth.valid-session-accepted",
+      "surface": "authentication and session handling",
+      "severity": "info",
+      "title": "Valid session can access authenticated user endpoint",
+      "passed": true,
+      "details": "GET /api/auth/me with authenticated cookie returned HTTP 200",
+      "reproductionSteps": [
+        "Log in, then request /api/auth/me with the returned session cookie."
+      ],
+      "evidence": {
+        "status": 200,
+        "bodyKeys": [
+          "success",
+          "data"
+        ]
+      },
+      "remediation": "Investigate login/session middleware if this fails."
+    },
+    {
+      "id": "auth.csrf-required-for-state-change",
+      "surface": "authentication and session handling",
+      "severity": "high",
+      "title": "State-changing session request requires CSRF token",
+      "passed": true,
+      "details": "POST /api/issues without x-csrf-token returned HTTP 403",
+      "reproductionSteps": [
+        "Log in, then POST /api/issues with the session cookie but without x-csrf-token."
+      ],
+      "evidence": {
+        "status": 403,
+        "body": {
+          "raw": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>ForbiddenError: invalid csrf token<br> &nbsp; &nbsp;at csrfSync (file:///C:/Users/jayce/Documents/Codex/2026-05-19/files-mentioned-by-the-user-gfa/ship/node_modules/.pnpm/csrf-sync@4.2.1/node_modules/csrf-sync/lib/index.js:22:33)<br> &nbsp; &nbsp;at &lt;anonymous&gt; (c:\\Users\\jayce\\Documents\\Codex\\2026-05-19\\files-mentioned-by-the-user-gfa\\ship\\api\\src\\app.ts:47:55)<br> &nbsp; &nbsp;at Module"
+        }
+      },
+      "remediation": "Apply CSRF protection to cookie-authenticated state-changing routes."
+    },
+    {
+      "id": "auth.admin-route-role-boundary",
+      "surface": "authentication and session handling",
+      "severity": "high",
+      "title": "Admin-only user list follows the current role boundary",
+      "passed": true,
+      "details": "Probe account is super-admin; /api/admin/users returned HTTP 200",
+      "reproductionSteps": [
+        "Log in as the probe user and request /api/admin/users."
+      ],
+      "evidence": {
+        "status": 200,
+        "isSuperAdmin": true
+      },
+      "remediation": "Require explicit super-admin checks for admin routes."
+    },
+    {
+      "id": "websocket.unauthenticated-events-rejected",
+      "surface": "WebSocket message validation",
+      "severity": "high",
+      "title": "Unauthenticated events WebSocket is rejected",
+      "passed": true,
+      "details": "Attempted /events WebSocket connection without cookies.",
+      "reproductionSteps": [
+        "Connect to ws://127.0.0.1:3000/events without Cookie header."
+      ],
+      "evidence": {
+        "opened": false,
+        "events": [
+          {
+            "type": "unexpected-response",
+            "statusCode": 401
+          }
+        ]
+      },
+      "remediation": "Validate session cookies before accepting WebSocket upgrades."
+    },
+    {
+      "id": "websocket.malformed-events-message-survives",
+      "surface": "WebSocket message validation",
+      "severity": "medium",
+      "title": "Events WebSocket survives malformed and unexpected message types",
+      "passed": true,
+      "details": "Sent invalid JSON and an unexpected event type over an authenticated /events socket.",
+      "reproductionSteps": [
+        "Log in, connect to /events with Cookie header, send `not-json`, then send `{ \"type\": \"unexpected_security_probe_type\" }`."
+      ],
+      "evidence": {
+        "opened": true,
+        "events": [
+          {
+            "type": "open"
+          },
+          {
+            "type": "message",
+            "bytes": 30
+          },
+          {
+            "type": "timeout"
+          },
+          {
+            "type": "close",
+            "code": 1005,
+            "reason": ""
+          }
+        ]
+      },
+      "remediation": "Reject malformed messages without crashing and ignore or close on unsupported message types."
+    },
+    {
+      "id": "websocket.unauthorized-document-room-rejected",
+      "surface": "WebSocket message validation",
+      "severity": "high",
+      "title": "Unauthorized collaboration document room is rejected",
+      "passed": true,
+      "details": "Attempted authenticated connection to non-existent/random collaboration room wiki:00000000-0000-4000-8000-000000000000.",
+      "reproductionSteps": [
+        "Log in, then connect to ws://127.0.0.1:3000/collaboration/wiki:00000000-0000-4000-8000-000000000000 with Cookie header."
+      ],
+      "evidence": {
+        "opened": false,
+        "events": [
+          {
+            "type": "unexpected-response",
+            "statusCode": 403
+          }
+        ]
+      },
+      "remediation": "Verify workspace and document access before WebSocket room join."
+    },
+    {
+      "id": "input.stored-xss-payload-handling",
+      "surface": "input sanitization",
+      "severity": "medium",
+      "title": "Stored XSS payload handling on issue title",
+      "passed": false,
+      "details": "Issue title accepted an HTML event-handler payload with HTTP 201; verify frontend escaping/sanitization.",
+      "reproductionSteps": [
+        "Log in and POST /api/issues with a title containing `<img src=x onerror=alert(...)>`."
+      ],
+      "evidence": {
+        "status": 201,
+        "createdIssueId": "c6e71c33-0c98-482c-a81c-8f08481c96a0",
+        "responseTitle": "security-probe-xss <img src=x onerror=alert('shipshape-probe')>"
+      },
+      "remediation": "Reject or sanitize HTML-bearing user text at trust boundaries, and keep React output escaped."
+    },
+    {
+      "id": "input.excessively-long-title-rejected",
+      "surface": "input sanitization",
+      "severity": "medium",
+      "title": "Excessively long issue title is rejected",
+      "passed": true,
+      "details": "POST /api/issues with 10k-character title returned HTTP 400",
+      "reproductionSteps": [
+        "Log in and POST /api/issues with a 10,000-character title."
+      ],
+      "evidence": {
+        "status": 400,
+        "body": {
+          "error": "Invalid input",
+          "details": [
+            {
+              "code": "too_big",
+              "maximum": 500,
+              "type": "string",
+              "inclusive": true,
+              "exact": false,
+              "message": "String must contain at most 500 character(s)",
+              "path": [
+                "title"
+              ]
+            }
+          ]
+        }
+      },
+      "remediation": "Enforce explicit length limits on all user-facing string fields."
+    },
+    {
+      "id": "input.sql-injection-filter-is-parameterized",
+      "surface": "input sanitization",
+      "severity": "high",
+      "title": "SQL injection payload in issue filter does not break query",
+      "passed": true,
+      "details": "GET /api/issues?state=' OR 1=1-- returned HTTP 200",
+      "reproductionSteps": [
+        "curl -i 'http://127.0.0.1:3000/api/issues?state=%27%20OR%201%3D1--' with authenticated Cookie header."
+      ],
+      "evidence": {
+        "status": 200,
+        "bodySample": "[]"
+      },
+      "remediation": "Use parameterized SQL and schema validation for all query filters."
+    },
+    {
+      "id": "manual.verbose-error-leakage",
+      "surface": "manual review: error message verbosity",
+      "severity": "medium",
+      "title": "Malformed ID error does not leak stack traces or SQL",
+      "passed": true,
+      "details": "GET /api/documents/not-a-uuid returned HTTP 500",
+      "reproductionSteps": [
+        "Log in and request /api/documents/not-a-uuid."
+      ],
+      "evidence": {
+        "status": 500,
+        "bodySample": "{\"error\":\"Internal server error\"}"
+      },
+      "remediation": "Return generic validation errors and log detailed stack traces server-side only."
+    },
+    {
+      "id": "manual.cors-restricts-arbitrary-origin",
+      "surface": "manual review: CORS and CSP configuration",
+      "severity": "medium",
+      "title": "CORS does not allow arbitrary hostile origin",
+      "passed": true,
+      "details": "OPTIONS with Origin https://evil.example returned Access-Control-Allow-Origin: http://localhost:5173",
+      "reproductionSteps": [
+        "curl -i -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' http://127.0.0.1:3000/api/auth/me"
+      ],
+      "evidence": {
+        "status": 204,
+        "allowOrigin": "http://localhost:5173",
+        "allowCredentials": "true",
+        "networkError": null
+      },
+      "remediation": "Restrict CORS to the deployed frontend origin and do not reflect arbitrary origins."
+    },
+    {
+      "id": "websocket.oversized-message-rejected",
+      "surface": "WebSocket message validation",
+      "severity": "high",
+      "title": "Oversized WebSocket message is rejected without taking down API health",
+      "passed": false,
+      "details": "Sent an 11MB payload to authenticated /events socket; follow-up /health returned HTTP 0.",
+      "reproductionSteps": [
+        "Log in, connect to /events, send an 11MB message, then request /health."
+      ],
+      "evidence": {
+        "websocket": {
+          "opened": true,
+          "events": [
+            {
+              "type": "open"
+            },
+            {
+              "type": "message",
+              "bytes": 30
+            },
+            {
+              "type": "close",
+              "code": 1009,
+              "reason": ""
+            }
+          ]
+        },
+        "postOversizedHealth": {
+          "status": 0,
+          "body": {
+            "error": "fetch failed"
+          },
+          "networkError": "fetch failed"
+        }
+      },
+      "remediation": "Set maxPayload and close oversized WebSocket messages with code 1009 without crashing the HTTP server."
+    },
+    {
+      "id": "dependencies.high-critical-cves",
+      "surface": "dependency vulnerabilities",
+      "severity": "high",
+      "title": "Dependency audit high/critical CVE count",
+      "passed": false,
+      "details": "pnpm audit reported 2 critical and 31 high advisories.",
+      "reproductionSteps": [
+        "Run `corepack pnpm audit --json` from the repository root."
+      ],
+      "evidence": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 4,
+          "moderate": 40,
+          "high": 31,
+          "critical": 2
+        },
+        "highCritical": 33,
+        "packages": [
+          {
+            "module": "minimatch",
+            "severity": "high",
+            "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+            "vulnerableVersions": ">=5.0.0 <5.1.7",
+            "recommendation": "Upgrade to version 5.1.7 or later"
+          },
+          {
+            "module": "minimatch",
+            "severity": "high",
+            "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+            "vulnerableVersions": ">=9.0.0 <9.0.6",
+            "recommendation": "Upgrade to version 9.0.6 or later"
+          },
+          {
+            "module": "rollup",
+            "severity": "high",
+            "title": "Rollup 4 has Arbitrary File Write via Path Traversal",
+            "vulnerableVersions": ">=4.0.0 <4.59.0",
+            "recommendation": "Upgrade to version 4.59.0 or later"
+          },
+          {
+            "module": "minimatch",
+            "severity": "high",
+            "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+            "vulnerableVersions": ">=5.0.0 <5.1.8",
+            "recommendation": "Upgrade to version 5.1.8 or later"
+          },
+          {
+            "module": "minimatch",
+            "severity": "high",
+            "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+            "vulnerableVersions": ">=9.0.0 <9.0.7",
+            "recommendation": "Upgrade to version 9.0.7 or later"
+          },
+          {
+            "module": "minimatch",
+            "severity": "high",
+            "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+            "vulnerableVersions": ">=5.0.0 <5.1.8",
+            "recommendation": "Upgrade to version 5.1.8 or later"
+          },
+          {
+            "module": "minimatch",
+            "severity": "high",
+            "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+            "vulnerableVersions": ">=9.0.0 <9.0.7",
+            "recommendation": "Upgrade to version 9.0.7 or later"
+          },
+          {
+            "module": "fast-xml-parser",
+            "severity": "critical",
+            "title": "fast-xml-parser has an entity encoding bypass via regex injection in DOCTYPE entity names",
+            "vulnerableVersions": ">=5.0.0 <5.3.5",
+            "recommendation": "Upgrade to version 5.3.5 or later"
+          },
+          {
+            "module": "fast-xml-parser",
+            "severity": "high",
+            "title": "fast-xml-parser affected by DoS through entity expansion in DOCTYPE (no expansion limit)",
+            "vulnerableVersions": ">=5.0.0 <5.3.6",
+            "recommendation": "Upgrade to version 5.3.6 or later"
+          },
+          {
+            "module": "hono",
+            "severity": "high",
+            "title": "Hono vulnerable to arbitrary file access via serveStatic vulnerability ",
+            "vulnerableVersions": "<4.12.4",
+            "recommendation": "Upgrade to version 4.12.4 or later"
+          },
+          {
+            "module": "svgo",
+            "severity": "high",
+            "title": "SVGO DoS through entity expansion in DOCTYPE (Billion Laughs)",
+            "vulnerableVersions": ">=3.0.0 <3.3.3",
+            "recommendation": "Upgrade to version 3.3.3 or later"
+          },
+          {
+            "module": "@hono/node-server",
+            "severity": "high",
+            "title": "@hono/node-server has authorization bypass for protected static paths via encoded slashes in Serve Static Middleware",
+            "vulnerableVersions": "<1.19.10",
+            "recommendation": "Upgrade to version 1.19.10 or later"
+          },
+          {
+            "module": "express-rate-limit",
+            "severity": "high",
+            "title": "express-rate-limit: IPv4-mapped IPv6 addresses bypass per-client rate limiting on servers with dual-stack network",
+            "vulnerableVersions": ">=8.2.0 <8.2.2",
+            "recommendation": "Upgrade to version 8.2.2 or later"
+          },
+          {
+            "module": "flatted",
+            "severity": "high",
+            "title": "flatted vulnerable to unbounded recursion DoS in parse() revive phase",
+            "vulnerableVersions": "<3.4.0",
+            "recommendation": "Upgrade to version 3.4.0 or later"
+          },
+          {
+            "module": "undici",
+            "severity": "high",
+            "title": "Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client",
+            "vulnerableVersions": ">=7.0.0 <7.24.0",
+            "recommendation": "Upgrade to version 7.24.0 or later"
+          },
+          {
+            "module": "undici",
+            "severity": "high",
+            "title": "Undici has Unbounded Memory Consumption in WebSocket permessage-deflate Decompression",
+            "vulnerableVersions": ">=7.0.0 <7.24.0",
+            "recommendation": "Upgrade to version 7.24.0 or later"
+          },
+          {
+            "module": "undici",
+            "severity": "high",
+            "title": "Undici has Unhandled Exception in WebSocket Client Due to Invalid server_max_window_bits Validation",
+            "vulnerableVersions": ">=7.0.0 <7.24.0",
+            "recommendation": "Upgrade to version 7.24.0 or later"
+          },
+          {
+            "module": "fast-xml-parser",
+            "severity": "high",
+            "title": "fast-xml-parser affected by numeric entity expansion bypassing all entity expansion limits (incomplete fix for CVE-2026-26278)",
+            "vulnerableVersions": ">=5.0.0 <5.5.6",
+            "recommendation": "Upgrade to version 5.5.6 or later"
+          },
+          {
+            "module": "flatted",
+            "severity": "high",
+            "title": "Prototype Pollution via parse() in NodeJS flatted",
+            "vulnerableVersions": "<=3.4.1",
+            "recommendation": "Upgrade to version 3.4.2 or later"
+          },
+          {
+            "module": "path-to-regexp",
+            "severity": "high",
+            "title": "path-to-regexp vulnerable to Regular Expression Denial of Service via multiple route parameters",
+            "vulnerableVersions": "<0.1.13",
+            "recommendation": "Upgrade to version 0.1.13 or later"
+          },
+          {
+            "module": "picomatch",
+            "severity": "high",
+            "title": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
+            "vulnerableVersions": "<2.3.2",
+            "recommendation": "Upgrade to version 2.3.2 or later"
+          },
+          {
+            "module": "picomatch",
+            "severity": "high",
+            "title": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
+            "vulnerableVersions": ">=4.0.0 <4.0.4",
+            "recommendation": "Upgrade to version 4.0.4 or later"
+          },
+          {
+            "module": "path-to-regexp",
+            "severity": "high",
+            "title": "path-to-regexp vulnerable to Denial of Service via sequential optional groups",
+            "vulnerableVersions": ">=8.0.0 <8.4.0",
+            "recommendation": "Upgrade to version 8.4.0 or later"
+          },
+          {
+            "module": "lodash",
+            "severity": "high",
+            "title": "lodash vulnerable to Code Injection via `_.template` imports key names",
+            "vulnerableVersions": ">=4.0.0 <=4.17.23",
+            "recommendation": "Upgrade to version 4.18.0 or later"
+          },
+          {
+            "module": "vite",
+            "severity": "high",
+            "title": "Vite Vulnerable to Arbitrary File Read via Vite Dev Server WebSocket",
+            "vulnerableVersions": ">=6.0.0 <=6.4.1",
+            "recommendation": "Upgrade to version 6.4.2 or later"
+          },
+          {
+            "module": "protobufjs",
+            "severity": "critical",
+            "title": "Arbitrary code execution in protobufjs",
+            "vulnerableVersions": "<7.5.5",
+            "recommendation": "Upgrade to version 7.5.5 or later"
+          },
+          {
+            "module": "fast-uri",
+            "severity": "high",
+            "title": "fast-uri vulnerable to path traversal via percent-encoded dot segments",
+            "vulnerableVersions": "<=3.1.0",
+            "recommendation": "Upgrade to version 3.1.1 or later"
+          },
+          {
+            "module": "fast-uri",
+            "severity": "high",
+            "title": "fast-uri vulnerable to host confusion via percent-encoded authority delimiters",
+            "vulnerableVersions": "<=3.1.1",
+            "recommendation": "Upgrade to version 3.1.2 or later"
+          },
+          {
+            "module": "protobufjs",
+            "severity": "high",
+            "title": "protobuf.js: Code injection through bytes field defaults in generated toObject code",
+            "vulnerableVersions": "<=7.5.5",
+            "recommendation": "Upgrade to version 7.5.6 or later"
+          },
+          {
+            "module": "protobufjs",
+            "severity": "high",
+            "title": "protobuf.js: Code generation gadget after prototype pollution",
+            "vulnerableVersions": "<=7.5.5",
+            "recommendation": "Upgrade to version 7.5.6 or later"
+          }
+        ]
+      },
+      "remediation": "Upgrade vulnerable packages or document accepted risk with feature impact and mitigation."
+    }
+  ]
+}
