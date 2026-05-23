@@ -13,6 +13,11 @@ Outputs:
 - `docs/security-tool/latest-security-report.json`
 - `docs/security-tool/latest-security-report.md`
 
+AWS deployment design:
+
+- `docs/security-tool/aws-architecture.md`
+- `terraform/security-tool.tf`
+
 ## What It Checks
 
 - Hardcoded secret patterns, including GitLab PATs, AWS access keys, private keys, and generic secret assignments.

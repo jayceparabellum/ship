@@ -88,3 +88,18 @@ output "uploads_bucket_arn" {
   value       = aws_s3_bucket.uploads.arn
 }
 
+output "security_tool_report_bucket" {
+  description = "S3 bucket used by the optional ShipShape security audit runner"
+  value       = var.enable_security_tool ? aws_s3_bucket.security_tool_reports[0].id : null
+}
+
+output "security_tool_codebuild_project" {
+  description = "CodeBuild project used by the optional ShipShape security audit runner"
+  value       = var.enable_security_tool ? aws_codebuild_project.security_tool[0].name : null
+}
+
+output "security_tool_latest_report_prefix" {
+  description = "S3 prefix containing the latest security audit report"
+  value       = var.enable_security_tool ? "s3://${aws_s3_bucket.security_tool_reports[0].id}/latest/" : null
+}
+

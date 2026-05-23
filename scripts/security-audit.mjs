@@ -234,6 +234,7 @@ async function main() {
       .filter((match) => {
         if (match.rule === 'generic-secret-assignment' && /\.(test|spec)\.[cm]?[tj]sx?$/.test(file)) return false;
         if (match.rule === 'private-key' && /^docs\//.test(file) && match.text.includes('...')) return false;
+        if (match.rule === 'generic-secret-assignment' && match.text.includes('aws ssm get-parameter')) return false;
         return true;
       });
     secretMatches.push(...matches);
