@@ -1,10 +1,11 @@
 # ShipShape Security Tool AWS Resources
 #
 # Optional scheduled security audit runner:
+# - EventBridge invokes Lambda on a schedule
+# - Lambda starts a CodeBuild security audit job
 # - CodeBuild clones the ShipShape security branch
 # - Runs `corepack pnpm security:audit`
 # - Uploads JSON/Markdown reports to encrypted S3
-# - EventBridge can trigger the run on a schedule
 
 locals {
   security_tool_name        = "${var.project_name}-${var.environment}-security-tool"
@@ -79,6 +80,16 @@ resource "aws_cloudwatch_log_group" "security_tool" {
 
   tags = {
     Name = "${var.project_name}-security-tool-logs"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "security_tool_lambda" {
+  count             = var.enable_security_tool ? 1 : 0
+  name              = "/aws/lambda/${local.security_tool_name}-trigger"
+  retention_in_days = 90
+
+  tags = {
+    Name = "${var.project_name}-security-tool-lambda-logs"
   }
 }
 
@@ -249,9 +260,16 @@ resource "aws_codebuild_project" "security_tool" {
   }
 }
 
-resource "aws_iam_role" "security_tool_events" {
+data "archive_file" "security_tool_trigger" {
+  count       = var.enable_security_tool ? 1 : 0
+  type        = "zip"
+  source_dir  = "${path.module}/lambda/security-tool-trigger"
+  output_path = "${path.module}/.terraform/security-tool-trigger.zip"
+}
+
+resource "aws_iam_role" "security_tool_lambda" {
   count = var.enable_security_tool ? 1 : 0
-  name  = "${local.security_tool_name}-events-role"
+  name  = "${local.security_tool_name}-lambda-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -259,7 +277,7 @@ resource "aws_iam_role" "security_tool_events" {
       {
         Effect = "Allow"
         Principal = {
-          Service = "events.amazonaws.com"
+          Service = "lambda.amazonaws.com"
         }
         Action = "sts:AssumeRole"
       }
@@ -267,14 +285,14 @@ resource "aws_iam_role" "security_tool_events" {
   })
 
   tags = {
-    Name = "${var.project_name}-security-tool-events-role"
+    Name = "${var.project_name}-security-tool-lambda-role"
   }
 }
 
-resource "aws_iam_role_policy" "security_tool_events" {
+resource "aws_iam_role_policy" "security_tool_lambda" {
   count = var.enable_security_tool ? 1 : 0
-  name  = "${local.security_tool_name}-events-policy"
-  role  = aws_iam_role.security_tool_events[0].id
+  name  = "${local.security_tool_name}-lambda-policy"
+  role  = aws_iam_role.security_tool_lambda[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -285,9 +303,43 @@ resource "aws_iam_role_policy" "security_tool_events" {
           "codebuild:StartBuild"
         ]
         Resource = aws_codebuild_project.security_tool[0].arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "${aws_cloudwatch_log_group.security_tool_lambda[0].arn}:*"
       }
     ]
   })
+}
+
+resource "aws_lambda_function" "security_tool_trigger" {
+  count            = var.enable_security_tool ? 1 : 0
+  function_name    = "${local.security_tool_name}-trigger"
+  description      = "Starts the ShipShape security audit CodeBuild job"
+  role             = aws_iam_role.security_tool_lambda[0].arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.security_tool_trigger[0].output_path
+  source_code_hash = data.archive_file.security_tool_trigger[0].output_base64sha256
+  timeout          = 30
+
+  environment {
+    variables = {
+      CODEBUILD_PROJECT_NAME = aws_codebuild_project.security_tool[0].name
+    }
+  }
+
+  depends_on = [
+    aws_cloudwatch_log_group.security_tool_lambda,
+  ]
+
+  tags = {
+    Name = "${var.project_name}-security-tool-lambda"
+  }
 }
 
 resource "aws_cloudwatch_event_rule" "security_tool_schedule" {
@@ -300,7 +352,15 @@ resource "aws_cloudwatch_event_rule" "security_tool_schedule" {
 resource "aws_cloudwatch_event_target" "security_tool_schedule" {
   count     = var.enable_security_tool ? 1 : 0
   rule      = aws_cloudwatch_event_rule.security_tool_schedule[0].name
-  target_id = "codebuild-security-tool"
-  arn       = aws_codebuild_project.security_tool[0].arn
-  role_arn  = aws_iam_role.security_tool_events[0].arn
+  target_id = "lambda-security-tool-trigger"
+  arn       = aws_lambda_function.security_tool_trigger[0].arn
+}
+
+resource "aws_lambda_permission" "security_tool_schedule" {
+  count         = var.enable_security_tool ? 1 : 0
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.security_tool_trigger[0].function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.security_tool_schedule[0].arn
 }

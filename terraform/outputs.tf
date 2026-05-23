@@ -98,6 +98,11 @@ output "security_tool_codebuild_project" {
   value       = var.enable_security_tool ? aws_codebuild_project.security_tool[0].name : null
 }
 
+output "security_tool_trigger_lambda" {
+  description = "Lambda function that starts the optional ShipShape security audit runner"
+  value       = var.enable_security_tool ? aws_lambda_function.security_tool_trigger[0].function_name : null
+}
+
 output "security_tool_latest_report_prefix" {
   description = "S3 prefix containing the latest security audit report"
   value       = var.enable_security_tool ? "s3://${aws_s3_bucket.security_tool_reports[0].id}/latest/" : null

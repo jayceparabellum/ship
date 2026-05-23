@@ -10,10 +10,11 @@ The local command `corepack pnpm security:audit` remains the source of truth. AW
 
 | Service | Purpose |
 | --- | --- |
+| Lambda | Scheduled control-plane function that starts the security audit run |
 | CodeBuild | Clones the `ShipShape-Security-Tool` branch and runs `corepack pnpm security:audit` |
 | S3 | Stores JSON and Markdown security reports under `runs/<run-id>/` and `latest/` |
 | CloudWatch Logs | Captures CodeBuild execution logs |
-| EventBridge | Starts CodeBuild on a schedule |
+| EventBridge | Invokes Lambda on a schedule |
 | IAM | Grants least-privilege access to logs, S3 report writes, and optional SSM token reads |
 | SSM Parameter Store | Optional SecureString location for a GitLab token if the Labs repository requires authenticated clone |
 
@@ -21,7 +22,8 @@ The local command `corepack pnpm security:audit` remains the source of truth. AW
 
 ```mermaid
 flowchart TD
-  EventBridge["EventBridge schedule"] --> CodeBuild["CodeBuild security runner"]
+  EventBridge["EventBridge schedule"] --> Lambda["Lambda trigger"]
+  Lambda --> CodeBuild["CodeBuild security runner"]
   CodeBuild --> GitLab["Labs GitLab ShipShape-Security-Tool branch"]
   CodeBuild --> Audit["corepack pnpm security:audit"]
   Audit --> S3Runs["S3 reports: runs/<run-id>/"]
@@ -73,6 +75,7 @@ Terraform outputs:
 
 - `security_tool_report_bucket`
 - `security_tool_codebuild_project`
+- `security_tool_trigger_lambda`
 - `security_tool_latest_report_prefix`
 
 Reports are written to:
@@ -89,8 +92,9 @@ s3://<security-tool-report-bucket>/latest/latest-security-report.md
 This branch only defines the AWS services. Applying the Terraform should happen after review because it creates billable resources:
 
 - 1 S3 bucket
+- 1 Lambda function
 - 1 CodeBuild project
-- 1 CloudWatch log group
+- 2 CloudWatch log groups
 - 1 EventBridge scheduled rule
 - IAM roles and policies
 
