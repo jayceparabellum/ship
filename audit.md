@@ -6,11 +6,11 @@ Final deadline: Sunday, May 24, 2026 at 10:59 PM CT
 
 ## Executive Summary
 
-This audit now has live baseline evidence for all seven required categories. The local ShipShape stack was run with a seeded PostgreSQL database, authenticated browser flows, API load tests, source-map bundle analysis, TypeScript AST counts, repeated API test runs, API coverage, runtime capture, axe scans, and Lighthouse accessibility reports.
+This audit now has live baseline evidence for all seven required audit categories, plus a Category 8 security-tool extension. The local ShipShape stack was run with a seeded PostgreSQL database, authenticated browser flows, API load tests, source-map bundle analysis, TypeScript AST counts, repeated API test runs, API coverage, runtime capture, axe scans, Lighthouse accessibility reports, static security scanning, and an active live-app security probe.
 
 The strongest engineering signals are the strict TypeScript configuration, a stable API suite across three consecutive runs, fast database plans on the seeded local dataset, and clean axe/Lighthouse results after the contrast remediation. The weakest signals are the high concentration of type escape hatches in API route files, the 2.07 MB main frontend chunk, missing frontend unit-test execution due a `jsdom`/ESM environment failure, and weak offline reload behavior.
 
-Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries are mirrored under `docs/audit-evidence/`. The most important files are `docs/audit-evidence/api-benchmarks.json`, `docs/audit-evidence/db-query-capture.json`, `docs/audit-evidence/aurora-query-counts.json`, `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/lighthouse-summary.json`, `docs/audit-evidence/bundle-analysis.json`, `docs/audit-evidence/type-safety.json`, `docs/audit-evidence/api-test-runs.json`, and `docs/audit-evidence/api-coverage.json`.
+Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries are mirrored under `docs/audit-evidence/`. Category 8 security-tool evidence lives under `docs/security-tool/`. The most important files are `docs/audit-evidence/api-benchmarks.json`, `docs/audit-evidence/db-query-capture.json`, `docs/audit-evidence/aurora-query-counts.json`, `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/lighthouse-summary.json`, `docs/audit-evidence/bundle-analysis.json`, `docs/audit-evidence/type-safety.json`, `docs/audit-evidence/api-test-runs.json`, `docs/audit-evidence/api-coverage.json`, `docs/security-tool/latest-security-report.json`, and `docs/security-tool/latest-probe-report.json`.
 
 ## Orientation
 
@@ -328,6 +328,59 @@ The prior color-contrast failures have been remediated for the five scanned auth
 
 Severity: Low after remediation; keep these scans in the regression checklist.
 
+## Category 8: Security Tool
+
+### Methodology
+
+I built a repo-native security tool with two complementary runners:
+
+1. `scripts/security-audit.mjs` performs static checks across source, Docker, Terraform, and dependency metadata.
+2. `scripts/security-probe.mjs` runs an authenticated active probe against a live ShipShape app.
+
+The active probe logs in with the seeded audit account, exercises session and CSRF boundaries, verifies WebSocket authentication behavior, submits adversarial input payloads, checks dependency high/critical CVEs through `pnpm audit --json`, and validates CORS/error-handling behavior. Evidence is written to `docs/security-tool/latest-security-report.json`, `docs/security-tool/latest-security-report.md`, `docs/security-tool/latest-probe-report.json`, and `docs/security-tool/latest-probe-report.md`.
+
+Commands:
+
+```bash
+corepack pnpm security:audit
+corepack pnpm security:probe -- --api-url http://127.0.0.1:3000 --web-url http://127.0.0.1:5173 --email dev@ship.local --password admin123
+```
+
+The AWS deployment design is documented in `docs/security-tool/aws-architecture.md` and implemented in `terraform/security-tool.tf`: EventBridge schedules Lambda, Lambda starts CodeBuild, CodeBuild runs the scanner/probe, probe credentials are read from SSM Parameter Store, and reports are written to S3.
+
+### Latest Result
+
+| Metric | Result |
+| --- | ---: |
+| Active live-app checks | 17 |
+| Passed | 17 |
+| Failed | 0 |
+| Critical findings | 0 |
+| High findings | 0 |
+| Medium findings | 0 |
+| High/Critical dependency CVEs | 0 |
+
+### Coverage Map
+
+| Security surface | Evidence |
+| --- | --- |
+| Authentication boundary | Unauthenticated and invalid-session `/api/auth/me` requests rejected |
+| Session strength | Session token shape checked for 64-character high-entropy hex value |
+| CSRF | State-changing `/api/issues` request without CSRF token rejected |
+| Authorization | Admin user endpoint checked against the current super-admin role boundary |
+| WebSocket auth | Unauthenticated `/events` and collaboration WebSocket attempts rejected |
+| WebSocket robustness | Oversized WebSocket message does not take down `/health` |
+| Input validation | HTML tag characters in issue titles rejected; long title and script-like payload behavior checked |
+| Dependency risk | `pnpm audit --json` reports zero high/critical advisories after dependency overrides |
+| Browser/server hardening | Static scanner checks Helmet, CSRF, rate limiting, session cookie flags, CSP signals, TLS bypass patterns, Docker runtime signals, and Terraform encryption-at-rest signals |
+| AWS automation | Lambda + CodeBuild + SSM + S3 report pipeline documented and represented in Terraform |
+
+### Findings
+
+The initial active probe found three issues: an oversized WebSocket message could make follow-up `/health` unavailable, the dependency audit reported high/critical advisories, and the issue-title endpoint accepted an XSS-style title payload. The fixes added WebSocket error handlers, hardened issue-title validation against HTML tag characters, added a regression test, and updated `pnpm` dependency overrides. The rerun result is now 17 passed and 0 failed.
+
+Severity: Low after remediation; keep both `security:audit` and `security:probe` in the final regression checklist. The remaining follow-up is to run the same active probe against the deployed AWS URL once the production probe account is confirmed in that environment.
+
 ## Evidence Index
 
 | Artifact | Purpose |
@@ -343,8 +396,11 @@ Severity: Low after remediation; keep these scans in the regression checklist.
 | `docs/audit-evidence/api-coverage.json` | API coverage summary from Node 24 run |
 | `docs/audit-evidence/browser-accessibility.json` | Console, failed request, offline, throttled network, and axe scan evidence |
 | `docs/audit-evidence/lighthouse-summary.json` | Lighthouse accessibility scores for authenticated major pages |
+| `docs/security-tool/latest-security-report.json` | Static Category 8 security scanner output |
+| `docs/security-tool/latest-probe-report.json` | Active Category 8 live-app probe output |
+| `docs/security-tool/aws-architecture.md` | AWS Lambda/CodeBuild security-tool architecture |
 | `.audit/browser/*.png` | Local browser screenshots for scanned pages |
 
 ## Recommendation
 
-This baseline is now strong enough to pass the measurement side of the audit gate. The first implementation fixes should target frontend test environment repair, bundle splitting around editor/collaboration dependencies, and an app-level offline recovery state for document reloads.
+This baseline is now strong enough to pass the measurement side of the audit gate and includes a working Category 8 security-tool extension. The first implementation fixes should target frontend test environment repair, bundle splitting around editor/collaboration dependencies, an app-level offline recovery state for document reloads, and wiring the security probe into the deployed AWS environment.

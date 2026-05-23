@@ -19,11 +19,12 @@ Prepared: May 23, 2026
 | Discovery write-up | `docs/shipshape-discovery-writeup.md` |
 | AI cost analysis | `docs/shipshape-ai-cost-analysis.md` |
 | Raw audit evidence | `docs/audit-evidence/` |
+| Security tool evidence | `docs/security-tool/` |
 | Final checklist | `docs/shipshape-submission-checklist.md` |
 
 ## Evidence Coverage
 
-All seven audit categories have baseline evidence and after-fix proof:
+All seven original audit categories have baseline evidence and after-fix proof. Category 8 adds the security-tool extension:
 
 1. Type safety: `docs/audit-evidence/type-safety.json`, `docs/audit-evidence/type-safety-after-issues-route.json`
 2. Bundle size: `docs/audit-evidence/bundle-analysis.json`, `docs/audit-evidence/bundle-analysis-after-route-splitting.json`
@@ -32,6 +33,9 @@ All seven audit categories have baseline evidence and after-fix proof:
 5. Test coverage and quality: `docs/audit-evidence/api-test-runs.json`, `docs/audit-evidence/api-coverage.json`, `docs/audit-evidence/web-test-run.json`, `docs/audit-evidence/web-test-run-after-jsdom-pin.json`
 6. Runtime errors and edge cases: `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/browser-runtime-after-offline-shell.json`
 7. Accessibility: `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/browser-accessibility-after-contrast.json`, `docs/audit-evidence/lighthouse-summary.json`
+8. Security tool: `docs/security-tool/latest-security-report.json`, `docs/security-tool/latest-probe-report.json`, `docs/security-tool/aws-architecture.md`
+
+Latest Category 8 active probe result: 17 checks, 17 passed, 0 failed.
 
 ## Known Caveats To State Honestly
 
@@ -45,6 +49,7 @@ All seven audit categories have baseline evidence and after-fix proof:
 - Web type-check passed.
 - Web Vitest passed: 16 files, 151 tests.
 - Audit evidence JSON parses.
+- Category 8 active probe passed: 17/17.
 - Labs GitLab branches are pushed:
   - `master`: `33aea0c` before this packaging pass
   - `main`: `df3ba49` before this packaging pass
