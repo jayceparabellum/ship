@@ -36,7 +36,7 @@ All seven original audit categories have baseline evidence and after-fix proof. 
 7. Accessibility: `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/browser-accessibility-after-contrast.json`, `docs/audit-evidence/lighthouse-summary.json`
 8. Security tool: `docs/security-tool/latest-security-report.json`, `docs/security-tool/latest-probe-report.json`, `docs/security-tool/aws-architecture.md`
 
-Latest Category 8 active probe result: 17 checks, 17 passed, 0 failed.
+Latest Category 8 active probe result: 17 checks, 17 passed, 0 failed against the deployed AWS CloudFront app.
 
 ## Known Caveats To State Honestly
 
@@ -51,6 +51,7 @@ Latest Category 8 active probe result: 17 checks, 17 passed, 0 failed.
 - Web Vitest passed: 16 files, 151 tests.
 - Audit evidence JSON parses.
 - Category 8 active probe passed: 17/17.
+- AWS security-tool runner passed through Lambda/CodeBuild and uploaded reports to `s3://ship-prod-security-tool-743737183156/latest/`.
 - Labs GitLab branches are pushed:
   - `master`: `33aea0c` before this packaging pass
   - `main`: `df3ba49` before this packaging pass

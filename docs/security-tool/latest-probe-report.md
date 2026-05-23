@@ -1,10 +1,10 @@
 # ShipShape Active Security Probe Report
 
-Generated: 2026-05-23T22:47:14.958Z
+Generated: 2026-05-23T23:51:11.217Z
 
-Target API: http://127.0.0.1:3000
+Target API: https://d9o5hawnpdm4g.cloudfront.net
 
-Target Web: http://127.0.0.1:5173
+Target Web: https://d9o5hawnpdm4g.cloudfront.net
 
 ## Summary
 
@@ -45,7 +45,7 @@ Details: GET /api/auth/me without cookies returned HTTP 401
 
 Reproduction:
 
-- curl -i http://127.0.0.1:3000/api/auth/me
+- curl -i https://d9o5hawnpdm4g.cloudfront.net/api/auth/me
 
 Remediation: Require auth middleware on session/user endpoints.
 
@@ -59,7 +59,7 @@ Details: GET /api/auth/me with fake session_id returned HTTP 401
 
 Reproduction:
 
-- curl -i -H "Cookie: session_id=security-probe-invalid-session" http://127.0.0.1:3000/api/auth/me
+- curl -i -H "Cookie: session_id=security-probe-invalid-session" https://d9o5hawnpdm4g.cloudfront.net/api/auth/me
 
 Remediation: Reject unknown or expired session identifiers.
 
@@ -115,7 +115,7 @@ Details: Attempted /events WebSocket connection without cookies.
 
 Reproduction:
 
-- Connect to ws://127.0.0.1:3000/events without Cookie header.
+- Connect to wss://d9o5hawnpdm4g.cloudfront.net/events without Cookie header.
 
 Remediation: Validate session cookies before accepting WebSocket upgrades.
 
@@ -129,7 +129,7 @@ Details: Attempted authenticated connection to non-existent/random collaboration
 
 Reproduction:
 
-- Log in, then connect to ws://127.0.0.1:3000/collaboration/wiki:00000000-0000-4000-8000-000000000000 with Cookie header.
+- Log in, then connect to wss://d9o5hawnpdm4g.cloudfront.net/collaboration/wiki:00000000-0000-4000-8000-000000000000 with Cookie header.
 
 Remediation: Verify workspace and document access before WebSocket room join.
 
@@ -143,7 +143,7 @@ Details: GET /api/issues?state=' OR 1=1-- returned HTTP 200
 
 Reproduction:
 
-- curl -i 'http://127.0.0.1:3000/api/issues?state=%27%20OR%201%3D1--' with authenticated Cookie header.
+- curl -i 'https://d9o5hawnpdm4g.cloudfront.net/api/issues?state=%27%20OR%201%3D1--' with authenticated Cookie header.
 
 Remediation: Use parameterized SQL and schema validation for all query filters.
 
@@ -209,11 +209,11 @@ Surface: manual review: CORS and CSP configuration
 
 Rule: `manual.cors-restricts-arbitrary-origin`
 
-Details: OPTIONS with Origin https://evil.example returned Access-Control-Allow-Origin: http://localhost:5173
+Details: OPTIONS with Origin https://evil.example returned Access-Control-Allow-Origin: https://d9o5hawnpdm4g.cloudfront.net
 
 Reproduction:
 
-- curl -i -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' http://127.0.0.1:3000/api/auth/me
+- curl -i -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' https://d9o5hawnpdm4g.cloudfront.net/api/auth/me
 
 Remediation: Restrict CORS to the deployed frontend origin and do not reflect arbitrary origins.
 
@@ -227,7 +227,7 @@ Details: GET /health returned HTTP 200
 
 Reproduction:
 
-- curl http://127.0.0.1:3000/health
+- curl https://d9o5hawnpdm4g.cloudfront.net/health
 
 Remediation: Start the API or set SECURITY_PROBE_API_URL / --api-url to a reachable app instance.
 

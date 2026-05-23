@@ -1,6 +1,6 @@
 # AWS Security Tool Architecture
 
-This design extends the deployed Ship AWS architecture with an optional, scheduled security audit runner.
+This design extends the deployed Ship AWS architecture with an optional, scheduled security audit runner. The production runner is implemented in `terraform/environments/prod/security-tool.tf`.
 
 ## Purpose
 
@@ -110,6 +110,12 @@ s3://<security-tool-report-bucket>/latest/latest-security-report.json
 s3://<security-tool-report-bucket>/latest/latest-security-report.md
 s3://<security-tool-report-bucket>/latest/latest-probe-report.json
 s3://<security-tool-report-bucket>/latest/latest-probe-report.md
+```
+
+Current production report prefix:
+
+```text
+s3://ship-prod-security-tool-743737183156/latest/
 ```
 
 ## Review Before Applying

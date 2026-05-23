@@ -65,7 +65,6 @@
       "lodash": "4.18.1",
       "markdown-it": "14.1.1",
       "minimatch": "9.0.7",
-      "path-to-regexp": "8.4.2",
       "picomatch": "4.0.4",
       "protobufjs": "7.6.1",
       "qs": "6.15.2",

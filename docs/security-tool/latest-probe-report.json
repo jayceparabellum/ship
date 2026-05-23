@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-23T22:47:14.958Z",
+  "generatedAt": "2026-05-23T23:51:11.217Z",
   "tool": "shipshape-active-security-probe",
   "target": {
-    "apiUrl": "http://127.0.0.1:3000",
-    "webUrl": "http://127.0.0.1:5173",
+    "apiUrl": "https://d9o5hawnpdm4g.cloudfront.net",
+    "webUrl": "https://d9o5hawnpdm4g.cloudfront.net",
     "email": "dev@ship.local"
   },
   "summary": {
@@ -36,7 +36,7 @@
       "passed": true,
       "details": "GET /health returned HTTP 200",
       "reproductionSteps": [
-        "curl http://127.0.0.1:3000/health"
+        "curl https://d9o5hawnpdm4g.cloudfront.net/health"
       ],
       "evidence": {
         "status": 200,
@@ -54,7 +54,7 @@
       "passed": true,
       "details": "GET /api/auth/me without cookies returned HTTP 401",
       "reproductionSteps": [
-        "curl -i http://127.0.0.1:3000/api/auth/me"
+        "curl -i https://d9o5hawnpdm4g.cloudfront.net/api/auth/me"
       ],
       "evidence": {
         "status": 401,
@@ -76,7 +76,7 @@
       "passed": true,
       "details": "GET /api/auth/me with fake session_id returned HTTP 401",
       "reproductionSteps": [
-        "curl -i -H \"Cookie: session_id=security-probe-invalid-session\" http://127.0.0.1:3000/api/auth/me"
+        "curl -i -H \"Cookie: session_id=security-probe-invalid-session\" https://d9o5hawnpdm4g.cloudfront.net/api/auth/me"
       ],
       "evidence": {
         "status": 401,
@@ -138,7 +138,7 @@
       "evidence": {
         "status": 403,
         "body": {
-          "raw": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>ForbiddenError: invalid csrf token<br> &nbsp; &nbsp;at csrfSync (file:///C:/Users/jayce/Documents/Codex/2026-05-19/files-mentioned-by-the-user-gfa/ship/node_modules/.pnpm/csrf-sync@4.2.1/node_modules/csrf-sync/lib/index.js:22:33)<br> &nbsp; &nbsp;at &lt;anonymous&gt; (c:\\Users\\jayce\\Documents\\Codex\\2026-05-19\\files-mentioned-by-the-user-gfa\\ship\\api\\src\\app.ts:47:55)<br> &nbsp; &nbsp;at Module"
+          "raw": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Forbidden</pre>\n</body>\n</html>\n"
         }
       },
       "remediation": "Apply CSRF protection to cookie-authenticated state-changing routes."
@@ -167,7 +167,7 @@
       "passed": true,
       "details": "Attempted /events WebSocket connection without cookies.",
       "reproductionSteps": [
-        "Connect to ws://127.0.0.1:3000/events without Cookie header."
+        "Connect to wss://d9o5hawnpdm4g.cloudfront.net/events without Cookie header."
       ],
       "evidence": {
         "opened": false,
@@ -220,7 +220,7 @@
       "passed": true,
       "details": "Attempted authenticated connection to non-existent/random collaboration room wiki:00000000-0000-4000-8000-000000000000.",
       "reproductionSteps": [
-        "Log in, then connect to ws://127.0.0.1:3000/collaboration/wiki:00000000-0000-4000-8000-000000000000 with Cookie header."
+        "Log in, then connect to wss://d9o5hawnpdm4g.cloudfront.net/collaboration/wiki:00000000-0000-4000-8000-000000000000 with Cookie header."
       ],
       "evidence": {
         "opened": false,
@@ -287,7 +287,7 @@
       "passed": true,
       "details": "GET /api/issues?state=' OR 1=1-- returned HTTP 200",
       "reproductionSteps": [
-        "curl -i 'http://127.0.0.1:3000/api/issues?state=%27%20OR%201%3D1--' with authenticated Cookie header."
+        "curl -i 'https://d9o5hawnpdm4g.cloudfront.net/api/issues?state=%27%20OR%201%3D1--' with authenticated Cookie header."
       ],
       "evidence": {
         "status": 200,
@@ -317,13 +317,13 @@
       "severity": "medium",
       "title": "CORS does not allow arbitrary hostile origin",
       "passed": true,
-      "details": "OPTIONS with Origin https://evil.example returned Access-Control-Allow-Origin: http://localhost:5173",
+      "details": "OPTIONS with Origin https://evil.example returned Access-Control-Allow-Origin: https://d9o5hawnpdm4g.cloudfront.net",
       "reproductionSteps": [
-        "curl -i -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' http://127.0.0.1:3000/api/auth/me"
+        "curl -i -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' https://d9o5hawnpdm4g.cloudfront.net/api/auth/me"
       ],
       "evidence": {
         "status": 204,
-        "allowOrigin": "http://localhost:5173",
+        "allowOrigin": "https://d9o5hawnpdm4g.cloudfront.net",
         "allowCredentials": "true",
         "networkError": null
       },

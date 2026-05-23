@@ -139,4 +139,4 @@ Latest active probe: 17 passed, 0 failed
 AWS design: docs/security-tool/aws-architecture.md and terraform/security-tool.tf
 ```
 
-The next production step is to run the same probe against the deployed AWS URLs after the production probe account is confirmed in SSM.
+The production runner now executes the same probe through AWS Lambda and CodeBuild. The latest reports are stored at `s3://ship-prod-security-tool-743737183156/latest/`.
