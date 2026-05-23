@@ -1,6 +1,6 @@
 # ShipShape Final Review
 
-Review date: May 22, 2026
+Review date: May 23, 2026
 
 ## Assignment Requirements Checked
 
@@ -54,6 +54,8 @@ Latest health check during review:
 The audit gate is complete, and `docs/shipshape-improvement-documentation.md` now has after-fix proof for Categories 1 through 7. The main remaining risk is Phase 2 depth rather than missing evidence: Category 3 has real benchmark evidence, but only one endpoint cleared the original 20% P95 stretch target at 50 concurrency. Category 6 fixes the highest-risk offline reload confusion case, but the after capture still records expected development/offline network noise from Vite HMR and realtime WebSocket disconnects.
 
 The demo video is also a separate required final-submission item, but it remains intentionally out of scope for this pass per Jayce's instruction.
+
+The final copy/paste submission package is tracked at `docs/shipshape-final-submission-package.md`.
 
 ## Final Review Result
 

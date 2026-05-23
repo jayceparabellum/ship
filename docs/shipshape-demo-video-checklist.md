@@ -68,14 +68,18 @@ State:
 
 Show `docs/shipshape-improvement-documentation.md`.
 
-State clearly which items are complete and which are pending. Do not overclaim. If implementation fixes have not been completed yet, say the current deliverable is a baseline audit package and the next step is before/after implementation proof.
+State clearly that all seven categories now have before/after proof, while keeping the caveats honest:
+
+- Category 3 has real benchmark improvements, but only one endpoint cleared the original 20% P95 stretch target at 50 concurrent workers.
+- Category 6 fixes the highest-risk offline reload confusion case, while realtime/offline WebSocket console noise remains a follow-up.
 
 ### 4:30-5:00 Close
 
 State:
 
 - The audit gate is addressed with measured baselines across all seven categories.
-- Remaining final-submission risks are deployment, demo recording, Lighthouse, DB query logging, and implementation after measurements.
+- Raw evidence, improvement documentation, discovery write-up, AI cost analysis, and deployment links are ready.
+- The video is the separate final artifact being recorded.
 
 ## Recording Reminder
 

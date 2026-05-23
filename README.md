@@ -86,6 +86,7 @@ For the ShipShape submission, the audit report and supporting deliverables live 
 - `audit.md`
 - `docs/shipshape-audit-report.md`
 - `docs/shipshape-submission-checklist.md`
+- `docs/shipshape-final-submission-package.md`
 - `docs/shipshape-improvement-documentation.md`
 - `docs/shipshape-discovery-writeup.md`
 - `docs/shipshape-ai-cost-analysis.md`
@@ -117,8 +118,10 @@ $env:VITE_API_URL=''; corepack pnpm --filter @ship/web exec vite build --sourcem
 node scripts/audit-bundle-map.mjs
 $env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
 node scripts/audit-db-query-capture.mjs
+corepack pnpm --dir api exec tsx ..\scripts\audit-auth-query-count.mjs
 node scripts/audit-browser-accessibility.mjs
 corepack pnpm --filter @ship/api test
+corepack pnpm --filter @ship/web test
 ```
 
 ### Prerequisites

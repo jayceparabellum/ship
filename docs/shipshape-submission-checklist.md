@@ -17,6 +17,7 @@ Deadline: Sunday, May 24, 2026 at 10:59 PM CT
 | AI cost analysis | Ready | `docs/shipshape-ai-cost-analysis.md` |
 | Deployed application | Ready | Production frontend: `https://d9o5hawnpdm4g.cloudfront.net`; API health: `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
 | Social post | Ready draft | `docs/shipshape-social-post-draft.md` |
+| Final submission package | Ready | `docs/shipshape-final-submission-package.md` lists the exact links, files, evidence, and caveats |
 
 ## Audit Gate
 
@@ -41,6 +42,7 @@ The pass/fail audit gate requires baseline measurements for all seven categories
 ## Suggested Final Packaging Order
 
 1. Review `audit.md`, `docs/shipshape-improvement-documentation.md`, and `docs/audit-evidence/` before submission.
-2. Record the 3-5 minute demo video if the submission portal requires the full final package.
-3. Consider one extra performance slice only if there is time after the required submission assets are packaged.
-4. Commit in logical groups and push to Labs GitLab.
+2. Use `docs/shipshape-final-submission-package.md` as the final copy/paste checklist for links, files, and caveats.
+3. Record the 3-5 minute demo video if the submission portal requires the full final package.
+4. Consider one extra performance slice only if there is time after the required submission assets are packaged.
+5. Commit in logical groups and push to Labs GitLab.
