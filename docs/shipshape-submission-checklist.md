@@ -12,6 +12,7 @@ Deadline: Sunday, May 24, 2026 at 10:59 PM CT
 | Audit report | Ready | Canonical report: `audit.md` |
 | Raw audit data | Ready | `docs/audit-evidence/*.json` |
 | Category 8 security tool | Ready | `docs/security-tool/latest-security-report.json`, `docs/security-tool/latest-probe-report.json`; latest active probe is 17/17 |
+| Security tool demo script | Ready | `docs/security-tool/demo-script.md` |
 | Improvement documentation | Ready with caveats | `docs/shipshape-improvement-documentation.md` has Categories 1 through 7 completed with after-fix proof; Category 3 and 6 caveats are documented |
 | Discovery write-up | Ready | `docs/shipshape-discovery-writeup.md` |
 | Demo video, 3-5 minutes | Not recorded | Use `docs/shipshape-demo-video-checklist.md`; do not push `docs/mvp-demo-script.md` |
