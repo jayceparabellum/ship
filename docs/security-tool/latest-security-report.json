@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-05-24T02:47:21.224Z",
+  "generatedAt": "2026-05-24T03:27:41.073Z",
   "tool": "shipshape-security-audit",
   "outDir": "docs/security-tool",
   "git": {
     "branch": "ShipShape-Security-Tool",
-    "commit": "4639676"
+    "commit": "ae4b9a0"
   },
   "summary": {
     "totalChecks": 13,
