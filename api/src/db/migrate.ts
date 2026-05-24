@@ -23,7 +23,7 @@ function getDatabaseSslConfig() {
     return false;
   }
 
-  const ca = process.env.DATABASE_CA_CERT || process.env.DB_CA_CERT;
+  const ca = (process.env.DATABASE_CA_CERT || process.env.DB_CA_CERT)?.replace(/\\n/g, '\n');
   return ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true };
 }
 
