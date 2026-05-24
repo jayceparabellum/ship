@@ -25,6 +25,19 @@ Ship is a project management tool that combines documentation, issue tracking, a
 
 **Built by the U.S. Department of the Treasury** for government teams, but useful for any organization that wants to work more effectively.
 
+### Current ShipShape Build
+
+This working branch is the ShipShape final build with the Category 8 security tool:
+
+| Item | Current value |
+|------|---------------|
+| Final branch | `ShipShape-Security-Tool` |
+| Labs GitLab branch | `https://labs.gauntletai.com/jayceparabellum/ship/-/tree/ShipShape-Security-Tool` |
+| GitHub branch | `https://github.com/jayceparabellum/ship/tree/ShipShape-Security-Tool` |
+| Production app | `https://d9o5hawnpdm4g.cloudfront.net` |
+| Production API health | `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
+| Security results page | `https://d9o5hawnpdm4g.cloudfront.net/programs/security` |
+
 ---
 
 ## How to Use Ship
@@ -90,9 +103,12 @@ For the ShipShape submission, the audit report and supporting deliverables live 
 - `docs/shipshape-improvement-documentation.md`
 - `docs/shipshape-discovery-writeup.md`
 - `docs/shipshape-ai-cost-analysis.md`
+- `docs/category-1-8-final-handoff.md`
+- `docs/shipshape-rubric-readiness-review.md`
 - `docs/audit-evidence/`
+- `docs/security-tool/`
 
-Local audit setup used for the May 21, 2026 baseline:
+Local audit setup used for the final ShipShape evidence pass:
 
 ```bash
 corepack pnpm install --frozen-lockfile
@@ -116,13 +132,22 @@ node scripts/audit-type-safety.mjs
 corepack pnpm --filter @ship/shared build
 $env:VITE_API_URL=''; corepack pnpm --filter @ship/web exec vite build --sourcemap
 node scripts/audit-bundle-map.mjs
-$env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
+$env:AUDIT_REQUEST_DELAY_MS='3500'; $env:AUDIT_BENCH_OUT='docs/audit-evidence/api-benchmarks-after-session-touch-throttle.json'; node scripts/audit-api-benchmark.mjs
 node scripts/audit-db-query-capture.mjs
 corepack pnpm --dir api exec tsx ..\scripts\audit-auth-query-count.mjs
 node scripts/audit-browser-accessibility.mjs
+corepack pnpm security:audit
+corepack pnpm security:probe
 corepack pnpm --filter @ship/api test
 corepack pnpm --filter @ship/web test
 ```
+
+Final rubric threshold evidence:
+
+- Category 1 type safety: `docs/audit-evidence/type-safety-after-auth-context.json`, 1,281 -> 959 total violations.
+- Category 3 API response time: `docs/audit-evidence/api-benchmarks-after-session-touch-throttle.json`, two endpoints above the required 20% P95 reduction at 50 concurrency.
+- Category 6 runtime/edge cases: offline reload recovery, malformed document-ID validation, and session activity write throttling.
+- Category 8 security tool: `docs/security-tool/latest-security-report.json` and `docs/security-tool/latest-probe-report.json`, currently 13/13 static checks and 17/17 live probe checks.
 
 ### Prerequisites
 
@@ -268,8 +293,19 @@ Ship supports multiple deployment patterns:
 | Environment | Recommended Approach |
 |-------------|---------------------|
 | **Development** | Local with Docker Compose |
-| **Staging** | AWS Elastic Beanstalk |
-| **Production** | AWS GovCloud with Terraform |
+| **Staging** | AWS Elastic Beanstalk + S3/CloudFront |
+| **Production** | AWS Terraform + Elastic Beanstalk + S3/CloudFront |
+
+The current ShipShape production deployment is on AWS:
+
+| Surface | Current value |
+|---------|---------------|
+| Frontend | `https://d9o5hawnpdm4g.cloudfront.net` |
+| API health | `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
+| Security results | `https://d9o5hawnpdm4g.cloudfront.net/programs/security` |
+| Security report bucket | `s3://ship-prod-security-tool-743737183156/latest/` |
+
+See [INFRASTRUCTURE.md](./INFRASTRUCTURE.md) for the current deployed architecture.
 
 ### Docker
 
@@ -298,6 +334,9 @@ docker-compose -f docker-compose.prod.yml up
 - **No external CDN** — All assets served from your infrastructure
 - **Session timeout** — 15-minute idle timeout (government standard)
 - **Audit logging** — Track all document operations
+- **Category 8 security tool** - Static scanner plus active live-app probe
+- **AWS security automation** - Lambda starts CodeBuild daily and stores reports in S3
+- **Current probe result** - 17/17 live checks passing against production
 
 > **Reporting Vulnerabilities:** See [SECURITY.md](./SECURITY.md) for our vulnerability disclosure policy.
 
@@ -330,6 +369,8 @@ We welcome contributions. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guideline
 - [Accountability Manager Guide](./docs/accountability-manager-guide.md) — Using approval workflows
 - [Contributing Guidelines](./CONTRIBUTING.md) — How to contribute
 - [Security Policy](./SECURITY.md) — Vulnerability reporting
+- [Infrastructure](./INFRASTRUCTURE.md) - Current AWS deployment and security-tool architecture
+- [Security Tool](./docs/security-tool/README.md) - Category 8 scanner/probe usage and evidence
 
 ---
 

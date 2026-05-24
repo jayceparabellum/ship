@@ -1,98 +1,172 @@
 # Security Policy
 
-## Reporting a Vulnerability
+Current branch: `ShipShape-Security-Tool`
 
-The U.S. Department of the Treasury takes security seriously. If you discover a security vulnerability in this project, please report it responsibly.
+This repository now includes the ShipShape Category 8 security tool in addition to the application security controls inherited from Ship. The current build supports static repository scanning, active live-app probing, AWS scheduled execution, and reviewer-facing security reports.
 
-### How to Report
+## Supported Version
 
-**Do NOT create a public GitHub issue for security vulnerabilities.**
+| Version / Branch | Supported |
+| --- | --- |
+| `ShipShape-Security-Tool` | Yes |
 
-Instead, please report vulnerabilities through one of these channels:
+## Current Security Tool Status
 
-1. **Email**: Sam Corcos (samuel.corcos@treasury.gov)
-2. **GitHub Security Advisories**: Use the "Report a vulnerability" button in the Security tab
+Latest tracked evidence:
 
-### What to Include
+| Evidence | Location |
+| --- | --- |
+| Static scanner report | `docs/security-tool/latest-security-report.md` |
+| Static scanner JSON | `docs/security-tool/latest-security-report.json` |
+| Live-app probe report | `docs/security-tool/latest-probe-report.md` |
+| Live-app probe JSON | `docs/security-tool/latest-probe-report.json` |
+| AWS security-tool architecture | `docs/security-tool/aws-architecture.md` |
+| Walkthrough document | `docs/security-tool/ShipShape Security Tool Walkthrough.docx` |
 
-When reporting a vulnerability, please include:
+Latest tracked results:
 
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Any suggested fixes (optional)
+```text
+Static scanner: 13 passed / 0 failed
+Active production probe: 17 passed / 0 failed
+Target: https://d9o5hawnpdm4g.cloudfront.net
+```
 
-### Response Timeline
+The production app also includes a security-tool results surface:
 
-- **Acknowledgment**: Within 48 hours
-- **Initial Assessment**: Within 5 business days
-- **Resolution Timeline**: Depends on severity
+```text
+https://d9o5hawnpdm4g.cloudfront.net/programs/security
+```
 
-### Scope
+## What The Security Tool Checks
 
-This security policy applies to:
-- The main repository code
-- Official releases
-- Documentation
+Static scanner:
 
-### Out of Scope
+- Secret patterns: GitLab PATs, AWS access keys, private keys, generic token/password assignments.
+- Express hardening: Helmet, CSRF, rate limiting, secure cookie settings, production `SESSION_SECRET`.
+- Browser hardening: CSP posture, unsafe DOM sinks, and local-storage auth/session risks.
+- TLS bypass patterns such as `rejectUnauthorized: false`.
+- Dockerfile hardening: pinned images and non-root runtime users.
+- Terraform encryption-at-rest signals.
+- High/critical dependency advisories through `pnpm audit --json` when available.
 
-- Third-party dependencies (report to upstream maintainers)
-- Self-hosted instances with custom modifications
+Active live-app probe:
 
-## Supported Versions
+- Unauthenticated request rejection.
+- Invalid-session rejection.
+- Valid probe-account authentication.
+- Session token entropy shape.
+- CSRF enforcement on state-changing requests.
+- Admin route role boundary.
+- WebSocket auth and collaboration-room authorization.
+- Oversized and malformed WebSocket message resilience.
+- SQL-injection payload handling.
+- Long-title validation.
+- Stored-XSS title handling.
+- Verbose error leakage.
+- Hostile-origin CORS check.
+- API health reachability.
+- Dependency audit high/critical CVE check.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| Latest  | :white_check_mark: |
+## Running Security Checks
 
-## Security Best Practices
+Run the static scanner:
 
-When deploying Ship:
+```bash
+corepack pnpm security:audit
+```
 
-1. Keep dependencies updated
-2. Use environment variables for sensitive configuration
-3. Enable HTTPS in production
-4. Follow your organization's security guidelines
+Run the active probe against a local stack:
 
-## Development Security
+```bash
+corepack pnpm security:probe -- --api-url http://127.0.0.1:3000 --web-url http://127.0.0.1:5173 --email dev@ship.local --password admin123
+```
 
-### Pre-commit Compliance Checks
+Run the active probe against production with environment variables:
 
-This repository uses `comply opensource` as a pre-commit hook that scans for:
+```powershell
+$env:SECURITY_PROBE_API_URL='https://d9o5hawnpdm4g.cloudfront.net'
+$env:SECURITY_PROBE_WEB_URL='https://d9o5hawnpdm4g.cloudfront.net'
+$env:SECURITY_PROBE_EMAIL='<probe account email>'
+$env:SECURITY_PROBE_PASSWORD='<probe account password>'
+corepack pnpm security:probe
+```
 
-- **Secrets**: API keys, passwords, tokens (via gitleaks)
-- **Sensitive Information**: AI-powered analysis for PII, internal URLs
-- **Vulnerabilities**: Container and dependency scanning (via trivy)
+Optional controls:
 
-### NEVER Bypass Security Checks
+| Variable | Purpose |
+| --- | --- |
+| `SECURITY_AUDIT_FAIL_ON_FINDINGS=1` | Make static scanner findings fail the command |
+| `SECURITY_AUDIT_SKIP_DEPENDENCY_AUDIT=1` | Skip `pnpm audit` when offline or rate-limited |
+| `SECURITY_PROBE_FAIL_ON_FINDINGS=1` | Make live-probe failures fail the command |
+| `SECURITY_PROBE_API_URL` | API/base target for active probe |
+| `SECURITY_PROBE_WEB_URL` | Web target for active probe |
+| `SECURITY_PROBE_EMAIL` | Probe account email |
+| `SECURITY_PROBE_PASSWORD` | Probe account password |
 
-**`git commit --no-verify` is prohibited.** This flag bypasses all pre-commit hooks and defeats the security scanning.
+## AWS Security Automation
 
-If you encounter a situation where you're tempted to use `--no-verify`:
+The production security tool runs through AWS:
 
-| Situation | Correct Action |
-|-----------|----------------|
-| False positive from gitleaks | Add to `.gitleaksignore` and re-run |
-| Compliance tool crashes | Report bug to compliance-toolkit repo, wait for fix |
-| Need to commit urgently | No exception. Fix the issue first. |
-| CI is down | Local hooks still work. CI is backup enforcement. |
+| Resource | Current value |
+| --- | --- |
+| Lambda trigger | `ship-prod-security-tool-trigger` |
+| CodeBuild runner | `ship-prod-security-tool` |
+| Schedule | `rate(1 day)` |
+| Report bucket | `ship-prod-security-tool-743737183156` |
+| Latest report prefix | `s3://ship-prod-security-tool-743737183156/latest/` |
 
-### CI Enforcement
+Probe credentials are stored in SSM Parameter Store as SecureString values. Do not commit probe credentials, AWS credentials, GitLab tokens, or generated secrets to this repository.
 
-GitHub Actions provides a second layer of enforcement:
+## Development Security Practices
 
-- **secrets-scan**: Runs gitleaks on every PR
-- **attestation-check**: Verifies ATTESTATION.md exists and is current
+Before committing or submitting:
 
-These are required status checks. PRs cannot merge without passing.
+```bash
+corepack pnpm --filter @ship/api type-check
+corepack pnpm --filter @ship/web type-check
+corepack pnpm security:audit
+corepack pnpm security:probe
+```
 
-### Attestation
+The repository still includes a pre-commit compliance hook that attempts to run `comply opensource`. On this workstation the optional `comply` CLI may not be installed, so the hook warns and allows the commit to proceed. For stricter future parity, install it with:
 
-Every commit to main should have an associated security attestation in `ATTESTATION.md`. This file:
+```bash
+pip install comply-cli
+```
 
-- Records who performed the security review
-- Documents which scanning tools were used
-- Provides audit trail for FISMA compliance
+Do not use `git commit --no-verify` for normal work. If a scanner reports a false positive, document the false positive and update the appropriate ignore/configuration file instead of bypassing the check.
 
-Run `comply opensource` to update the attestation before committing.
+## Application Security Controls
+
+The current build includes:
+
+- Helmet-based HTTP header hardening.
+- CSRF token enforcement on state-changing API routes.
+- Session cookies with HTTP-only, SameSite, secure-in-production settings.
+- 15-minute inactivity timeout and 12-hour absolute session timeout.
+- Session activity write throttling to reduce hot-path database writes.
+- Malformed document-ID validation before PostgreSQL UUID casts.
+- WebSocket authentication and room-authorization checks.
+- Offline app-shell recovery for authenticated frontend routes.
+- AWS SSM Parameter Store for deployment/probe secrets.
+- Encrypted Aurora and S3 storage in production.
+
+## Reporting A Vulnerability
+
+Do not create a public issue containing vulnerability details.
+
+For this ShipShape project, report privately to the repository owner or project reviewer with:
+
+- Vulnerability description.
+- Reproduction steps.
+- Impact assessment.
+- Affected route, file, or AWS resource.
+- Suggested fix, if known.
+- Security-tool output, if the issue was detected by `security:audit` or `security:probe`.
+
+## Post-Submission Security Cleanup
+
+- Rotate the AWS access key used during setup.
+- Keep probe credentials in SSM, not in source control.
+- Re-run the AWS CodeBuild security tool after any production deployment.
+- Keep `docs/security-tool/latest-*` reports current when the security posture changes.
