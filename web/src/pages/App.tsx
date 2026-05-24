@@ -1443,6 +1443,8 @@ function ProgramsList({
   onUpdateProgram: (id: string, updates: Partial<Program>) => Promise<Program | null>;
 }) {
   const { showToast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; programId: string } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -1510,9 +1512,25 @@ function ProgramsList({
   }
 
   const contextMenuProgram = contextMenu ? programs.find(p => p.id === contextMenu.programId) : null;
+  const securityToolActive = location.pathname === '/programs/security';
 
   return (
     <>
+      <div className="mb-3 border-b border-border px-2 pb-3">
+        <button
+          onClick={() => navigate('/programs/security')}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
+            securityToolActive
+              ? 'bg-border/50 text-foreground'
+              : 'text-muted hover:bg-border/30 hover:text-foreground'
+          )}
+        >
+          <ShieldCheckIcon />
+          <span className="truncate">Security Results</span>
+        </button>
+      </div>
+
       <ul className="space-y-0.5 px-2" data-testid="programs-list">
         {programs.map((program) => (
           <li key={program.id} data-testid="program-item">
@@ -1609,6 +1627,15 @@ function EditIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  );
+}
+
+function ShieldCheckIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3l7 3v5c0 4.55-2.91 8.57-7 10-4.09-1.43-7-5.45-7-10V6l7-3z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-5" />
     </svg>
   );
 }

@@ -48,6 +48,7 @@ module "elastic_beanstalk" {
   public_subnet_ids             = module.vpc.public_subnet_ids
   alb_security_group_id         = module.security_groups.alb_security_group_id
   eb_instance_security_group_id = module.security_groups.eb_instance_security_group_id
+  security_tool_report_bucket   = var.enable_security_tool ? local.security_tool_bucket_name : ""
 }
 
 # CloudFront + S3 Frontend

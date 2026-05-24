@@ -51,6 +51,25 @@ resource "aws_iam_role_policy_attachment" "eb_ssm_managed_instance" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "aws_iam_role_policy" "eb_security_tool_reports" {
+  count = var.security_tool_report_bucket != "" ? 1 : 0
+  name  = "${var.project_name}-${var.environment}-security-tool-reports-read"
+  role  = aws_iam_role.eb_instance.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = "arn:aws:s3:::${var.security_tool_report_bucket}/latest/*"
+      }
+    ]
+  })
+}
+
 # Instance Profile
 resource "aws_iam_instance_profile" "eb" {
   name = "${var.project_name}-${var.environment}-eb-instance-profile"
@@ -297,6 +316,24 @@ resource "aws_elastic_beanstalk_environment" "api" {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "AWS_REGION"
     value     = var.aws_region
+  }
+
+  dynamic "setting" {
+    for_each = var.security_tool_report_bucket != "" ? [var.security_tool_report_bucket] : []
+    content {
+      namespace = "aws:elasticbeanstalk:application:environment"
+      name      = "SECURITY_TOOL_REPORT_BUCKET"
+      value     = setting.value
+    }
+  }
+
+  dynamic "setting" {
+    for_each = var.security_tool_report_bucket != "" ? ["latest"] : []
+    content {
+      namespace = "aws:elasticbeanstalk:application:environment"
+      name      = "SECURITY_TOOL_REPORT_PREFIX"
+      value     = setting.value
+    }
   }
 
   # Health Check Path

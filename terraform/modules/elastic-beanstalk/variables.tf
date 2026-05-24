@@ -55,3 +55,9 @@ variable "max_instances" {
   type        = number
   default     = 4
 }
+
+variable "security_tool_report_bucket" {
+  description = "Optional S3 bucket containing latest security tool report JSON for the in-app dashboard"
+  type        = string
+  default     = ""
+}

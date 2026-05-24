@@ -45,6 +45,7 @@ const LoginPage = lazyPage(() => import('@/pages/Login'), 'LoginPage');
 const DocumentsPage = lazyPage(() => import('@/pages/Documents'), 'DocumentsPage');
 const IssuesPage = lazyPage(() => import('@/pages/Issues'), 'IssuesPage');
 const ProgramsPage = lazyPage(() => import('@/pages/Programs'), 'ProgramsPage');
+const SecurityToolResultsPage = lazyPage(() => import('@/pages/SecurityToolResults'), 'SecurityToolResultsPage');
 const TeamModePage = lazyPage(() => import('@/pages/TeamMode'), 'TeamModePage');
 const TeamDirectoryPage = lazyPage(() => import('@/pages/TeamDirectory'), 'TeamDirectoryPage');
 const PersonEditorPage = lazyPage(() => import('@/pages/PersonEditor'), 'PersonEditorPage');
@@ -249,6 +250,7 @@ function AppRoutes() {
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/:id" element={<DocumentRedirect />} />
         <Route path="programs" element={<ProgramsPage />} />
+        <Route path="programs/security" element={<SecurityToolResultsPage />} />
         <Route path="programs/:programId/sprints/:id" element={<DocumentRedirect />} />
         <Route path="programs/:id/*" element={<ProgramTabRedirect />} />
         <Route path="sprints" element={<Navigate to="/team/allocation" replace />} />
