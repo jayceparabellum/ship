@@ -17,6 +17,15 @@ const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function getDatabaseSslConfig() {
+  if (process.env.DB_SSL === 'disable') {
+    return false;
+  }
+
+  const ca = process.env.DATABASE_CA_CERT || process.env.DB_CA_CERT;
+  return ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true };
+}
+
 async function migrate() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -29,7 +38,7 @@ async function migrate() {
 
   const pool = new Pool({
     connectionString: databaseUrl,
-    ssl: { rejectUnauthorized: false },
+    ssl: getDatabaseSslConfig(),
   });
 
   try {

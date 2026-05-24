@@ -1,7 +1,6 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import { createRoot, Root } from 'react-dom/client';
 import { Comment } from '@/hooks/useCommentsQuery';
 import { formatRelativeTime } from '@/lib/date-utils';
 
@@ -59,6 +58,27 @@ interface CommentDisplayStorage {
  * InlineCommentThread component rendered inside widget decorations.
  * Displays a GitHub-style comment card that breaks the document flow.
  */
+function appendTextElement(
+  parent: HTMLElement,
+  tagName: string,
+  className: string,
+  text: string
+): HTMLElement {
+  const element = document.createElement(tagName);
+  element.className = className;
+  element.textContent = text;
+  parent.appendChild(element);
+  return element;
+}
+
+function createCommentHeader(authorName: string, createdAt: string): HTMLElement {
+  const header = document.createElement('div');
+  header.className = 'comment-header';
+  appendTextElement(header, 'span', 'comment-author', authorName);
+  appendTextElement(header, 'span', 'comment-time', formatRelativeTime(createdAt));
+  return header;
+}
+
 function InlineCommentThread({
   thread,
   quotedText,
@@ -82,55 +102,57 @@ function InlineCommentThread({
   container.contentEditable = 'false';
 
   if (isResolved) {
-    container.innerHTML = `
-      <div class="comment-thread-resolved" data-comment-id="${escapeHtml(root.comment_id)}">
-        <span class="comment-resolved-icon">✓</span>
-        <span class="comment-resolved-text">Resolved by ${escapeHtml(root.author.name)} · ${formatRelativeTime(root.resolved_at!)}</span>
-        <span class="comment-resolved-toggle">Show thread</span>
-      </div>
-    `;
+    const resolved = document.createElement('div');
+    resolved.className = 'comment-thread-resolved';
+    resolved.dataset.commentId = root.comment_id;
+    appendTextElement(resolved, 'span', 'comment-resolved-icon', 'Resolved');
+    appendTextElement(
+      resolved,
+      'span',
+      'comment-resolved-text',
+      `Resolved by ${root.author.name} - ${formatRelativeTime(root.resolved_at!)}`
+    );
+    appendTextElement(resolved, 'span', 'comment-resolved-toggle', 'Show thread');
+    container.appendChild(resolved);
   } else {
-    const quotedHtml = quotedText
-      ? `<div class="comment-quoted-text">"${escapeHtml(quotedText)}"</div>`
-      : '';
-
-    let repliesHtml = '';
-    for (const reply of replies) {
-      repliesHtml += `
-        <div class="comment-reply">
-          <div class="comment-header">
-            <span class="comment-author">${escapeHtml(reply.author.name)}</span>
-            <span class="comment-time">${formatRelativeTime(reply.created_at)}</span>
-          </div>
-          <div class="comment-body">${escapeHtml(reply.content)}</div>
-        </div>
-      `;
+    if (quotedText) {
+      appendTextElement(container, 'div', 'comment-quoted-text', `"${quotedText}"`);
     }
 
-    container.innerHTML = `
-      ${quotedHtml}
-      <div class="comment-root">
-        <div class="comment-header">
-          <span class="comment-author">${escapeHtml(root.author.name)}</span>
-          <span class="comment-time">${formatRelativeTime(root.created_at)}</span>
-          <button class="comment-resolve-btn" data-comment-id="${escapeHtml(root.comment_id)}" title="Resolve">✓</button>
-        </div>
-        <div class="comment-body">${escapeHtml(root.content)}</div>
-      </div>
-      ${repliesHtml}
-      <div class="comment-reply-area">
-        <input type="text" class="comment-reply-input" placeholder="Reply..." data-comment-id="${escapeHtml(root.comment_id)}" />
-      </div>
-    `;
+    const rootElement = document.createElement('div');
+    rootElement.className = 'comment-root';
+
+    const header = createCommentHeader(root.author.name, root.created_at);
+    const resolveButton = document.createElement('button');
+    resolveButton.className = 'comment-resolve-btn';
+    resolveButton.dataset.commentId = root.comment_id;
+    resolveButton.title = 'Resolve';
+    resolveButton.textContent = 'Resolve';
+    header.appendChild(resolveButton);
+    rootElement.appendChild(header);
+    appendTextElement(rootElement, 'div', 'comment-body', root.content);
+    container.appendChild(rootElement);
+
+    for (const reply of replies) {
+      const replyElement = document.createElement('div');
+      replyElement.className = 'comment-reply';
+      replyElement.appendChild(createCommentHeader(reply.author.name, reply.created_at));
+      appendTextElement(replyElement, 'div', 'comment-body', reply.content);
+      container.appendChild(replyElement);
+    }
+
+    const replyArea = document.createElement('div');
+    replyArea.className = 'comment-reply-area';
+    const replyInput = document.createElement('input');
+    replyInput.type = 'text';
+    replyInput.className = 'comment-reply-input';
+    replyInput.placeholder = 'Reply...';
+    replyInput.dataset.commentId = root.comment_id;
+    replyArea.appendChild(replyInput);
+    container.appendChild(replyArea);
   }
 
   return container;
-}
-
-function escapeHtml(str: string): string {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 /**
@@ -176,11 +198,19 @@ export const CommentDisplayExtension = Extension.create<Record<string, never>, C
                   const container = document.createElement('div');
                   container.className = 'comment-thread-inline comment-pending-input';
                   container.contentEditable = 'false';
-                  container.innerHTML = `
-                    <div class="comment-pending-label">Add your comment:</div>
-                    <input type="text" class="comment-pending-field" placeholder="Write a comment..." data-pending-comment-id="${escapeHtml(pendingId)}" />
-                    <div class="comment-pending-hint">Press Enter to submit, Escape to cancel</div>
-                  `;
+                  appendTextElement(container, 'div', 'comment-pending-label', 'Add your comment:');
+                  const input = document.createElement('input');
+                  input.type = 'text';
+                  input.className = 'comment-pending-field';
+                  input.placeholder = 'Write a comment...';
+                  input.dataset.pendingCommentId = pendingId;
+                  container.appendChild(input);
+                  appendTextElement(
+                    container,
+                    'div',
+                    'comment-pending-hint',
+                    'Press Enter to submit, Escape to cancel'
+                  );
                   // Auto-focus the input after it's added to the DOM
                   requestAnimationFrame(() => {
                     const input = container.querySelector('.comment-pending-field') as HTMLInputElement;

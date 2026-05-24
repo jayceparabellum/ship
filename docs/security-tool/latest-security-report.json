@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-05-23T23:50:52.941Z",
+  "generatedAt": "2026-05-24T02:45:04.509Z",
   "tool": "shipshape-security-audit",
-  "outDir": ".security-tool-output",
+  "outDir": "docs/security-tool",
   "git": {
     "branch": "ShipShape-Security-Tool",
-    "commit": "d80f608"
+    "commit": "24ccba2"
   },
   "summary": {
     "totalChecks": 13,
-    "passed": 9,
-    "failed": 4,
-    "critical": 1,
-    "high": 2,
-    "medium": 1,
+    "passed": 13,
+    "failed": 0,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
     "low": 0
   },
   "dependencyAudit": {
@@ -32,15 +32,8 @@
       "category": "secrets",
       "id": "secrets.no-hardcoded-secrets",
       "title": "No hardcoded secrets or private keys",
-      "passed": false,
-      "evidence": [
-        {
-          "file": "api/scripts/create-test-user.ts",
-          "line": 20,
-          "rule": "generic-secret-assignment",
-          "text": "password: '!Musicfun1$$',"
-        }
-      ],
+      "passed": true,
+      "evidence": [],
       "remediation": "Move secrets to SSM/CI variables, rotate exposed credentials, and remove committed values from history when needed."
     },
     {
@@ -103,21 +96,8 @@
       "category": "browser-hardening",
       "id": "csp.no-unsafe-inline",
       "title": "CSP avoids unsafe-inline",
-      "passed": false,
-      "evidence": [
-        {
-          "file": "api/src/app.ts",
-          "line": 117,
-          "rule": "csp-unsafe-inline",
-          "text": "scriptSrc: [\"'self'\", \"'unsafe-inline'\"], // Admin credentials page uses inline scripts"
-        },
-        {
-          "file": "api/src/app.ts",
-          "line": 118,
-          "rule": "csp-unsafe-inline",
-          "text": "styleSrc: [\"'self'\", \"'unsafe-inline'\"], // TipTap editor needs inline styles"
-        }
-      ],
+      "passed": true,
+      "evidence": [],
       "remediation": "Replace inline scripts/styles with nonce or hashed CSP entries where practical."
     },
     {
@@ -125,63 +105,8 @@
       "category": "browser-hardening",
       "id": "xss.no-unsafe-dom-sinks",
       "title": "No unsafe DOM injection sinks",
-      "passed": false,
-      "evidence": [
-        {
-          "file": "api/src/routes/admin-credentials.ts",
-          "line": 310,
-          "rule": "innerHTML-assignment",
-          "text": "badge.innerHTML = '<span>✓ Configured</span>';"
-        },
-        {
-          "file": "api/src/routes/admin-credentials.ts",
-          "line": 313,
-          "rule": "innerHTML-assignment",
-          "text": "badge.innerHTML = '<span>○ Not Configured</span>';"
-        },
-        {
-          "file": "api/src/routes/admin-credentials.ts",
-          "line": 322,
-          "rule": "innerHTML-assignment",
-          "text": "btn.innerHTML = '<span class=\"spinner\"></span>Saving...';"
-        },
-        {
-          "file": "api/src/routes/admin-credentials.ts",
-          "line": 390,
-          "rule": "innerHTML-assignment",
-          "text": "btn.innerHTML = '<span class=\"spinner\"></span>Testing...';"
-        },
-        {
-          "file": "web/src/components/editor/AIScoringDisplay.tsx",
-          "line": 181,
-          "rule": "innerHTML-assignment",
-          "text": "container.innerHTML = `"
-        },
-        {
-          "file": "web/src/components/editor/AIScoringDisplay.tsx",
-          "line": 206,
-          "rule": "innerHTML-assignment",
-          "text": "container.innerHTML = `"
-        },
-        {
-          "file": "web/src/components/editor/CommentDisplay.tsx",
-          "line": 85,
-          "rule": "innerHTML-assignment",
-          "text": "container.innerHTML = `"
-        },
-        {
-          "file": "web/src/components/editor/CommentDisplay.tsx",
-          "line": 110,
-          "rule": "innerHTML-assignment",
-          "text": "container.innerHTML = `"
-        },
-        {
-          "file": "web/src/components/editor/CommentDisplay.tsx",
-          "line": 179,
-          "rule": "innerHTML-assignment",
-          "text": "container.innerHTML = `"
-        }
-      ],
+      "passed": true,
+      "evidence": [],
       "remediation": "Replace innerHTML/eval-style sinks with React rendering, DOM textContent, or a sanitizer with explicit allowlists."
     },
     {
@@ -198,45 +123,8 @@
       "category": "transport-security",
       "id": "tls.no-reject-unauthorized-false",
       "title": "TLS verification is not disabled",
-      "passed": false,
-      "evidence": [
-        {
-          "file": "api/scripts/check-db-user.ts",
-          "line": 10,
-          "rule": "rejectUnauthorized-false",
-          "text": "ssl: { rejectUnauthorized: false }"
-        },
-        {
-          "file": "api/scripts/check-db-user.ts",
-          "line": 19,
-          "rule": "rejectUnauthorized-false",
-          "text": "ssl: { rejectUnauthorized: false }"
-        },
-        {
-          "file": "api/scripts/create-test-user.ts",
-          "line": 35,
-          "rule": "rejectUnauthorized-false",
-          "text": "ssl: { rejectUnauthorized: false },"
-        },
-        {
-          "file": "api/scripts/migrate-shadow.ts",
-          "line": 32,
-          "rule": "rejectUnauthorized-false",
-          "text": "ssl: { rejectUnauthorized: false },"
-        },
-        {
-          "file": "api/src/db/migrate.ts",
-          "line": 32,
-          "rule": "rejectUnauthorized-false",
-          "text": "ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,"
-        },
-        {
-          "file": "api/src/db/seed.ts",
-          "line": 44,
-          "rule": "rejectUnauthorized-false",
-          "text": "ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,"
-        }
-      ],
+      "passed": true,
+      "evidence": [],
       "remediation": "Use trusted CA bundles or managed certificates instead of disabling TLS verification."
     },
     {

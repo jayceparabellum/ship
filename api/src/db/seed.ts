@@ -16,6 +16,15 @@ const __dirname = dirname(__filename);
 config({ path: join(__dirname, '../../.env.local') });
 config({ path: join(__dirname, '../../.env') });
 
+function getDatabaseSslConfig() {
+  if (process.env.DB_SSL === 'disable') {
+    return false;
+  }
+
+  const ca = process.env.DATABASE_CA_CERT || process.env.DB_CA_CERT;
+  return ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true };
+}
+
 /**
  * Helper to create document associations in the junction table
  * This replaces the legacy program_id, project_id, sprint_id columns
@@ -41,7 +50,7 @@ async function seed() {
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.NODE_ENV === 'production' ? getDatabaseSslConfig() : false,
   });
   console.log('🌱 Starting database seed...');
   // Only log hostname, never full connection string (contains credentials)

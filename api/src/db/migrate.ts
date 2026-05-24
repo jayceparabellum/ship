@@ -18,6 +18,15 @@ config({ path: join(dirname(fileURLToPath(import.meta.url)), '../../.env.local')
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function getDatabaseSslConfig() {
+  if (process.env.DB_SSL === 'disable') {
+    return false;
+  }
+
+  const ca = process.env.DATABASE_CA_CERT || process.env.DB_CA_CERT;
+  return ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true };
+}
+
 async function migrate() {
   await loadProductionSecrets();
 
@@ -29,7 +38,7 @@ async function migrate() {
 
   const pool = new Pool({
     connectionString: databaseUrl,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.NODE_ENV === 'production' ? getDatabaseSslConfig() : false,
   });
 
   try {

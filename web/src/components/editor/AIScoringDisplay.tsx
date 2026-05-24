@@ -48,12 +48,6 @@ interface AIScoringStorage {
 
 export const aiScoringPluginKey = new PluginKey('aiScoringDisplay');
 
-function escapeHtml(str: string): string {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
 /** Extract plain text from a ProseMirror node */
 function extractNodeText(node: any): string {
   let text = '';
@@ -173,18 +167,27 @@ function createPlanFeedbackWidget(item: PlanItemAnalysis): HTMLElement {
   const scorePercent = Math.round(item.score * 10);
   const colorClass = item.score >= 0.7 ? 'green' : item.score >= 0.4 ? 'yellow' : 'red';
 
-  let conciseness = '';
+  const feedback = document.createElement('div');
+  feedback.className = `ai-scoring-feedback ai-scoring-${colorClass}`;
+
+  const badge = document.createElement('span');
+  badge.className = 'ai-scoring-badge';
+  badge.textContent = String(scorePercent);
+  feedback.appendChild(badge);
+
+  const text = document.createElement('span');
+  text.className = 'ai-scoring-text';
+  text.textContent = item.feedback;
+  feedback.appendChild(text);
+
   if (item.is_verbose && item.conciseness_feedback) {
-    conciseness = `<span class="ai-scoring-conciseness">${escapeHtml(item.conciseness_feedback)}</span>`;
+    const conciseness = document.createElement('span');
+    conciseness.className = 'ai-scoring-conciseness';
+    conciseness.textContent = item.conciseness_feedback;
+    feedback.appendChild(conciseness);
   }
 
-  container.innerHTML = `
-    <div class="ai-scoring-feedback ai-scoring-${colorClass}">
-      <span class="ai-scoring-badge">${scorePercent}</span>
-      <span class="ai-scoring-text">${escapeHtml(item.feedback)}</span>
-      ${conciseness}
-    </div>
-  `;
+  container.appendChild(feedback);
 
   return container;
 }
@@ -199,16 +202,24 @@ function createRetroCoverageWidget(item: RetroItemAnalysis): HTMLElement {
     : item.addressed ? 'yellow'
     : 'red';
 
-  const statusIcon = item.addressed && item.has_evidence ? '&#10003;'
-    : item.addressed ? '&#9888;'
-    : '&#10007;';
+  const statusIcon = item.addressed && item.has_evidence ? 'Passed'
+    : item.addressed ? 'Partial'
+    : 'Missing';
 
-  container.innerHTML = `
-    <div class="ai-scoring-feedback ai-scoring-${statusClass}">
-      <span class="ai-scoring-status-icon">${statusIcon}</span>
-      <span class="ai-scoring-text">${escapeHtml(item.feedback)}</span>
-    </div>
-  `;
+  const feedback = document.createElement('div');
+  feedback.className = `ai-scoring-feedback ai-scoring-${statusClass}`;
+
+  const icon = document.createElement('span');
+  icon.className = 'ai-scoring-status-icon';
+  icon.textContent = statusIcon;
+  feedback.appendChild(icon);
+
+  const text = document.createElement('span');
+  text.className = 'ai-scoring-text';
+  text.textContent = item.feedback;
+  feedback.appendChild(text);
+
+  container.appendChild(feedback);
 
   return container;
 }

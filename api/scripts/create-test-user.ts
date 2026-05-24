@@ -4,11 +4,11 @@
  * Creates a test user in the shadow database for manual testing.
  *
  * Usage:
- *   DATABASE_URL="..." npx tsx api/scripts/create-test-user.ts
+ *   DATABASE_URL="..." TEST_USER_PASSWORD="..." npx tsx api/scripts/create-test-user.ts
  *
  * Or using SSM:
  *   DATABASE_URL=$(aws ssm get-parameter --name "/ship/shadow/DATABASE_URL" --with-decryption --query "Parameter.Value" --output text)
- *   npx tsx api/scripts/create-test-user.ts
+ *   TEST_USER_PASSWORD="..." npx tsx api/scripts/create-test-user.ts
  */
 
 import bcrypt from 'bcryptjs';
@@ -17,10 +17,18 @@ const { Pool } = pg;
 
 const TEST_USER = {
   email: 'shawn.jones@treasury.gov',
-  password: '!Musicfun1$$',
   name: 'Shawn Jones',
   isSuperAdmin: true,
 };
+
+function getDatabaseSslConfig() {
+  if (process.env.DB_SSL === 'disable') {
+    return false;
+  }
+
+  const ca = process.env.DATABASE_CA_CERT || process.env.DB_CA_CERT;
+  return ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true };
+}
 
 async function createTestUser() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -29,10 +37,16 @@ async function createTestUser() {
     process.exit(1);
   }
 
+  const testUserPassword = process.env.TEST_USER_PASSWORD;
+  if (!testUserPassword) {
+    console.error('ERROR: TEST_USER_PASSWORD environment variable is required');
+    process.exit(1);
+  }
+
   // Create pool with SSL for Aurora
   const pool = new Pool({
     connectionString: databaseUrl,
-    ssl: { rejectUnauthorized: false },
+    ssl: getDatabaseSslConfig(),
   });
 
   try {
@@ -49,7 +63,7 @@ async function createTestUser() {
       console.log(existingUser.rows[0]);
 
       // Update password for existing user
-      const passwordHash = await bcrypt.hash(TEST_USER.password, 10);
+      const passwordHash = await bcrypt.hash(testUserPassword, 10);
       await pool.query(
         'UPDATE users SET password_hash = $1, name = $2 WHERE LOWER(email) = LOWER($3)',
         [passwordHash, TEST_USER.name, TEST_USER.email]
@@ -57,7 +71,7 @@ async function createTestUser() {
       console.log('Password updated for existing user');
     } else {
       // Create new user
-      const passwordHash = await bcrypt.hash(TEST_USER.password, 10);
+      const passwordHash = await bcrypt.hash(testUserPassword, 10);
 
       const result = await pool.query(
         `INSERT INTO users (email, password_hash, name, is_super_admin)
@@ -115,7 +129,7 @@ async function createTestUser() {
 
     console.log('\n✅ Test user ready!');
     console.log(`   Email: ${TEST_USER.email}`);
-    console.log(`   Password: ${TEST_USER.password}`);
+    console.log('   Password: set from TEST_USER_PASSWORD');
 
   } catch (err) {
     console.error('Error:', err);

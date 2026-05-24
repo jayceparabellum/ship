@@ -1,13 +1,22 @@
 import pg from 'pg';
 const { Pool } = pg;
 
+function getDatabaseSslConfig() {
+  if (process.env.DB_SSL === 'disable') {
+    return false;
+  }
+
+  const ca = process.env.DATABASE_CA_CERT || process.env.DB_CA_CERT;
+  return ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true };
+}
+
 const shadowConfig = {
   host: process.env.SHADOW_HOST,
   user: 'postgres',
   password: process.env.SHADOW_PASS,
   database: 'ship_main',
   port: 5432,
-  ssl: { rejectUnauthorized: false }
+  ssl: getDatabaseSslConfig()
 };
 
 const devConfig = {
@@ -16,7 +25,7 @@ const devConfig = {
   password: process.env.DEV_PASS,
   database: 'ship_main',
   port: 5432,
-  ssl: { rejectUnauthorized: false }
+  ssl: getDatabaseSslConfig()
 };
 
 async function checkUser(config: pg.PoolConfig, name: string) {

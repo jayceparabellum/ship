@@ -305,13 +305,15 @@ function renderPage(options: {
 
     function updateStatus(configured) {
       const badge = document.getElementById('status-badge');
+      const label = document.createElement('span');
       if (configured) {
         badge.className = 'status configured';
-        badge.innerHTML = '<span>✓ Configured</span>';
+        label.textContent = '✓ Configured';
       } else {
         badge.className = 'status not-configured';
-        badge.innerHTML = '<span>○ Not Configured</span>';
+        label.textContent = '○ Not Configured';
       }
+      badge.replaceChildren(label);
     }
 
     function setButtonLoading(btnId, loading) {
@@ -319,7 +321,9 @@ function renderPage(options: {
       if (loading) {
         btn.disabled = true;
         btn.dataset.originalText = btn.textContent;
-        btn.innerHTML = '<span class="spinner"></span>Saving...';
+        const spinner = document.createElement('span');
+        spinner.className = 'spinner';
+        btn.replaceChildren(spinner, document.createTextNode('Saving...'));
       } else {
         btn.disabled = false;
         btn.textContent = btn.dataset.originalText || 'Save';
@@ -387,7 +391,9 @@ function renderPage(options: {
 
       const btn = document.getElementById('test-btn');
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>Testing...';
+      const spinner = document.createElement('span');
+      spinner.className = 'spinner';
+      btn.replaceChildren(spinner, document.createTextNode('Testing...'));
 
       try {
         // Fetch CSRF token first
