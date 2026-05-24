@@ -2,13 +2,17 @@
 
 Assignment requirement: share on X or LinkedIn what you learned auditing a government codebase, include key findings, and tag `@GauntletAI`.
 
+Submission needs the final public post link. Paste it here after posting:
+
+- Post URL: `[add final X or LinkedIn URL]`
+
 ## LinkedIn Draft
 
 This week I audited Ship, an open-source project management tool from the U.S. Department of the Treasury, for @GauntletAI.
 
 The biggest lesson: production engineering is mostly disciplined measurement before clever fixes.
 
-I audited seven areas:
+I audited eight areas:
 
 - TypeScript safety
 - Frontend bundle size
@@ -17,12 +21,14 @@ I audited seven areas:
 - Test coverage and reliability
 - Runtime error handling
 - Accessibility / Section 508 readiness
+- Security probing
 
-Three findings stood out:
+Four findings stood out:
 
 1. Strict TypeScript was enabled, but type escape hatches clustered in API route files where request input, JSONB rows, and response objects meet.
 2. The frontend build shipped a large main chunk, with editor/collaboration dependencies among the top bundle contributors.
 3. Accessibility claims need continuous verification: axe found serious color-contrast issues on key authenticated pages.
+4. Security needs both static scanning and active live-app probing; the final probe checked auth/session handling, WebSocket validation, input sanitization, CORS, and dependency advisories.
 
 The project reinforced a simple habit I want to keep: do not write the conclusion before the measurement exists.
 
@@ -37,5 +43,6 @@ Key findings:
 - main frontend chunk is too large
 - API/doc list endpoints need perf attention
 - axe found serious color contrast issues
+- active probe caught security edges across auth, WS, input validation, CORS, and deps
 
 Good audit habit: no claim without a command, artifact, or reproduction step.
