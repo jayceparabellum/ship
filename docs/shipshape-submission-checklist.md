@@ -12,10 +12,10 @@ Deadline: Sunday, May 24, 2026 at 10:59 PM CT
 | Audit report | Ready | Canonical report: `audit.md` |
 | Raw audit data | Ready | `docs/audit-evidence/*.json` |
 | Category 8 security tool | Ready | `docs/security-tool/latest-security-report.json`, `docs/security-tool/latest-probe-report.json`; latest AWS active probe is 17/17 |
-| Security tool demo script | Ready | `docs/security-tool/demo-script.md` |
+| Security tool walkthrough | Ready | `docs/security-tool/ShipShape Security Tool Walkthrough.docx` |
 | Improvement documentation | Ready with caveats | `docs/shipshape-improvement-documentation.md` has Categories 1 through 7 completed with after-fix proof; Category 3 and 6 caveats are documented |
 | Discovery write-up | Ready | `docs/shipshape-discovery-writeup.md` |
-| Demo video, 3-5 minutes | Not recorded | Use `docs/shipshape-demo-video-checklist.md`; do not push `docs/mvp-demo-script.md` |
+| Demo video, 3-5 minutes | Not recorded | Use `docs/shipshape-demo-video-checklist.md`; do not push obsolete MVP narration notes |
 | AI cost analysis | Ready | `docs/shipshape-ai-cost-analysis.md` |
 | Deployed application | Ready | Production frontend: `https://d9o5hawnpdm4g.cloudfront.net`; API health: `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
 | Social post | Ready draft | `docs/shipshape-social-post-draft.md` |

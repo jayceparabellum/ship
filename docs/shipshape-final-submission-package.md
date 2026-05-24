@@ -20,7 +20,7 @@ Prepared: May 23, 2026
 | AI cost analysis | `docs/shipshape-ai-cost-analysis.md` |
 | Raw audit evidence | `docs/audit-evidence/` |
 | Security tool evidence | `docs/security-tool/` |
-| Security tool demo script | `docs/security-tool/demo-script.md` |
+| Security tool walkthrough | `docs/security-tool/ShipShape Security Tool Walkthrough.docx` |
 | Final checklist | `docs/shipshape-submission-checklist.md` |
 
 ## Evidence Coverage
