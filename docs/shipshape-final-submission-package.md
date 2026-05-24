@@ -21,6 +21,7 @@ Prepared: May 23, 2026
 | Raw audit evidence | `docs/audit-evidence/` |
 | Security tool evidence | `docs/security-tool/` |
 | Security tool walkthrough | `docs/security-tool/ShipShape Security Tool Walkthrough.docx` |
+| Category 1-8 final handoff | `docs/category-1-8-final-handoff.md` |
 | Final checklist | `docs/shipshape-submission-checklist.md` |
 
 ## Evidence Coverage
@@ -53,5 +54,5 @@ Latest Category 8 active probe result: 17 checks, 17 passed, 0 failed against th
 - Category 8 active probe passed: 17/17.
 - AWS security-tool runner passed through Lambda/CodeBuild and uploaded reports to `s3://ship-prod-security-tool-743737183156/latest/`.
 - Labs GitLab branches are pushed:
-  - `master`: `33aea0c` before this packaging pass
-  - `main`: `df3ba49` before this packaging pass
+  - `ShipShape-Security-Tool`: latest Category 1-8 completion branch
+  - Merge request URL: `https://labs.gauntletai.com/jayceparabellum/ship/-/merge_requests/new?merge_request%5Bsource_branch%5D=ShipShape-Security-Tool`

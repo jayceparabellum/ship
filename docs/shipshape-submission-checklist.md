@@ -13,6 +13,7 @@ Deadline: Sunday, May 24, 2026 at 10:59 PM CT
 | Raw audit data | Ready | `docs/audit-evidence/*.json` |
 | Category 8 security tool | Ready | `docs/security-tool/latest-security-report.json`, `docs/security-tool/latest-probe-report.json`; latest AWS active probe is 17/17 |
 | Security tool walkthrough | Ready | `docs/security-tool/ShipShape Security Tool Walkthrough.docx` |
+| Category 1-8 final handoff | Ready | `docs/category-1-8-final-handoff.md` |
 | Improvement documentation | Ready with caveats | `docs/shipshape-improvement-documentation.md` has Categories 1 through 7 completed with after-fix proof; Category 3 and 6 caveats are documented |
 | Discovery write-up | Ready | `docs/shipshape-discovery-writeup.md` |
 | Demo video, 3-5 minutes | Not recorded | Use `docs/shipshape-demo-video-checklist.md`; do not push obsolete MVP narration notes |
@@ -45,7 +46,7 @@ The pass/fail audit gate requires baseline measurements for all seven categories
 ## Suggested Final Packaging Order
 
 1. Review `audit.md`, `docs/shipshape-improvement-documentation.md`, `docs/audit-evidence/`, and `docs/security-tool/` before submission.
-2. Use `docs/shipshape-final-submission-package.md` as the final copy/paste checklist for links, files, and caveats.
-3. Record the 3-5 minute demo video if the submission portal requires the full final package.
-4. Consider one extra performance slice only if there is time after the required submission assets are packaged.
-5. Commit in logical groups and push to Labs GitLab.
+2. Use `docs/category-1-8-final-handoff.md` for the final reviewer links and copy/paste submission blurb.
+3. Use `docs/shipshape-final-submission-package.md` as the full checklist for links, files, and caveats.
+4. Open the merge request from `ShipShape-Security-Tool` using the URL in the handoff doc.
+5. Record the 3-5 minute demo video if the submission portal requires the full final package.
