@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { csrfSync } from 'csrf-sync';
 import rateLimit from 'express-rate-limit';
+import { randomBytes } from 'crypto';
 import authRoutes from './routes/auth.js';
 import documentsRoutes from './routes/documents.js';
 import issuesRoutes from './routes/issues.js';
@@ -108,6 +109,11 @@ export function createApp(corsOrigin: string = 'http://localhost:5173'): express
     });
   }
 
+  app.use((_req, res, next) => {
+    res.locals.cspNonce = randomBytes(16).toString('base64');
+    next();
+  });
+
   // Middleware - Security headers
   app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },  // Allow images to be loaded cross-origin
@@ -115,8 +121,8 @@ export function createApp(corsOrigin: string = 'http://localhost:5173'): express
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'"],
+        scriptSrc: ["'self'", (_req, res) => `'nonce-${(res as Response).locals.cspNonce}'`],
+        styleSrc: ["'self'", (_req, res) => `'nonce-${(res as Response).locals.cspNonce}'`],
         imgSrc: ["'self'", "data:", "blob:", "https:"],
         connectSrc: ["'self'", "wss:", "ws:"], // WebSocket connections
         fontSrc: ["'self'", "data:"],

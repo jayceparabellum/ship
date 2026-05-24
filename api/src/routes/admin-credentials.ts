@@ -48,8 +48,10 @@ function renderPage(options: {
   isConfigured: boolean;
   redirectUri: string;
   secretPath: string;
+  cspNonce?: string;
 }): string {
-  const { currentConfig, isConfigured, redirectUri, secretPath } = options;
+  const { currentConfig, isConfigured, redirectUri, secretPath, cspNonce = '' } = options;
+  const nonceAttribute = cspNonce ? ` nonce="${escapeHtml(cspNonce)}"` : '';
 
   return `
 <!DOCTYPE html>
@@ -58,7 +60,7 @@ function renderPage(options: {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CAIA Credentials - Ship Admin</title>
-  <style>
+  <style${nonceAttribute}>
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -276,7 +278,7 @@ function renderPage(options: {
     </div>
   </div>
 
-  <script>
+  <script${nonceAttribute}>
     function showError(msg) {
       const el = document.getElementById('alert-error');
       el.textContent = msg;
@@ -461,6 +463,7 @@ router.get('/', authMiddleware, superAdminMiddleware, async (_req: Request, res:
     isConfigured: result.configured,
     redirectUri: getRedirectUri(),
     secretPath: getCAIASecretPath(),
+    cspNonce: res.locals.cspNonce,
   });
 
   res.setHeader('Content-Type', 'text/html');
