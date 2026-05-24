@@ -6,11 +6,29 @@ Final deadline: Sunday, May 24, 2026 at 10:59 PM CT
 
 ## Executive Summary
 
-This audit now has live baseline evidence for all seven required audit categories, plus a Category 8 security-tool extension. The local ShipShape stack was run with a seeded PostgreSQL database, authenticated browser flows, API load tests, source-map bundle analysis, TypeScript AST counts, repeated API test runs, API coverage, runtime capture, axe scans, Lighthouse accessibility reports, static security scanning, and an active live-app security probe.
+This audit has live baseline evidence for all seven original audit categories, plus the Category 8 security-tool extension. The local ShipShape stack was run with a seeded PostgreSQL database, authenticated browser flows, API load tests, source-map bundle analysis, TypeScript AST counts, repeated API test runs, API coverage, runtime capture, axe scans, Lighthouse accessibility reports, static security scanning, and an active live-app security probe.
 
-The strongest engineering signals are the strict TypeScript configuration, a stable API suite across three consecutive runs, fast database plans on the seeded local dataset, and clean axe/Lighthouse results after the contrast remediation. The weakest signals are the high concentration of type escape hatches in API route files, the 2.07 MB main frontend chunk, missing frontend unit-test execution due a `jsdom`/ESM environment failure, and weak offline reload behavior.
+The final rubric threshold work is now complete for the implementation categories. Category 1 reduced measured type-safety violations by 25.14%, Category 2 reduced the initial JS chunk by 77.31%, Category 3 reduced P95 latency by more than 20% on two benchmarked endpoints, Category 4 reduced authenticated session-validation query count by 33.33%, Category 5 restored the web test suite from zero executable tests to 151 passing tests, Category 6 documents three runtime/edge-case fixes, Category 7 fixed all Critical/Serious axe findings on the audited authenticated pages, and Category 8 now has a live-app probe at 17 passed / 0 failed.
 
-Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries are mirrored under `docs/audit-evidence/`. Category 8 security-tool evidence lives under `docs/security-tool/`. The most important files are `docs/audit-evidence/api-benchmarks.json`, `docs/audit-evidence/db-query-capture.json`, `docs/audit-evidence/aurora-query-counts.json`, `docs/audit-evidence/browser-accessibility.json`, `docs/audit-evidence/lighthouse-summary.json`, `docs/audit-evidence/bundle-analysis.json`, `docs/audit-evidence/type-safety.json`, `docs/audit-evidence/api-test-runs.json`, `docs/audit-evidence/api-coverage.json`, `docs/security-tool/latest-security-report.json`, and `docs/security-tool/latest-probe-report.json`.
+Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries are mirrored under `docs/audit-evidence/`. Category 8 security-tool evidence lives under `docs/security-tool/`. The most important final files are `docs/audit-evidence/type-safety-after-auth-context.json`, `docs/audit-evidence/bundle-analysis-after-route-splitting.json`, `docs/audit-evidence/api-benchmarks-after-session-touch-throttle.json`, `docs/audit-evidence/auth-query-count-after.json`, `docs/audit-evidence/web-test-run-after-jsdom-pin.json`, `docs/audit-evidence/browser-runtime-after-offline-shell.json`, `docs/audit-evidence/browser-accessibility-after-contrast.json`, `docs/security-tool/latest-security-report.json`, and `docs/security-tool/latest-probe-report.json`.
+
+## Final Rubric Status
+
+Jayce asked to leave the demo video and social posting out of this update. With those exclusions, the build is aligned to the final rubric:
+
+| Rubric area | Status | Evidence |
+| --- | --- | --- |
+| All 8 audit categories | Pass | `audit.md`, `docs/audit-evidence/`, `docs/security-tool/` |
+| Category 1 type safety | Pass | 1,281 -> 959 total violations, 25.14% reduction |
+| Category 2 bundle size | Pass | Initial chunk 2,073,742 -> 470,513 bytes, 77.31% reduction |
+| Category 3 API response | Pass | `/api/weeks` P95 32.8% faster; `/api/dashboard/my-work` P95 31.0% faster |
+| Category 4 database efficiency | Pass | Session-validation query count 3 -> 2, 33.33% reduction |
+| Category 5 tests | Pass | Web Vitest restored to 16 files / 151 tests passing |
+| Category 6 runtime/edge cases | Pass | Offline recovery, malformed document-ID handling, session write throttling |
+| Category 7 accessibility | Pass | 0 Critical/Serious axe violations on audited authenticated pages |
+| Category 8 security tool | Pass | Static scanner 13/13; live probe 17/17 |
+| Deployed app | Pass | `https://d9o5hawnpdm4g.cloudfront.net` |
+| AI cost analysis | Pass | `docs/shipshape-ai-cost-analysis.md` |
 
 ## Orientation
 
@@ -39,7 +57,7 @@ Raw evidence lives under `.audit/` locally, and submission-ready JSON summaries 
 
 The browser calls `web/src/lib/api.ts`, which handles CSRF/session behavior at `ensureCsrfToken` and `apiGet` (`web/src/lib/api.ts:54`, `web/src/lib/api.ts:118`). API routes are mounted in `api/src/app.ts`: CSRF token at `api/src/app.ts:160`, documents at `api/src/app.ts:183`, issues at `api/src/app.ts:186`, weeks at `api/src/app.ts:190`, and dashboard at `api/src/app.ts:209`.
 
-For an authenticated list flow, the browser requests `/api/documents`; Express routes through `authMiddleware`; the route reads `req.userId!` and `req.workspaceId!` and queries PostgreSQL with visibility filtering (`api/src/routes/documents.ts:94`, `api/src/routes/documents.ts:97`, `api/src/routes/documents.ts:98`).
+For an authenticated list flow, the browser requests `/api/documents`; Express routes through `authMiddleware`; the route reads typed auth context through `getAuthContext(req)` and queries PostgreSQL with visibility filtering (`api/src/routes/documents.ts`, `api/src/utils/auth-context.ts`).
 
 ### TypeScript Pattern Citations
 
@@ -49,7 +67,7 @@ The strict compiler posture is real, but the escape hatches cluster at risk boun
 | --- | --- | --- |
 | Unstructured editor content | `api/src/routes/documents.ts:44`, `api/src/routes/documents.ts:53` | `z.any()` allows document payloads to cross API boundaries without shape validation |
 | Database row escape | `api/src/routes/issues.ts:82` | `row: any` hides nullable/JSONB assumptions in issue mapping |
-| Auth assumptions | `api/src/routes/issues.ts:118`, `api/src/routes/issues.ts:119` | Non-null assertions assume middleware invariants in route code |
+| Auth context narrowing | `api/src/utils/auth-context.ts` | Shared helper now narrows authenticated `userId` / `workspaceId` instead of repeating non-null assertions |
 | Frontend session handling | `web/src/lib/api.ts:35`, `web/src/lib/api.ts:54` | Centralized behavior is good, but redirect/throw paths need runtime coverage |
 
 ### Three Strongest Areas
@@ -60,9 +78,9 @@ The strict compiler posture is real, but the escape hatches cluster at risk boun
 
 ### Three Weakest Areas
 
-1. Type escape pressure is concentrated in high-risk API route handlers.
-2. The web app ships a very large main chunk: `index-BXwX_FdO.js` is 2,073,742 bytes before gzip.
-3. Offline reload behavior falls out to Chrome's network error page instead of a recoverable in-app offline state.
+1. Some JSONB/document-content boundaries still need careful validation over time.
+2. API route and service coverage is useful but not yet exhaustive.
+3. The security tool depends on keeping SSM probe credentials and AWS reports current after future deployments.
 
 ## Category 1: Type Safety
 
@@ -110,6 +128,19 @@ Strict mode is not the problem; concentrated escape hatches are. The API routes 
 
 Severity: High for API route clusters.
 
+### Final Improvement Result
+
+Evidence: `docs/audit-evidence/type-safety-after-auth-context.json`
+
+- Total violations: 1,281 -> 959
+- Reduction: 322 violations, 25.14%
+- Explicit `any`: 260 -> 209
+- Type assertions: 691 -> 659
+- Non-null assertions: 329 -> 90
+- API type-check passed
+
+Result: passes the rubric threshold of 25% reduction.
+
 ## Category 2: Bundle Size
 
 ### Methodology
@@ -150,6 +181,16 @@ The production build succeeds, but the initial chunk is too large. The strongest
 
 Severity: High for initial load.
 
+### Final Improvement Result
+
+Evidence: `docs/audit-evidence/bundle-analysis-after-route-splitting.json`
+
+- Initial JS chunk: 2,073,742 bytes -> 470,513 bytes
+- Initial-load reduction: 77.31%
+- Web type-check and production build passed
+
+Result: passes the rubric threshold through the initial-load reduction path.
+
 ## Category 3: API Response Time
 
 ### Methodology
@@ -187,6 +228,19 @@ $env:AUDIT_REQUEST_DELAY_MS='3500'; node scripts/audit-api-benchmark.mjs
 `/api/documents` and `/api/issues` show the highest P95/P99 growth under 50 concurrent workers. That lines up with the larger response bodies and route complexity. These should be the first endpoints measured again after Phase 2 fixes.
 
 Severity: Medium on seeded local data; re-test on AWS/Aurora.
+
+### Final Improvement Result
+
+Evidence: `docs/audit-evidence/api-benchmarks-after-session-touch-throttle.json`
+
+The final after-run used the same local seeded benchmark harness and the same 3,500 ms worker delay as baseline.
+
+| Endpoint | Baseline P95 at 50c | After P95 at 50c | Change |
+| --- | ---: | ---: | ---: |
+| `/api/weeks` | 144.89 ms | 97.42 ms | 32.8% faster |
+| `/api/dashboard/my-work` | 150.61 ms | 103.86 ms | 31.0% faster |
+
+Result: passes the rubric threshold of 20% P95 reduction on at least two endpoints.
 
 ## Category 4: Database Query Efficiency
 
@@ -237,6 +291,16 @@ On the seeded local dataset and the deployed Aurora production environment, the 
 
 Severity: Low on current seed and production smoke volume.
 
+### Final Improvement Result
+
+Evidence: `docs/audit-evidence/auth-query-count-after.json`
+
+- Target flow: authenticated session validation
+- Query count: 3 -> 2
+- Reduction: 33.33%
+
+Result: passes the rubric threshold of 20% query-count reduction on one flow.
+
 ## Category 5: Test Coverage and Quality
 
 ### Methodology
@@ -272,6 +336,17 @@ The API suite is stable and now has real coverage numbers. The weakest quality g
 
 Severity: High for web test environment; Medium for API coverage gaps.
 
+### Final Improvement Result
+
+Evidence: `docs/audit-evidence/web-test-run-after-jsdom-pin.json`
+
+- Before: web Vitest exited before executing tests
+- After: 16 web test files passed
+- After: 151 web tests passed
+- Failures: 0
+
+Result: passes the test-quality improvement path by restoring meaningful executable web coverage.
+
 ## Category 6: Runtime Error and Edge-Case Handling
 
 ### Methodology
@@ -298,6 +373,18 @@ node scripts/audit-browser-accessibility.mjs
 The slow-network path eventually renders usable content, but the offline reload path is weak: the app does not present a recoverable in-app offline state when the document route is reloaded offline. That is a user-facing resilience gap for a collaborative tool.
 
 Severity: Medium.
+
+### Final Improvement Result
+
+Evidence: `docs/audit-evidence/browser-runtime-after-offline-shell.json`
+
+Three runtime/edge-case fixes were completed:
+
+1. Offline reload recovery keeps `/docs` inside the app shell and displays cached content plus an offline banner.
+2. Malformed document IDs now return `400 {"error":"Invalid document ID"}` before database access.
+3. Session activity writes are throttled inside the 60-second touch window, reducing hot-path write failures and latency spikes.
+
+Result: passes the rubric threshold of three error-handling gaps fixed, including a real user-facing offline confusion scenario.
 
 ## Category 7: Accessibility
 
@@ -327,6 +414,18 @@ corepack pnpm dlx lighthouse http://localhost:5173/<route> --only-categories=acc
 The prior color-contrast failures have been remediated for the five scanned authenticated pages. Axe reports zero violations on all five routes, and Lighthouse reports a 100 accessibility score on those same routes. Lighthouse still emitted a Windows temp-directory cleanup error after writing JSON output; the generated JSON reports are complete and parsed in `docs/audit-evidence/lighthouse-summary.json`.
 
 Severity: Low after remediation; keep these scans in the regression checklist.
+
+### Final Improvement Result
+
+Evidence: `docs/audit-evidence/browser-accessibility-after-contrast.json`
+
+- `/my-week`: 0 axe violations
+- `/docs`: 0 axe violations
+- `/issues`: 0 axe violations
+- `/team/allocation`: 0 axe violations
+- `/dashboard`: 0 axe violations
+
+Result: passes the accessibility threshold by fixing all Critical/Serious axe findings on the audited authenticated pages.
 
 ## Category 8: Security Tool
 
@@ -408,4 +507,4 @@ Severity: Low after remediation; keep both `security:audit` and `security:probe`
 
 ## Recommendation
 
-This baseline is now strong enough to pass the measurement side of the audit gate and includes a working Category 8 security-tool extension. The first implementation fixes should target frontend test environment repair, bundle splitting around editor/collaboration dependencies, and an app-level offline recovery state for document reloads.
+The audit gate and final implementation thresholds are complete for Categories 1-8. Demo video and social posting are intentionally excluded from this update per Jayce's instruction. Future maintenance should keep the security-tool reports current after production deploys, rotate the AWS access key used during setup, and continue adding tests around high-risk JSONB/document workflows.
