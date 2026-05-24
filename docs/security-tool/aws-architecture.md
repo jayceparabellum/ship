@@ -33,7 +33,7 @@ flowchart TD
 
 ## Terraform Toggle
 
-The AWS resources are disabled by default.
+The root Terraform security-tool resources are disabled by default. The production environment runner has been applied from `terraform/environments/prod/security-tool.tf`.
 
 Enable them in `terraform.tfvars`:
 

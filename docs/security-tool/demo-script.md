@@ -29,7 +29,7 @@ Then point to:
 - `docs/security-tool/latest-security-report.md`
 - `docs/security-tool/latest-probe-report.md`
 - `docs/security-tool/aws-architecture.md`
-- `terraform/security-tool.tf`
+- `terraform/environments/prod/security-tool.tf`
 
 Speaking notes:
 
@@ -136,7 +136,7 @@ The current evidence is:
 Static audit report: docs/security-tool/latest-security-report.md
 Active probe report: docs/security-tool/latest-probe-report.md
 Latest active probe: 17 passed, 0 failed
-AWS design: docs/security-tool/aws-architecture.md and terraform/security-tool.tf
+AWS design: docs/security-tool/aws-architecture.md and terraform/environments/prod/security-tool.tf
 ```
 
 The production runner now executes the same probe through AWS Lambda and CodeBuild. The latest reports are stored at `s3://ship-prod-security-tool-743737183156/latest/`.

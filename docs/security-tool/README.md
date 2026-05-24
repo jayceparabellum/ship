@@ -37,7 +37,7 @@ Outputs:
 AWS deployment design:
 
 - `docs/security-tool/aws-architecture.md`
-- `terraform/security-tool.tf`
+- `terraform/environments/prod/security-tool.tf`
 
 ## What It Checks
 
