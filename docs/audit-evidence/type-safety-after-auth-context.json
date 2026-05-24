@@ -1,0 +1,192 @@
+{
+  "totals": {
+    "any": 209,
+    "assertions": 659,
+    "nonNull": 90,
+    "tsDirectives": 1
+  },
+  "byPackage": {
+    "web": {
+      "any": 27,
+      "assertions": 376,
+      "nonNull": 33,
+      "tsDirectives": 1
+    },
+    "api": {
+      "any": 182,
+      "assertions": 281,
+      "nonNull": 57,
+      "tsDirectives": 0
+    },
+    "shared": {
+      "any": 0,
+      "assertions": 2,
+      "nonNull": 0,
+      "tsDirectives": 0
+    }
+  },
+  "topFiles": [
+    {
+      "file": "api/src/__tests__/auth.test.ts",
+      "total": 63,
+      "any": 24,
+      "assertions": 39,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/__tests__/activity.test.ts",
+      "total": 49,
+      "any": 23,
+      "assertions": 23,
+      "nonNull": 3,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/routes/issues-history.test.ts",
+      "total": 40,
+      "any": 20,
+      "assertions": 20,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "web/src/pages/UnifiedDocumentPage.tsx",
+      "total": 37,
+      "any": 0,
+      "assertions": 36,
+      "nonNull": 1,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/routes/weeks.ts",
+      "total": 37,
+      "any": 11,
+      "assertions": 26,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/db/seed.ts",
+      "total": 35,
+      "any": 0,
+      "assertions": 0,
+      "nonNull": 35,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/__tests__/transformIssueLinks.test.ts",
+      "total": 35,
+      "any": 21,
+      "assertions": 13,
+      "nonNull": 1,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/routes/projects.test.ts",
+      "total": 34,
+      "any": 17,
+      "assertions": 17,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "web/src/components/UnifiedEditor.tsx",
+      "total": 28,
+      "any": 0,
+      "assertions": 28,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "web/src/components/sidebars/PropertiesPanel.tsx",
+      "total": 25,
+      "any": 0,
+      "assertions": 25,
+      "nonNull": 0,
+      "tsDirectives": 0
+    }
+  ],
+  "productionTopFiles": [
+    {
+      "file": "web/src/pages/UnifiedDocumentPage.tsx",
+      "total": 37,
+      "any": 0,
+      "assertions": 36,
+      "nonNull": 1,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/routes/weeks.ts",
+      "total": 37,
+      "any": 11,
+      "assertions": 26,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/db/seed.ts",
+      "total": 35,
+      "any": 0,
+      "assertions": 0,
+      "nonNull": 35,
+      "tsDirectives": 0
+    },
+    {
+      "file": "web/src/components/UnifiedEditor.tsx",
+      "total": 28,
+      "any": 0,
+      "assertions": 28,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "web/src/components/sidebars/PropertiesPanel.tsx",
+      "total": 25,
+      "any": 0,
+      "assertions": 25,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/routes/projects.ts",
+      "total": 25,
+      "any": 15,
+      "assertions": 10,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "web/src/components/document-tabs/ProjectDetailsTab.tsx",
+      "total": 19,
+      "any": 0,
+      "assertions": 19,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/utils/yjsConverter.ts",
+      "total": 17,
+      "any": 15,
+      "assertions": 2,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "web/src/hooks/useWeeksQuery.ts",
+      "total": 16,
+      "any": 0,
+      "assertions": 16,
+      "nonNull": 0,
+      "tsDirectives": 0
+    },
+    {
+      "file": "api/src/routes/weekly-plans.ts",
+      "total": 16,
+      "any": 0,
+      "assertions": 15,
+      "nonNull": 1,
+      "tsDirectives": 0
+    }
+  ]
+}

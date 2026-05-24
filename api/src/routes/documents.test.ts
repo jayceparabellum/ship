@@ -94,6 +94,15 @@ describe('Documents API - PATCH with Issue Fields', () => {
   })
 
   describe('PATCH /api/documents/:id with top-level issue fields', () => {
+    it('should return a validation error for malformed document IDs', async () => {
+      const response = await request(app)
+        .get('/api/documents/not-a-uuid')
+        .set('Cookie', sessionCookie)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe('Invalid document ID')
+    })
+
     it('should accept state at top level and store in properties', async () => {
       const response = await request(app)
         .patch(`/api/documents/${testIssueId}`)

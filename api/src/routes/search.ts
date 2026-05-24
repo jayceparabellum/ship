@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { pool } from '../db/client.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { getAuthContext } from '../utils/auth-context.js';
 import { isWorkspaceAdmin } from '../middleware/visibility.js';
 
 type RouterType = ReturnType<typeof Router>;
@@ -23,8 +24,7 @@ function parseSearchLimit(value: unknown, fallback = 10, max = 50): number {
 searchRouter.get('/mentions', authMiddleware, async (req: Request, res: Response) => {
   try {
     const searchQuery = (req.query.q as string) || '';
-    const workspaceId = req.workspaceId!;
-    const userId = req.userId!;
+    const { userId, workspaceId } = getAuthContext(req);
 
     // SECURITY: Escape wildcard characters to prevent SQL wildcard injection
     const sanitizedQuery = escapeLikePattern(searchQuery);
@@ -89,8 +89,7 @@ searchRouter.get('/learnings', authMiddleware, async (req: Request, res: Respons
   try {
     const searchQuery = (req.query.q as string) || '';
     const programId = req.query.program_id as string | undefined;
-    const workspaceId = req.workspaceId!;
-    const userId = req.userId!;
+    const { userId, workspaceId } = getAuthContext(req);
     const limit = parseSearchLimit(req.query.limit);
 
     // SECURITY: Escape wildcard characters to prevent SQL wildcard injection

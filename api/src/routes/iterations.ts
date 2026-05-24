@@ -3,6 +3,7 @@ import { pool } from '../db/client.js';
 import { z } from 'zod';
 import { getVisibilityContext, VISIBILITY_FILTER_SQL } from '../middleware/visibility.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { getAuthContext } from '../utils/auth-context.js';
 
 type RouterType = ReturnType<typeof Router>;
 const router: RouterType = Router();
@@ -26,8 +27,7 @@ const listIterationsSchema = z.object({
 router.post('/:id/iterations', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id: sprintId } = req.params;
-    const userId = req.userId!;
-    const workspaceId = req.workspaceId!;
+    const { userId, workspaceId } = getAuthContext(req);
 
     const parsed = createIterationSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -96,8 +96,7 @@ router.post('/:id/iterations', authMiddleware, async (req: Request, res: Respons
 router.get('/:id/iterations', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id: sprintId } = req.params;
-    const userId = req.userId!;
-    const workspaceId = req.workspaceId!;
+    const { userId, workspaceId } = getAuthContext(req);
 
     // Parse and validate query params
     const queryParsed = listIterationsSchema.safeParse(req.query);

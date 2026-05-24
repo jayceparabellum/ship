@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { pool } from '../db/client.js';
 import { getVisibilityContext, VISIBILITY_FILTER_SQL } from '../middleware/visibility.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { getAuthContext } from '../utils/auth-context.js';
 import { computeICEScore } from '@ship/shared';
 import { extractText } from '../utils/document-content.js';
 
@@ -73,8 +74,7 @@ function calculateCurrentWeekNumber(rawStartDate: unknown): number {
  */
 router.get('/observer', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
-    const workspaceId = req.workspaceId!;
+    const { userId, workspaceId } = getAuthContext(req);
     const { isAdmin } = await getVisibilityContext(userId, workspaceId);
 
     const workspaceResult = await pool.query(
@@ -285,8 +285,7 @@ router.get('/observer', authMiddleware, async (req: Request, res: Response) => {
  */
 router.get('/my-work', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
-    const workspaceId = req.workspaceId!;
+    const { userId, workspaceId } = getAuthContext(req);
 
     // Get visibility context for filtering
     const { isAdmin } = await getVisibilityContext(userId, workspaceId);
@@ -561,8 +560,7 @@ function extractPlanItems(content: unknown): PlanItem[] {
  */
 router.get('/my-focus', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
-    const workspaceId = req.workspaceId!;
+    const { userId, workspaceId } = getAuthContext(req);
 
     // 1. Look up the user's person document
     const personResult = await pool.query(
@@ -741,8 +739,7 @@ router.get('/my-focus', authMiddleware, async (req: Request, res: Response) => {
  */
 router.get('/my-week', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
-    const workspaceId = req.workspaceId!;
+    const { userId, workspaceId } = getAuthContext(req);
 
     // 1. Look up the user's person document
     const personResult = await pool.query(

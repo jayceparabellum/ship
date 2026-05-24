@@ -27,6 +27,7 @@ function createMockReqRes(cookies: Record<string, string> = {}) {
 describe('authMiddleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(pool.query).mockReset();
   });
 
   describe('session validation', () => {
@@ -68,6 +69,7 @@ describe('authMiddleware', () => {
             last_activity: now,
             created_at: now,
             is_super_admin: false,
+            membership_id: 'membership-1',
           }],
         } as any)
         .mockResolvedValueOnce({ rows: [{ id: 'membership-1' }] } as any)
@@ -94,7 +96,8 @@ describe('authMiddleware', () => {
           last_activity: staleActivity,
           created_at: now,
           is_super_admin: false,
-        }],
+            membership_id: 'membership-1',
+          }],
       } as any);
 
       await authMiddleware(req, res, next);
@@ -120,7 +123,8 @@ describe('authMiddleware', () => {
           last_activity: now,
           created_at: oldCreatedAt,
           is_super_admin: false,
-        }],
+            membership_id: 'membership-1',
+          }],
       } as any);
 
       await authMiddleware(req, res, next);
@@ -147,6 +151,7 @@ describe('authMiddleware', () => {
             last_activity: staleActivity,
             created_at: now,
             is_super_admin: false,
+            membership_id: 'membership-1',
           }],
         } as any)
         .mockResolvedValueOnce({ rows: [] } as any);
@@ -172,6 +177,7 @@ describe('authMiddleware', () => {
             last_activity: now,
             created_at: now,
             is_super_admin: false,
+            membership_id: null,
           }],
         } as any)
         .mockResolvedValueOnce({ rows: [] } as any);
@@ -199,6 +205,7 @@ describe('authMiddleware', () => {
             last_activity: now,
             created_at: now,
             is_super_admin: true,
+            membership_id: null,
           }],
         } as any)
         .mockResolvedValueOnce({ rows: [] } as any);
@@ -238,6 +245,7 @@ describe('authMiddleware', () => {
             last_activity: lastActivity,
             created_at: now,
             is_super_admin: false,
+            membership_id: 'membership-1',
           }],
         } as any)
         .mockResolvedValueOnce({ rows: [{ id: 'membership-1' }] } as any)
@@ -268,6 +276,7 @@ describe('authMiddleware', () => {
             last_activity: lastActivity,
             created_at: now,
             is_super_admin: false,
+            membership_id: 'membership-1',
           }],
         } as any)
         .mockResolvedValueOnce({ rows: [{ id: 'membership-1' }] } as any)
@@ -305,6 +314,7 @@ describe('authMiddleware', () => {
             user_id: 'user-123',
             workspace_id: 'ws-123',
             is_super_admin: false,
+            membership_id: 'membership-1',
           }],
         } as any)
         // Mock update last_used_at
@@ -364,6 +374,7 @@ describe('authMiddleware', () => {
             user_id: 'api-user',
             workspace_id: 'api-ws',
             is_super_admin: false,
+            membership_id: 'membership-1',
           }],
         } as any)
         .mockResolvedValueOnce({ rows: [] } as any);

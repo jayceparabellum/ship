@@ -53,12 +53,13 @@ Latest health check during review:
 
 ## Remaining Risks
 
-The audit gate is complete, and `docs/shipshape-improvement-documentation.md` now has after-fix proof for Categories 1 through 7. The main remaining risk is Phase 2 depth rather than missing evidence: Category 3 has real benchmark evidence, but only one endpoint cleared the original 20% P95 stretch target at 50 concurrency. Category 6 fixes the highest-risk offline reload confusion case, but the after capture still records expected development/offline network noise from Vite HMR and realtime WebSocket disconnects.
+The audit gate is complete, and `docs/shipshape-improvement-documentation.md` now has after-fix proof for Categories 1 through 8. Category 1 now clears the 25% reduction threshold, Category 3 now clears the two-endpoint P95 threshold, and Category 6 now documents three runtime/edge-case fixes.
 
 The demo video remains intentionally excluded per Jayce's instruction.
+The social post is intentionally left for Jayce to complete later.
 
 The final copy/paste submission package is tracked at `docs/shipshape-final-submission-package.md`.
 
 ## Final Review Result
 
-Ready for final submission without the demo video. The remaining post-submission cleanup item is rotating the AWS access key used during setup.
+Ready for final submission without the demo video and social post. The remaining post-submission cleanup item is rotating the AWS access key used during setup.

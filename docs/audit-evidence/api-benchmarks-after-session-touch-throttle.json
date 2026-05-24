@@ -1,0 +1,290 @@
+{
+  "generatedAt": "2026-05-24T19:14:37.336Z",
+  "baseUrl": "http://localhost:3000",
+  "durationMs": 30000,
+  "requestDelayMs": 3500,
+  "endpoints": [
+    {
+      "name": "session identity",
+      "method": "GET",
+      "path": "/api/auth/me"
+    },
+    {
+      "name": "document list",
+      "method": "GET",
+      "path": "/api/documents"
+    },
+    {
+      "name": "issue list",
+      "method": "GET",
+      "path": "/api/issues"
+    },
+    {
+      "name": "week list",
+      "method": "GET",
+      "path": "/api/weeks"
+    },
+    {
+      "name": "dashboard my work",
+      "method": "GET",
+      "path": "/api/dashboard/my-work"
+    }
+  ],
+  "results": [
+    {
+      "name": "session identity",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "concurrency": 10,
+      "durationSeconds": 30,
+      "requests": 90,
+      "requestsPerSecond": 3,
+      "errors": 0,
+      "statusCounts": {
+        "200": 90
+      },
+      "p50Ms": 17.84,
+      "p95Ms": 74.38,
+      "p99Ms": 84.91,
+      "maxMs": 84.91
+    },
+    {
+      "name": "session identity",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "concurrency": 25,
+      "durationSeconds": 30,
+      "requests": 225,
+      "requestsPerSecond": 7.5,
+      "errors": 0,
+      "statusCounts": {
+        "200": 225
+      },
+      "p50Ms": 24.06,
+      "p95Ms": 66.26,
+      "p99Ms": 67.86,
+      "maxMs": 87.48
+    },
+    {
+      "name": "session identity",
+      "method": "GET",
+      "path": "/api/auth/me",
+      "concurrency": 50,
+      "durationSeconds": 30,
+      "requests": 450,
+      "requestsPerSecond": 15,
+      "errors": 0,
+      "statusCounts": {
+        "200": 450
+      },
+      "p50Ms": 18.26,
+      "p95Ms": 111.8,
+      "p99Ms": 120.47,
+      "maxMs": 121.04
+    },
+    {
+      "name": "document list",
+      "method": "GET",
+      "path": "/api/documents",
+      "concurrency": 10,
+      "durationSeconds": 30,
+      "requests": 90,
+      "requestsPerSecond": 3,
+      "errors": 0,
+      "statusCounts": {
+        "200": 90
+      },
+      "p50Ms": 21.48,
+      "p95Ms": 61.98,
+      "p99Ms": 89.81,
+      "maxMs": 89.81
+    },
+    {
+      "name": "document list",
+      "method": "GET",
+      "path": "/api/documents",
+      "concurrency": 25,
+      "durationSeconds": 30,
+      "requests": 225,
+      "requestsPerSecond": 7.5,
+      "errors": 0,
+      "statusCounts": {
+        "200": 225
+      },
+      "p50Ms": 17.53,
+      "p95Ms": 146.07,
+      "p99Ms": 191.05,
+      "maxMs": 199.88
+    },
+    {
+      "name": "document list",
+      "method": "GET",
+      "path": "/api/documents",
+      "concurrency": 50,
+      "durationSeconds": 30,
+      "requests": 450,
+      "requestsPerSecond": 15,
+      "errors": 0,
+      "statusCounts": {
+        "200": 450
+      },
+      "p50Ms": 23.1,
+      "p95Ms": 228.76,
+      "p99Ms": 301.62,
+      "maxMs": 325.25
+    },
+    {
+      "name": "issue list",
+      "method": "GET",
+      "path": "/api/issues",
+      "concurrency": 10,
+      "durationSeconds": 30,
+      "requests": 90,
+      "requestsPerSecond": 3,
+      "errors": 0,
+      "statusCounts": {
+        "200": 90
+      },
+      "p50Ms": 22.71,
+      "p95Ms": 58.91,
+      "p99Ms": 94.73,
+      "maxMs": 94.73
+    },
+    {
+      "name": "issue list",
+      "method": "GET",
+      "path": "/api/issues",
+      "concurrency": 25,
+      "durationSeconds": 30,
+      "requests": 225,
+      "requestsPerSecond": 7.5,
+      "errors": 0,
+      "statusCounts": {
+        "200": 225
+      },
+      "p50Ms": 22.57,
+      "p95Ms": 139.75,
+      "p99Ms": 183.39,
+      "maxMs": 194.53
+    },
+    {
+      "name": "issue list",
+      "method": "GET",
+      "path": "/api/issues",
+      "concurrency": 50,
+      "durationSeconds": 30,
+      "requests": 450,
+      "requestsPerSecond": 15,
+      "errors": 0,
+      "statusCounts": {
+        "200": 450
+      },
+      "p50Ms": 31.24,
+      "p95Ms": 262.31,
+      "p99Ms": 316.12,
+      "maxMs": 329.57
+    },
+    {
+      "name": "week list",
+      "method": "GET",
+      "path": "/api/weeks",
+      "concurrency": 10,
+      "durationSeconds": 30,
+      "requests": 90,
+      "requestsPerSecond": 3,
+      "errors": 0,
+      "statusCounts": {
+        "200": 90
+      },
+      "p50Ms": 14.68,
+      "p95Ms": 26.23,
+      "p99Ms": 27.29,
+      "maxMs": 27.29
+    },
+    {
+      "name": "week list",
+      "method": "GET",
+      "path": "/api/weeks",
+      "concurrency": 25,
+      "durationSeconds": 30,
+      "requests": 225,
+      "requestsPerSecond": 7.5,
+      "errors": 0,
+      "statusCounts": {
+        "200": 225
+      },
+      "p50Ms": 25.12,
+      "p95Ms": 45.79,
+      "p99Ms": 48.64,
+      "maxMs": 53.21
+    },
+    {
+      "name": "week list",
+      "method": "GET",
+      "path": "/api/weeks",
+      "concurrency": 50,
+      "durationSeconds": 30,
+      "requests": 450,
+      "requestsPerSecond": 15,
+      "errors": 0,
+      "statusCounts": {
+        "200": 450
+      },
+      "p50Ms": 26.33,
+      "p95Ms": 97.42,
+      "p99Ms": 111.29,
+      "maxMs": 113.86
+    },
+    {
+      "name": "dashboard my work",
+      "method": "GET",
+      "path": "/api/dashboard/my-work",
+      "concurrency": 10,
+      "durationSeconds": 30,
+      "requests": 90,
+      "requestsPerSecond": 3,
+      "errors": 0,
+      "statusCounts": {
+        "200": 90
+      },
+      "p50Ms": 25.84,
+      "p95Ms": 34.96,
+      "p99Ms": 37.52,
+      "maxMs": 37.52
+    },
+    {
+      "name": "dashboard my work",
+      "method": "GET",
+      "path": "/api/dashboard/my-work",
+      "concurrency": 25,
+      "durationSeconds": 30,
+      "requests": 225,
+      "requestsPerSecond": 7.5,
+      "errors": 0,
+      "statusCounts": {
+        "200": 225
+      },
+      "p50Ms": 30.31,
+      "p95Ms": 59.91,
+      "p99Ms": 64.39,
+      "maxMs": 65.16
+    },
+    {
+      "name": "dashboard my work",
+      "method": "GET",
+      "path": "/api/dashboard/my-work",
+      "concurrency": 50,
+      "durationSeconds": 30,
+      "requests": 450,
+      "requestsPerSecond": 15,
+      "errors": 0,
+      "statusCounts": {
+        "200": 450
+      },
+      "p50Ms": 33.95,
+      "p95Ms": 103.86,
+      "p99Ms": 110.39,
+      "maxMs": 113.05
+    }
+  ]
+}
