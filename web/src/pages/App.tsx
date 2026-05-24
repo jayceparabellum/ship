@@ -1507,10 +1507,6 @@ function ProgramsList({
     });
   }, [onUpdateProgram, showToast]);
 
-  if (programs.length === 0) {
-    return <div className="px-3 py-2 text-sm text-muted">No programs yet</div>;
-  }
-
   const contextMenuProgram = contextMenu ? programs.find(p => p.id === contextMenu.programId) : null;
   const securityToolActive = location.pathname === '/programs/security';
 
@@ -1531,65 +1527,69 @@ function ProgramsList({
         </button>
       </div>
 
-      <ul className="space-y-0.5 px-2" data-testid="programs-list">
-        {programs.map((program) => (
-          <li key={program.id} data-testid="program-item">
-            <div
-              className="group relative"
-              onContextMenu={(e) => handleContextMenu(e, program.id)}
-            >
-              {editingId === program.id ? (
-                <div className="flex items-center gap-2 px-2 py-1.5">
-                  <span
-                    className="h-4 w-4 rounded flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
-                    style={{ backgroundColor: program.color, color: getContrastTextColor(program.color) }}
+      {programs.length === 0 ? (
+        <div className="px-3 py-2 text-sm text-muted">No programs yet</div>
+      ) : (
+        <ul className="space-y-0.5 px-2" data-testid="programs-list">
+          {programs.map((program) => (
+            <li key={program.id} data-testid="program-item">
+              <div
+                className="group relative"
+                onContextMenu={(e) => handleContextMenu(e, program.id)}
+              >
+                {editingId === program.id ? (
+                  <div className="flex items-center gap-2 px-2 py-1.5">
+                    <span
+                      className="h-4 w-4 rounded flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
+                      style={{ backgroundColor: program.color, color: getContrastTextColor(program.color) }}
+                    >
+                      {program.emoji || program.name?.[0]?.toUpperCase() || '?'}
+                    </span>
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onBlur={() => handleRenameSubmit(program.id)}
+                      onKeyDown={(e) => handleRenameKeyDown(e, program.id)}
+                      className="flex-1 bg-transparent border-none outline-none text-sm text-foreground"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => onSelect(program.id)}
+                    className={cn(
+                      'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
+                      activeId === program.id
+                        ? 'bg-border/50 text-foreground'
+                        : 'text-muted hover:bg-border/30 hover:text-foreground'
+                    )}
                   >
-                    {program.emoji || program.name?.[0]?.toUpperCase() || '?'}
-                  </span>
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    onBlur={() => handleRenameSubmit(program.id)}
-                    onKeyDown={(e) => handleRenameKeyDown(e, program.id)}
-                    className="flex-1 bg-transparent border-none outline-none text-sm text-foreground"
-                  />
-                </div>
-              ) : (
-                <button
-                  onClick={() => onSelect(program.id)}
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
-                    activeId === program.id
-                      ? 'bg-border/50 text-foreground'
-                      : 'text-muted hover:bg-border/30 hover:text-foreground'
-                  )}
-                >
-                  <span
-                    className="h-4 w-4 rounded flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
-                    style={{ backgroundColor: program.color, color: getContrastTextColor(program.color) }}
+                    <span
+                      className="h-4 w-4 rounded flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
+                      style={{ backgroundColor: program.color, color: getContrastTextColor(program.color) }}
+                    >
+                      {program.emoji || program.name?.[0]?.toUpperCase() || '?'}
+                    </span>
+                    <span className="flex-1 truncate">{program.name}</span>
+                  </button>
+                )}
+                {/* Three-dot menu button */}
+                {editingId !== program.id && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleMenuClick(e, program.id)}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-border/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label={`Actions for ${program.name}`}
                   >
-                    {program.emoji || program.name?.[0]?.toUpperCase() || '?'}
-                  </span>
-                  <span className="flex-1 truncate">{program.name}</span>
-                </button>
-              )}
-              {/* Three-dot menu button */}
-              {editingId !== program.id && (
-                <button
-                  type="button"
-                  onClick={(e) => handleMenuClick(e, program.id)}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-border/50 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label={`Actions for ${program.name}`}
-                >
-                  <MoreHorizontalIcon />
-                </button>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+                    <MoreHorizontalIcon />
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {/* Context Menu */}
       {contextMenu && contextMenuProgram && (
