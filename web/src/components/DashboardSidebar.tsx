@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { cn } from '@/lib/cn';
 
 const STORAGE_KEY = 'dashboard-view';
-export type DashboardView = 'my-work' | 'overview';
+export type DashboardView = 'my-work' | 'overview' | 'observer';
 
 export function DashboardSidebar() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -56,6 +56,21 @@ export function DashboardSidebar() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
         </svg>
         Overview
+      </button>
+
+      <button
+        onClick={() => setView('observer')}
+        className={cn(
+          'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors mt-1',
+          currentView === 'observer'
+            ? 'bg-accent/30 text-blue-200 font-medium'
+            : 'text-muted hover:bg-border/30 hover:text-foreground'
+        )}
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 13.5h4.5L9 10l3 7 2.25-5.5H21M4.5 6.75h15M4.5 20.25h15" />
+        </svg>
+        Observer
       </button>
     </div>
   );

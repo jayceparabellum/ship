@@ -3266,6 +3266,151 @@ components:
         - items
         - currentSprintNumber
         - daysRemaining
+    ObserverProgram:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID identifier
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        active_project_count:
+          type: integer
+        active_week_count:
+          type: integer
+        open_issue_count:
+          type: integer
+        completed_issue_count:
+          type: integer
+        blocked_issue_count:
+          type: integer
+        recent_standup_count:
+          type: integer
+        reviewable_week_count:
+          type: integer
+        review_count:
+          type: integer
+        missing_review_count:
+          type: integer
+        review_completion_rate:
+          type: integer
+          description: Percent of weekly reviews completed in the observer review window
+      required:
+        - id
+        - title
+        - icon
+        - color
+        - active_project_count
+        - active_week_count
+        - open_issue_count
+        - completed_issue_count
+        - blocked_issue_count
+        - recent_standup_count
+        - reviewable_week_count
+        - review_count
+        - missing_review_count
+        - review_completion_rate
+    ObserverTotals:
+      type: object
+      properties:
+        programs:
+          type: integer
+        active_weeks:
+          type: integer
+        active_projects:
+          type: integer
+        open_issues:
+          type: integer
+        completed_issues:
+          type: integer
+        blocked_issues:
+          type: integer
+        recent_standups:
+          type: integer
+        reviewable_weeks:
+          type: integer
+        review_count:
+          type: integer
+        missing_reviews:
+          type: integer
+        review_completion_rate:
+          type: integer
+      required:
+        - programs
+        - active_weeks
+        - active_projects
+        - open_issues
+        - completed_issues
+        - blocked_issues
+        - recent_standups
+        - reviewable_weeks
+        - review_count
+        - missing_reviews
+        - review_completion_rate
+    ObserverAttentionItem:
+      type: object
+      properties:
+        program_id:
+          type: string
+          format: uuid
+          description: UUID identifier
+          example: 550e8400-e29b-41d4-a716-446655440000
+        program_title:
+          type: string
+        blocked_issue_count:
+          type: integer
+        missing_review_count:
+          type: integer
+      required:
+        - program_id
+        - program_title
+        - blocked_issue_count
+        - missing_review_count
+    ObserverDashboardResponse:
+      type: object
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 datetime string
+          example: "2025-01-30T14:30:00.000Z"
+        current_week_number:
+          type: integer
+        review_window:
+          type: object
+          properties:
+            start_week_number:
+              type: integer
+            end_week_number:
+              type: integer
+          required:
+            - start_week_number
+            - end_week_number
+        totals:
+          $ref: "#/components/schemas/ObserverTotals"
+        programs:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObserverProgram"
+        attention:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObserverAttentionItem"
+      required:
+        - generated_at
+        - current_week_number
+        - review_window
+        - totals
+        - programs
+        - attention
     PlanItem:
       type: object
       properties:
@@ -7464,6 +7609,21 @@ paths:
                   - $ref: "#/components/schemas/RetroContext"
         400:
           description: Missing required parameter for context_type
+  /dashboard/observer:
+    get:
+      tags:
+        - Dashboard
+      summary: Get observer dashboard
+      description: "Returns cross-program leadership visibility: program health, blocked work, standup activity, and sprint review completion."
+      responses:
+        200:
+          description: Observer dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObserverDashboardResponse"
+        404:
+          description: Workspace not found
   /dashboard/my-work:
     get:
       tags:

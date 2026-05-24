@@ -3,11 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useActiveWeeksQuery, ActiveWeek } from '@/hooks/useWeeksQuery';
 import { useProjects, Project } from '@/contexts/ProjectsContext';
 import { useDashboardActionItems } from '@/hooks/useDashboardActionItems';
+import { ObserverProgram, useObserverDashboard } from '@/hooks/useObserverDashboard';
 import { cn } from '@/lib/cn';
 import { formatRelativeTime } from '@/lib/date-utils';
 import { DashboardVariantC } from '@/components/dashboard/DashboardVariantC';
 
-type DashboardView = 'my-work' | 'overview';
+type DashboardView = 'my-work' | 'overview' | 'observer';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -49,6 +50,7 @@ export function DashboardPage() {
   const { data: weeksData, isLoading: weeksLoading } = useActiveWeeksQuery();
   const { projects, loading: projectsLoading } = useProjects();
   const { data: actionItemsData, isLoading: actionItemsLoading } = useDashboardActionItems();
+  const { data: observerData, isLoading: observerLoading, error: observerError } = useObserverDashboard();
   const [recentStandups, setRecentStandups] = useState<Standup[]>([]);
   const [standupsLoading, setStandupsLoading] = useState(true);
 
@@ -169,17 +171,29 @@ export function DashboardPage() {
           {/* Header */}
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              {currentView === 'my-work' ? 'My Work' : 'Dashboard'}
+              {currentView === 'my-work'
+                ? 'My Work'
+                : currentView === 'observer'
+                  ? 'Observer Dashboard'
+                  : 'Dashboard'}
             </h1>
             <p className="mt-1 text-sm text-muted">
               {currentView === 'my-work'
                 ? 'What you need to do right now'
-                : 'Cross-program overview of work transparency'}
+                : currentView === 'observer'
+                  ? 'Leadership visibility across programs, delivery signals, and review health'
+                  : 'Cross-program overview of work transparency'}
             </p>
           </div>
 
           {currentView === 'my-work' ? (
             <DashboardVariantC />
+          ) : currentView === 'observer' ? (
+            <ObserverDashboardView
+              data={observerData}
+              isLoading={observerLoading}
+              error={observerError}
+            />
           ) : (
             /* Overview View - Stats and Lists */
             <>
@@ -265,6 +279,167 @@ export function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ObserverDashboardView({
+  data,
+  isLoading,
+  error,
+}: {
+  data?: ReturnType<typeof useObserverDashboard>['data'];
+  isLoading: boolean;
+  error: unknown;
+}) {
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border border-border bg-background p-6 text-sm text-muted">
+        Loading observer dashboard...
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-6">
+        <div className="font-medium text-red-200">Observer dashboard could not be loaded</div>
+        <p className="mt-1 text-sm text-red-100/80">Refresh the page or try again after the API is available.</p>
+      </div>
+    );
+  }
+
+  const generatedAt = new Date(data.generated_at).toLocaleString();
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <StatCard label="Programs" value={data.totals.programs} color="text-blue-600" />
+        <StatCard label="Active Weeks" value={data.totals.active_weeks} color="text-cyan-600" />
+        <StatCard label="Active Projects" value={data.totals.active_projects} color="text-green-600" />
+        <StatCard label="Open Issues" value={data.totals.open_issues} color="text-amber-600" />
+        <StatCard label="Blocked" value={data.totals.blocked_issues} color="text-red-600" />
+        <StatCard
+          label="Reviews"
+          value={`${data.totals.review_completion_rate}%`}
+          subtitle={`${data.totals.review_count}/${data.totals.reviewable_weeks} complete`}
+          color="text-violet-600"
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="rounded-lg border border-border bg-background">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">Program Health</h2>
+              <p className="text-xs text-muted">
+                Week {data.current_week_number} with reviews from weeks {data.review_window.start_week_number}-{data.review_window.end_week_number}
+              </p>
+            </div>
+            <span className="text-xs text-muted">Updated {generatedAt}</span>
+          </div>
+
+          {data.programs.length === 0 ? (
+            <div className="p-6 text-sm text-muted">No programs found.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-border text-xs uppercase text-muted">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-medium">Program</th>
+                    <th className="px-3 py-3 text-right font-medium">Weeks</th>
+                    <th className="px-3 py-3 text-right font-medium">Projects</th>
+                    <th className="px-3 py-3 text-right font-medium">Open</th>
+                    <th className="px-3 py-3 text-right font-medium">Blocked</th>
+                    <th className="px-3 py-3 text-right font-medium">Standups</th>
+                    <th className="px-4 py-3 text-right font-medium">Review Health</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {data.programs.map(program => (
+                    <ObserverProgramRow key={program.id} program={program} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-border bg-background p-4">
+          <h2 className="text-base font-semibold text-foreground">Attention</h2>
+          <p className="mt-1 text-xs text-muted">Programs with blocked work or missing reviews.</p>
+
+          {data.attention.length === 0 ? (
+            <div className="mt-4 rounded-md border border-green-500/30 bg-green-950/20 p-3 text-sm text-green-100">
+              No blocked issues or missing reviews in the current window.
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {data.attention.map(item => (
+                <Link
+                  key={item.program_id}
+                  to={`/documents/${item.program_id}`}
+                  className="block rounded-md border border-border p-3 transition-colors hover:border-accent/50"
+                >
+                  <div className="font-medium text-foreground">{item.program_title}</div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    {item.blocked_issue_count > 0 && (
+                      <span className="rounded bg-red-950/40 px-2 py-1 text-red-200">
+                        {item.blocked_issue_count} blocked
+                      </span>
+                    )}
+                    {item.missing_review_count > 0 && (
+                      <span className="rounded bg-amber-950/40 px-2 py-1 text-amber-200">
+                        {item.missing_review_count} reviews missing
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function ObserverProgramRow({ program }: { program: ObserverProgram }) {
+  const reviewColor =
+    program.review_completion_rate >= 90
+      ? 'text-green-600'
+      : program.review_completion_rate >= 70
+        ? 'text-amber-600'
+        : 'text-red-600';
+
+  return (
+    <tr className="hover:bg-border/20">
+      <td className="px-4 py-3">
+        <Link to={`/documents/${program.id}`} className="flex items-center gap-3">
+          <span
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm font-medium text-white"
+            style={{ backgroundColor: program.color || '#2563eb' }}
+          >
+            {program.icon || program.title?.[0]?.toUpperCase() || '?'}
+          </span>
+          <span className="font-medium text-foreground">{program.title}</span>
+        </Link>
+      </td>
+      <td className="px-3 py-3 text-right tabular-nums text-foreground">{program.active_week_count}</td>
+      <td className="px-3 py-3 text-right tabular-nums text-foreground">{program.active_project_count}</td>
+      <td className="px-3 py-3 text-right tabular-nums text-foreground">{program.open_issue_count}</td>
+      <td className={cn('px-3 py-3 text-right tabular-nums', program.blocked_issue_count > 0 ? 'text-red-500 font-semibold' : 'text-muted')}>
+        {program.blocked_issue_count}
+      </td>
+      <td className="px-3 py-3 text-right tabular-nums text-foreground">{program.recent_standup_count}</td>
+      <td className="px-4 py-3 text-right">
+        <span className={cn('font-semibold tabular-nums', reviewColor)}>
+          {program.review_completion_rate}%
+        </span>
+        <span className="ml-2 text-xs text-muted">
+          {program.review_count}/{program.reviewable_week_count}
+        </span>
+      </td>
+    </tr>
   );
 }
 

@@ -48,6 +48,89 @@ registry.register('MyWorkResponse', MyWorkResponseSchema);
 
 // ============== Register Dashboard Endpoints ==============
 
+// ============== Observer Dashboard ==============
+
+export const ObserverProgramSchema = z.object({
+  id: UuidSchema,
+  title: z.string(),
+  icon: z.string().nullable(),
+  color: z.string().nullable(),
+  active_project_count: z.number().int(),
+  active_week_count: z.number().int(),
+  open_issue_count: z.number().int(),
+  completed_issue_count: z.number().int(),
+  blocked_issue_count: z.number().int(),
+  recent_standup_count: z.number().int(),
+  reviewable_week_count: z.number().int(),
+  review_count: z.number().int(),
+  missing_review_count: z.number().int(),
+  review_completion_rate: z.number().int().openapi({
+    description: 'Percent of weekly reviews completed in the observer review window',
+  }),
+}).openapi('ObserverProgram');
+
+registry.register('ObserverProgram', ObserverProgramSchema);
+
+export const ObserverTotalsSchema = z.object({
+  programs: z.number().int(),
+  active_weeks: z.number().int(),
+  active_projects: z.number().int(),
+  open_issues: z.number().int(),
+  completed_issues: z.number().int(),
+  blocked_issues: z.number().int(),
+  recent_standups: z.number().int(),
+  reviewable_weeks: z.number().int(),
+  review_count: z.number().int(),
+  missing_reviews: z.number().int(),
+  review_completion_rate: z.number().int(),
+}).openapi('ObserverTotals');
+
+registry.register('ObserverTotals', ObserverTotalsSchema);
+
+export const ObserverAttentionItemSchema = z.object({
+  program_id: UuidSchema,
+  program_title: z.string(),
+  blocked_issue_count: z.number().int(),
+  missing_review_count: z.number().int(),
+}).openapi('ObserverAttentionItem');
+
+registry.register('ObserverAttentionItem', ObserverAttentionItemSchema);
+
+export const ObserverDashboardResponseSchema = z.object({
+  generated_at: DateTimeSchema,
+  current_week_number: z.number().int(),
+  review_window: z.object({
+    start_week_number: z.number().int(),
+    end_week_number: z.number().int(),
+  }),
+  totals: ObserverTotalsSchema,
+  programs: z.array(ObserverProgramSchema),
+  attention: z.array(ObserverAttentionItemSchema),
+}).openapi('ObserverDashboardResponse');
+
+registry.register('ObserverDashboardResponse', ObserverDashboardResponseSchema);
+
+registry.registerPath({
+  method: 'get',
+  path: '/dashboard/observer',
+  tags: ['Dashboard'],
+  summary: 'Get observer dashboard',
+  description: 'Returns cross-program leadership visibility: program health, blocked work, standup activity, and sprint review completion.',
+  responses: {
+    200: {
+      description: 'Observer dashboard data',
+      content: {
+        'application/json': {
+          schema: ObserverDashboardResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Workspace not found',
+    },
+  },
+});
+
 registry.registerPath({
   method: 'get',
   path: '/dashboard/my-work',

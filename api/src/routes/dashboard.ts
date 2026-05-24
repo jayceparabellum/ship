@@ -32,6 +32,250 @@ interface WorkItem {
   program_name?: string | null;
 }
 
+interface ObserverProgramRow {
+  id: string;
+  title: string;
+  properties: Record<string, unknown> | null;
+  active_project_count: string;
+  active_week_count: string;
+  open_issue_count: string;
+  completed_issue_count: string;
+  blocked_issue_count: string;
+}
+
+interface ObserverReviewRow {
+  program_id: string;
+  reviewable_week_count: string;
+  review_count: string;
+}
+
+function calculateCurrentWeekNumber(rawStartDate: unknown): number {
+  const sprintDuration = 7;
+  let workspaceStartDate: Date;
+
+  if (rawStartDate instanceof Date) {
+    workspaceStartDate = new Date(Date.UTC(rawStartDate.getFullYear(), rawStartDate.getMonth(), rawStartDate.getDate()));
+  } else if (typeof rawStartDate === 'string') {
+    workspaceStartDate = new Date(rawStartDate + 'T00:00:00Z');
+  } else {
+    workspaceStartDate = new Date();
+  }
+
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const daysSinceStart = Math.floor((today.getTime() - workspaceStartDate.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.max(1, Math.floor(daysSinceStart / sprintDuration) + 1);
+}
+
+/**
+ * GET /api/dashboard/observer
+ * Returns cross-program delivery signals for leadership review.
+ */
+router.get('/observer', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const workspaceId = req.workspaceId!;
+    const { isAdmin } = await getVisibilityContext(userId, workspaceId);
+
+    const workspaceResult = await pool.query(
+      `SELECT sprint_start_date FROM workspaces WHERE id = $1`,
+      [workspaceId]
+    );
+
+    if (workspaceResult.rows.length === 0) {
+      res.status(404).json({ error: 'Workspace not found' });
+      return;
+    }
+
+    const currentWeekNumber = calculateCurrentWeekNumber(workspaceResult.rows[0].sprint_start_date);
+    const reviewWindowStart = Math.max(1, currentWeekNumber - 3);
+
+    const programResult = await pool.query<ObserverProgramRow>(
+      `SELECT
+         p.id,
+         p.title,
+         p.properties,
+         COUNT(DISTINCT proj.id) FILTER (
+           WHERE proj.document_type = 'project'
+             AND proj.archived_at IS NULL
+             AND proj.deleted_at IS NULL
+         )::text AS active_project_count,
+         COUNT(DISTINCT week.id) FILTER (
+           WHERE week.document_type = 'sprint'
+             AND week.deleted_at IS NULL
+             AND (week.properties->>'sprint_number')::int = $2
+         )::text AS active_week_count,
+         COUNT(DISTINCT issue.id) FILTER (
+           WHERE issue.document_type = 'issue'
+             AND issue.deleted_at IS NULL
+             AND COALESCE(issue.properties->>'state', 'backlog') NOT IN ('done', 'cancelled')
+         )::text AS open_issue_count,
+         COUNT(DISTINCT issue.id) FILTER (
+           WHERE issue.document_type = 'issue'
+             AND issue.deleted_at IS NULL
+             AND COALESCE(issue.properties->>'state', 'backlog') = 'done'
+         )::text AS completed_issue_count,
+         COUNT(DISTINCT issue.id) FILTER (
+           WHERE issue.document_type = 'issue'
+             AND issue.deleted_at IS NULL
+             AND (
+               COALESCE(issue.properties->>'state', '') IN ('blocked', 'stuck')
+               OR issue.properties->>'blocked' = 'true'
+               OR issue.properties->>'is_blocked' = 'true'
+             )
+         )::text AS blocked_issue_count
+       FROM documents p
+       LEFT JOIN document_associations proj_assoc ON proj_assoc.related_id = p.id AND proj_assoc.relationship_type = 'program'
+       LEFT JOIN documents proj ON proj.id = proj_assoc.document_id AND proj.document_type = 'project'
+       LEFT JOIN document_associations week_assoc ON week_assoc.related_id = p.id AND week_assoc.relationship_type = 'program'
+       LEFT JOIN documents week ON week.id = week_assoc.document_id AND week.document_type = 'sprint'
+       LEFT JOIN document_associations issue_assoc ON issue_assoc.related_id = p.id AND issue_assoc.relationship_type = 'program'
+       LEFT JOIN documents issue ON issue.id = issue_assoc.document_id AND issue.document_type = 'issue'
+       WHERE p.workspace_id = $1
+         AND p.document_type = 'program'
+         AND p.deleted_at IS NULL
+         AND ${VISIBILITY_FILTER_SQL('p', '$3', '$4')}
+       GROUP BY p.id, p.title, p.properties
+       ORDER BY p.title`,
+      [workspaceId, currentWeekNumber, userId, isAdmin]
+    );
+
+    const standupResult = await pool.query<{ program_id: string; recent_standup_count: string }>(
+      `SELECT prog.id AS program_id, COUNT(DISTINCT s.id)::text AS recent_standup_count
+       FROM documents s
+       JOIN documents week ON week.id = s.parent_id AND week.document_type = 'sprint'
+       JOIN document_associations prog_da ON prog_da.document_id = week.id AND prog_da.relationship_type = 'program'
+       JOIN documents prog ON prog.id = prog_da.related_id AND prog.document_type = 'program'
+       WHERE s.workspace_id = $1
+         AND s.document_type = 'standup'
+         AND s.deleted_at IS NULL
+         AND s.created_at >= NOW() - INTERVAL '7 days'
+       GROUP BY prog.id`,
+      [workspaceId]
+    );
+
+    const reviewResult = await pool.query<ObserverReviewRow>(
+      `SELECT
+         prog.id AS program_id,
+         COUNT(DISTINCT week.id)::text AS reviewable_week_count,
+         COUNT(DISTINCT review.id)::text AS review_count
+       FROM documents week
+       JOIN document_associations prog_da ON prog_da.document_id = week.id AND prog_da.relationship_type = 'program'
+       JOIN documents prog ON prog.id = prog_da.related_id AND prog.document_type = 'program'
+       LEFT JOIN document_associations review_da ON review_da.related_id = week.id AND review_da.relationship_type = 'sprint'
+       LEFT JOIN documents review ON review.id = review_da.document_id
+        AND review.document_type = 'weekly_review'
+        AND review.deleted_at IS NULL
+       WHERE week.workspace_id = $1
+         AND week.document_type = 'sprint'
+         AND week.deleted_at IS NULL
+         AND (week.properties->>'sprint_number')::int BETWEEN $2 AND $3
+       GROUP BY prog.id`,
+      [workspaceId, reviewWindowStart, currentWeekNumber]
+    );
+
+    const standupsByProgram = new Map(
+      standupResult.rows.map(row => [row.program_id, Number(row.recent_standup_count)])
+    );
+    const reviewsByProgram = new Map(
+      reviewResult.rows.map(row => [
+        row.program_id,
+        {
+          reviewable_week_count: Number(row.reviewable_week_count),
+          review_count: Number(row.review_count),
+        },
+      ])
+    );
+
+    const programs = programResult.rows.map(row => {
+      const reviewStats = reviewsByProgram.get(row.id) || { reviewable_week_count: 0, review_count: 0 };
+      const missingReviewCount = Math.max(0, reviewStats.reviewable_week_count - reviewStats.review_count);
+      const reviewCompletionRate = reviewStats.reviewable_week_count > 0
+        ? Math.round((reviewStats.review_count / reviewStats.reviewable_week_count) * 100)
+        : 100;
+
+      return {
+        id: row.id,
+        title: row.title,
+        icon: (row.properties?.icon || row.properties?.emoji || null) as string | null,
+        color: (row.properties?.color || null) as string | null,
+        active_project_count: Number(row.active_project_count),
+        active_week_count: Number(row.active_week_count),
+        open_issue_count: Number(row.open_issue_count),
+        completed_issue_count: Number(row.completed_issue_count),
+        blocked_issue_count: Number(row.blocked_issue_count),
+        recent_standup_count: standupsByProgram.get(row.id) || 0,
+        reviewable_week_count: reviewStats.reviewable_week_count,
+        review_count: reviewStats.review_count,
+        missing_review_count: missingReviewCount,
+        review_completion_rate: reviewCompletionRate,
+      };
+    });
+
+    const totals = programs.reduce(
+      (acc, program) => {
+        acc.programs += 1;
+        acc.active_weeks += program.active_week_count;
+        acc.active_projects += program.active_project_count;
+        acc.open_issues += program.open_issue_count;
+        acc.completed_issues += program.completed_issue_count;
+        acc.blocked_issues += program.blocked_issue_count;
+        acc.recent_standups += program.recent_standup_count;
+        acc.reviewable_weeks += program.reviewable_week_count;
+        acc.review_count += program.review_count;
+        acc.missing_reviews += program.missing_review_count;
+        return acc;
+      },
+      {
+        programs: 0,
+        active_weeks: 0,
+        active_projects: 0,
+        open_issues: 0,
+        completed_issues: 0,
+        blocked_issues: 0,
+        recent_standups: 0,
+        reviewable_weeks: 0,
+        review_count: 0,
+        missing_reviews: 0,
+        review_completion_rate: 100,
+      }
+    );
+
+    totals.review_completion_rate = totals.reviewable_weeks > 0
+      ? Math.round((totals.review_count / totals.reviewable_weeks) * 100)
+      : 100;
+
+    const attention = programs
+      .filter(program => program.blocked_issue_count > 0 || program.missing_review_count > 0)
+      .sort((a, b) =>
+        (b.blocked_issue_count + b.missing_review_count) -
+        (a.blocked_issue_count + a.missing_review_count)
+      )
+      .slice(0, 5)
+      .map(program => ({
+        program_id: program.id,
+        program_title: program.title,
+        blocked_issue_count: program.blocked_issue_count,
+        missing_review_count: program.missing_review_count,
+      }));
+
+    res.json({
+      generated_at: new Date().toISOString(),
+      current_week_number: currentWeekNumber,
+      review_window: {
+        start_week_number: reviewWindowStart,
+        end_week_number: currentWeekNumber,
+      },
+      totals,
+      programs,
+      attention,
+    });
+  } catch (err) {
+    console.error('Get observer dashboard error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 /**
  * GET /api/dashboard/my-work
  * Returns work items for the current user organized by urgency.
