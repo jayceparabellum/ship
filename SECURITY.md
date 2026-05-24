@@ -1,6 +1,6 @@
 # Security Policy
 
-Current branch: `ShipShape-Security-Tool`
+Current canonical branch: `master`
 
 This repository now includes the ShipShape Category 8 security tool in addition to the application security controls inherited from Ship. The current build supports static repository scanning, active live-app probing, AWS scheduled execution, and reviewer-facing security reports.
 
@@ -8,7 +8,7 @@ This repository now includes the ShipShape Category 8 security tool in addition 
 
 | Version / Branch | Supported |
 | --- | --- |
-| `ShipShape-Security-Tool` | Yes |
+| `master` | Yes |
 
 ## Current Security Tool Status
 

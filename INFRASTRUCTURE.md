@@ -1,6 +1,6 @@
 # ShipShape AWS Infrastructure
 
-Current branch: `ShipShape-Security-Tool`
+Current canonical branch: `master`
 
 Current production frontend: `https://d9o5hawnpdm4g.cloudfront.net`
 

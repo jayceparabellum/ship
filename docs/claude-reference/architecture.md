@@ -1,410 +1,253 @@
 # Ship Architecture
 
-Comprehensive architecture documentation for the Ship project management application with real-time collaboration.
+Current canonical branch: `master`
+
+Current production frontend: `https://d9o5hawnpdm4g.cloudfront.net`
+
+Current production API health: `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health`
+
+This document summarizes the current consolidated ShipShape build. It includes the core Ship application, the AWS production deployment, the Observer Dashboard, and the Category 8 security tool.
 
 ## System Overview
 
-Ship is a government-focused project management application built for teams that need real-time collaborative editing, offline-tolerant operation, and Section 508 accessibility compliance. It follows Notion's "everything is a document" paradigm where all content types (wikis, issues, programs, projects, weeks) share a unified data structure.
+Ship is a government-focused project management application for documentation, issues, projects, weekly plans, retros, and team accountability. The architecture uses a unified document model: wikis, issues, programs, projects, weeks, people, weekly plans, and retros are all documents with type-specific properties.
 
-**Core Purpose:**
-- Project and week-based planning with real-time collaboration
-- Unified document model for consistent UX across content types
-- Offline-tolerant architecture (works on planes/subways)
-- Government compliance (Section 508, PIV authentication support)
+The current build adds:
+
+- AWS production deployment through CloudFront, S3, Elastic Beanstalk, Aurora PostgreSQL, and SSM Parameter Store.
+- Offline app-shell recovery for authenticated frontend routes.
+- Session activity write throttling and stricter document-ID validation.
+- Observer Dashboard views for leadership/reviewer workflows.
+- Category 8 security tooling with static scanning, live-app probing, AWS CodeBuild automation, and S3 report storage.
 
 ## Monorepo Structure
 
-Ship uses a pnpm workspace monorepo with three packages:
-
-```
+```text
 ship/
-├── api/                    # Express backend
-│   ├── src/
-│   │   ├── routes/         # REST endpoints (documents, issues, weeks, etc.)
-│   │   ├── db/             # PostgreSQL client + schema
-│   │   ├── collaboration/  # WebSocket + Yjs handlers
-│   │   ├── middleware/     # Auth, CSRF, visibility checks
-│   │   └── index.ts        # Entry point
-│
-├── web/                    # React frontend
-│   ├── src/
-│   │   ├── components/     # UI components (Editor, SelectableList, etc.)
-│   │   ├── pages/          # Route pages
-│   │   ├── hooks/          # Custom hooks (useDocumentsQuery, etc.)
-│   │   ├── lib/            # Utilities (queryClient, api helpers)
-│   │   └── main.tsx        # Entry point
-│
-├── shared/                 # Shared TypeScript types
-│   └── src/
-│       ├── types/          # Document, User, Workspace types
-│       └── constants.ts    # Session timeouts, shared constants
+|-- api/
+|   |-- src/
+|   |   |-- routes/             # REST endpoints
+|   |   |-- collaboration/      # WebSocket + Yjs sync
+|   |   |-- db/                 # PostgreSQL schema, migrations, seed
+|   |   |-- middleware/         # Auth, CSRF, visibility, access checks
+|   |   |-- openapi/            # OpenAPI schemas
+|   |   `-- utils/              # Shared API helpers
+|   |-- Dockerfile
+|   `-- package.json
+|-- web/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- hooks/
+|   |   |-- pages/
+|   |   `-- lib/
+|   |-- public/
+|   `-- package.json
+|-- shared/
+|   `-- src/
+|-- scripts/
+|   |-- security-audit.mjs
+|   |-- security-probe.mjs
+|   |-- audit-api-benchmark.mjs
+|   `-- audit-type-safety.mjs
+|-- terraform/
+|   |-- environments/prod/
+|   |-- lambda/security-tool-trigger/
+|   `-- modules/
+|-- docs/
+|   |-- audit-evidence/
+|   |-- security-tool/
+|   `-- claude-reference/
+`-- README.md
 ```
 
-**Package Responsibilities:**
+## Runtime Architecture
 
-| Package | Purpose | Key Files |
-|---------|---------|-----------|
-| `api/` | REST API, WebSocket collaboration, database access | `api/src/index.ts:1-44`, `api/src/collaboration/index.ts` |
-| `web/` | React SPA with TipTap editor | `web/src/components/Editor.tsx`, `web/src/main.tsx` |
-| `shared/` | TypeScript types imported by both api and web | `shared/src/types/document.ts:34-45` |
+```mermaid
+flowchart TD
+  User["Browser user"] --> CloudFront["CloudFront"]
+  CloudFront --> S3["S3 static React app"]
+  CloudFront --> EB["Elastic Beanstalk API"]
+  EB --> Express["Express REST API"]
+  EB --> WS["WebSocket collaboration server"]
+  Express --> Aurora["Aurora Serverless v2 PostgreSQL 16"]
+  WS --> Aurora
+  Express --> SSM["SSM Parameter Store"]
+  EventBridge["EventBridge schedule"] --> Lambda["Security-tool Lambda trigger"]
+  Lambda --> CodeBuild["CodeBuild security runner"]
+  CodeBuild --> SecurityAudit["security:audit"]
+  CodeBuild --> SecurityProbe["security:probe"]
+  SecurityAudit --> ReportS3["S3 security reports"]
+  SecurityProbe --> ReportS3
+```
+
+## Production Deployment
+
+| Surface | Current value |
+| --- | --- |
+| Frontend | `https://d9o5hawnpdm4g.cloudfront.net` |
+| API health | `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
+| Security results page | `https://d9o5hawnpdm4g.cloudfront.net/programs/security` |
+| Security report bucket | `s3://ship-prod-security-tool-743737183156/latest/` |
+| GitLab master | `https://labs.gauntletai.com/jayceparabellum/ship/-/tree/master` |
+| GitHub master | `https://github.com/jayceparabellum/ship/tree/master` |
+
+Deployment responsibilities:
+
+1. Terraform manages durable AWS infrastructure.
+2. Elastic Beanstalk hosts the Express API and WebSocket collaboration server.
+3. S3/CloudFront hosts the React frontend and proxies API routes.
+4. Aurora PostgreSQL stores application data.
+5. SSM Parameter Store stores app and probe secrets.
+6. CodeBuild/Lambda/EventBridge run the scheduled security tool.
 
 ## Unified Document Model
 
-The central architectural pattern: **everything is a document with properties**.
+The central data model is a single `documents` table with a `document_type` discriminator and JSONB `properties`.
 
-### Document Types
+Primary document types:
 
-All content lives in a single `documents` table with a `document_type` discriminator:
+| Type | Purpose |
+| --- | --- |
+| `wiki` | General documentation |
+| `issue` | Work item, bug, task, or action item |
+| `program` | Long-lived product or initiative |
+| `project` | Time-bounded deliverable |
+| `sprint` | Week container, historically named sprint |
+| `person` | User/person profile document |
+| `weekly_plan` | Weekly intent document |
+| `weekly_retro` | Weekly reflection document |
 
-```sql
--- api/src/db/schema.sql:83-87
--- Note: document_type enum uses 'sprint' for historical compatibility
-CREATE TYPE document_type AS ENUM (
-  'wiki', 'issue', 'program', 'project', 'sprint',
-  'person', 'sprint_plan', 'sprint_retro'
-);
+Associations between documents are handled through direct columns where efficient and through `document_associations` for flexible relationships such as issue-to-project and issue-to-week links.
+
+## API Architecture
+
+The API is an Express service with:
+
+- Cookie/session authentication.
+- CSRF protection for state-changing routes.
+- Workspace visibility checks.
+- Route-level validation with Zod.
+- OpenAPI output under `api/openapi.json` and `api/openapi.yaml`.
+- WebSocket upgrade handling for collaborative document editing.
+
+Important current routes:
+
+| Route area | Purpose |
+| --- | --- |
+| `/api/auth/*` | Login, session identity, logout, CSRF |
+| `/api/documents/*` | Unified document CRUD and conversion |
+| `/api/issues/*` | Issue list and issue-specific workflows |
+| `/api/weeks/*` | Weekly planning and review workflows |
+| `/api/dashboard/*` | Dashboard and Observer Dashboard data |
+| `/api/security-tool/*` | Security-tool report surface |
+| `/collaboration/*` | Yjs WebSocket collaboration |
+
+Recent hardening:
+
+- `api/src/utils/auth-context.ts` centralizes authenticated request context narrowing.
+- `api/src/middleware/auth.ts` throttles session `last_activity` writes.
+- `api/src/routes/documents.ts` validates malformed document IDs before PostgreSQL UUID casts.
+- `api/src/collaboration/index.ts` rejects unauthorized and malformed collaboration attempts.
+
+## Frontend Architecture
+
+The frontend is a React/Vite app with:
+
+- Route-level code splitting.
+- TanStack Query for server state.
+- IndexedDB-backed query persistence.
+- TipTap + Yjs for collaborative rich text editing.
+- A service worker for offline app-shell recovery.
+- Dashboard and Observer Dashboard surfaces.
+- Security-tool result page at `/programs/security`.
+
+Main frontend surfaces:
+
+| Area | Files |
+| --- | --- |
+| App shell | `web/src/pages/App.tsx` |
+| Dashboard | `web/src/pages/Dashboard.tsx`, `web/src/hooks/useObserverDashboard.ts` |
+| Editor | `web/src/components/Editor.tsx` |
+| Security results | `web/src/pages/SecurityToolResults.tsx` |
+| API client | `web/src/lib/api.ts` |
+
+## Realtime Collaboration
+
+Collaboration uses TipTap, Yjs, y-websocket, and y-indexeddb.
+
+Flow:
+
+1. Browser loads cached document state from IndexedDB.
+2. Browser connects to the WebSocket collaboration room.
+3. API validates session and document access during upgrade.
+4. Yjs updates are broadcast to connected collaborators.
+5. Server persists debounced document state to PostgreSQL.
+
+Room prefixes follow document type, for example:
+
+- `doc:{uuid}`
+- `issue:{uuid}`
+- `project:{uuid}`
+- `program:{uuid}`
+- `sprint:{uuid}`
+
+## Security Tool Architecture
+
+Category 8 is implemented as both local scripts and AWS automation.
+
+Local commands:
+
+```bash
+corepack pnpm security:audit
+corepack pnpm security:probe
 ```
 
-| Type | Description | Key Properties |
-|------|-------------|----------------|
-| `wiki` | Documentation pages | maintainer_id |
-| `issue` | Work items (tasks/bugs) | state, priority, assignee_id, ticket_number |
-| `program` | Long-lived product/initiative | color, emoji |
-| `project` | Time-bounded deliverable | impact, confidence, ease (ICE scores), owner_id |
-| `sprint` | Week container (historical DB name for "week") | sprint_number, owner_id |
-| `person` | User profile document | email, role, capacity_hours |
+AWS resources:
 
-### Document Schema
+| Resource | Current value |
+| --- | --- |
+| Lambda trigger | `ship-prod-security-tool-trigger` |
+| CodeBuild runner | `ship-prod-security-tool` |
+| Schedule | `rate(1 day)` |
+| S3 report prefix | `s3://ship-prod-security-tool-743737183156/latest/` |
 
-```typescript
-// shared/src/types/document.ts:159-190
-interface Document {
-  id: string;                    // UUID
-  workspace_id: string;
-  document_type: DocumentType;
-  title: string;                 // Always "Untitled" for new docs
-  content: Record<string, unknown>;  // TipTap JSON
-  yjs_state?: Uint8Array;        // CRDT state for collaboration
+Tracked evidence:
 
-  // Associations (columns for efficient querying)
-  program_id?: string | null;
-  project_id?: string | null;
-  parent_id?: string | null;
-  // Note: sprint_id was dropped by migration 027.
-  // Week assignments now use the document_associations table.
+- `docs/security-tool/latest-security-report.json`
+- `docs/security-tool/latest-security-report.md`
+- `docs/security-tool/latest-probe-report.json`
+- `docs/security-tool/latest-probe-report.md`
+- `docs/security-tool/aws-architecture.md`
 
-  // Type-specific properties (JSONB)
-  properties: Record<string, unknown>;
+Latest tracked results:
 
-  // Visibility
-  visibility: 'private' | 'workspace';
-}
+```text
+Static scanner: 13 passed / 0 failed
+Live production probe: 17 passed / 0 failed
 ```
 
-### Properties System
+## Audit Evidence Architecture
 
-Properties use schema-less JSONB with TypeScript enforcement:
+Final rubric evidence is tracked in `docs/audit-evidence/`.
 
-```typescript
-// shared/src/types/document.ts:60-68
-interface IssueProperties {
-  state: IssueState;        // 'triage' | 'backlog' | 'todo' | 'in_progress' | 'done' | 'cancelled'
-  priority: IssuePriority;  // 'low' | 'medium' | 'high' | 'urgent'
-  assignee_id?: string;
-  estimate?: number;
-  source: IssueSource;      // 'internal' | 'external'
-  [key: string]: unknown;   // Custom properties allowed
-}
-```
+Key final evidence files:
 
-**Why JSONB:** Custom properties without schema migrations. TypeScript provides compile-time safety. GIN index on `properties` column for efficient queries.
-
-## 4-Panel Editor Layout
-
-Every document editor uses a consistent 4-panel layout:
-
-```
-┌──────┬────────────────┬─────────────────────────────────┬────────────────┐
-│      │                │ Header: ← Badge Title    Saved ●│                │
-│ Icon │   Contextual   ├─────────────────────────────────┤   Properties   │
-│ Rail │    Sidebar     │                                 │    Sidebar     │
-│      │                │   Large Title                   │                │
-│ 48px │    224px       │   Body content...               │     256px      │
-│      │  (mode list)   │                                 │  (doc props)   │
-│      │                │         (flex-1)                │                │
-└──────┴────────────────┴─────────────────────────────────┴────────────────┘
-```
-
-| Panel | Width | Purpose |
-|-------|-------|---------|
-| **Icon Rail** | 48px | Mode icons (Docs, Issues, Projects, Team), Settings |
-| **Contextual Sidebar** | 224px | List of items for active mode with + button |
-| **Main Content** | flex-1 | Header + TipTap Editor |
-| **Properties Sidebar** | 256px | Type-specific properties (status, assignee, etc.) |
-
-**Key Rules:**
-- All four panels always visible when editing
-- Properties sidebar content varies by document type via `sidebar` prop on Editor
-- See `web/src/components/Editor.tsx:103-123` for prop interface
-
-## Real-time Collaboration
-
-### Architecture Stack
-
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **CRDT** | Yjs | Conflict-free collaborative data type |
-| **Transport** | WebSocket (y-websocket) | Real-time sync |
-| **Editor** | TipTap | Rich text with Yjs integration |
-| **Persistence** | y-indexeddb | Client-side caching for instant load |
-
-### Collaboration Flow
-
-```
-┌─────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│   Client A  │      │  Server (WS)    │      │   Client B      │
-│  (TipTap)   │      │  (Yjs sync)     │      │  (TipTap)       │
-└──────┬──────┘      └────────┬────────┘      └────────┬────────┘
-       │                      │                        │
-       │  Yjs sync message    │                        │
-       │─────────────────────>│                        │
-       │                      │  Broadcast update      │
-       │                      │───────────────────────>│
-       │                      │                        │
-       │                      │  Persist to PostgreSQL │
-       │                      │  (debounced 2s)        │
-       │                      │                        │
-```
-
-### Server Implementation
-
-```typescript
-// api/src/collaboration/index.ts:598-720 (key sections)
-export function setupCollaboration(server: Server) {
-  const wss = new WebSocketServer({ noServer: true });
-
-  server.on('upgrade', async (request, socket, head) => {
-    // 1. Validate session from cookie
-    const sessionData = await validateWebSocketSession(request);
-    if (!sessionData) {
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-      socket.destroy();
-      return;
-    }
-
-    // 2. Check document access (visibility)
-    const canAccess = await canAccessDocumentForCollab(docId, sessionData.userId, sessionData.workspaceId);
-
-    // 3. Handle upgrade and emit connection
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request, docName, sessionData);
-    });
-  });
-}
-```
-
-### Client Implementation
-
-```typescript
-// web/src/components/Editor.tsx:197-329 (simplified)
-useEffect(() => {
-  // 1. Load from IndexedDB first (instant)
-  const indexeddbProvider = new IndexeddbPersistence(`ship-${roomPrefix}-${documentId}`, ydoc);
-
-  // 2. Connect WebSocket after cache loads
-  waitForCache.then(() => {
-    wsProvider = new WebsocketProvider(wsUrl, `${roomPrefix}:${documentId}`, ydoc);
-
-    // Track sync status
-    wsProvider.on('status', (event) => {
-      setSyncStatus(event.status === 'connected' ? 'synced' : 'disconnected');
-    });
-
-    // Setup awareness for presence
-    wsProvider.awareness.setLocalStateField('user', { name: userName, color });
-  });
-}, [documentId]);
-```
-
-### Room Naming Convention
-
-Documents connect to rooms by type prefix:
-- `doc:{uuid}` - Wiki documents
-- `issue:{uuid}` - Issues
-- `program:{uuid}` - Programs
-- `project:{uuid}` - Projects
-- `sprint:{uuid}` - Weeks (historical room prefix)
-
-## Data Flow
-
-### Request Lifecycle
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Client (React)                           │
-├─────────────────────────────────────────────────────────────────┤
-│  TanStack Query                     │  Yjs (Editor)             │
-│  - Stale-while-revalidate cache     │  - Y.Doc (in-memory)      │
-│  - Optimistic updates + rollback    │  - CRDT operations        │
-│  ↕                                  │  ↕                        │
-│  IndexedDB Persister                │  y-indexeddb              │
-│  (cache persists across sessions)   │  (doc persists)           │
-│  ↕                                  │  ↕                        │
-│  REST API (/api/*)                  │  WebSocket (/collaboration)│
-├─────────────────────────────────────────────────────────────────┤
-│                    PostgreSQL (source of truth)                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Caching Architecture
-
-**Two-Layer Model:**
-
-| Layer | Data Type | Technology | Behavior |
-|-------|-----------|------------|----------|
-| **Editor Content** | Yjs documents | y-indexeddb | Instant load + offline editing |
-| **Lists/Metadata** | Documents, issues | TanStack Query + IndexedDB | Stale-while-revalidate |
-
-```typescript
-// web/src/lib/queryClient.ts:136-174 (key config)
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,      // 5 minutes
-      gcTime: 1000 * 60 * 60 * 24,   // 24 hours
-    },
-  },
-});
-
-// IndexedDB persister for cross-session cache
-const queryStore = createStore('ship-query-cache', 'queries');
-export const queryPersister = createIDBPersister();
-```
-
-### Mutation Pattern
-
-```typescript
-// Optimistic updates with rollback on error
-const mutation = useMutation({
-  mutationFn: createDocument,
-  onMutate: async (newDoc) => {
-    const previousDocs = queryClient.getQueryData(['documents']);
-    queryClient.setQueryData(['documents'], (old) => [...old, optimisticDoc]);
-    return { previousDocs };
-  },
-  onError: (_err, _newDoc, context) => {
-    // Rollback on error
-    queryClient.setQueryData(['documents'], context.previousDocs);
-  },
-  onSettled: () => queryClient.invalidateQueries(['documents']),
-});
-```
-
-## Technology Stack
-
-| Layer | Technology | Rationale |
-|-------|------------|-----------|
-| **Runtime** | Node.js | JavaScript everywhere |
-| **API Framework** | Express | Battle-tested, simple |
-| **Frontend** | React + Vite | Fast dev, TipTap ecosystem |
-| **Database** | PostgreSQL | Reliable, direct SQL |
-| **DB Client** | pg (raw SQL) | No ORM abstraction |
-| **Rich Text** | TipTap + Yjs | Collaborative editing |
-| **State** | TanStack Query | Server state caching |
-| **UI Components** | shadcn/ui | Tailwind + Radix |
-| **Secrets** | SSM Parameter Store | AWS-native, gov-compliant |
-
-**Key Decisions:**
-- **pg over ORM:** Maximum simplicity, full SQL control
-- **Express over Fastify:** "Boring technology" - everyone knows it
-- **shadcn/ui:** Copy-paste ownership, Radix accessibility
-
-## Key Architectural Decisions
-
-### 1. Everything is a Document
-
-All content types share the same structure. Type differentiation via `document_type` field and `properties` JSONB.
-
-**Why:** Consistent UX, single code path, flexible custom properties.
-
-### 2. Server is Source of Truth
-
-Offline-tolerant, not offline-first. Mutations require network; optimistic updates roll back on error.
-
-**Why:** Simpler than offline mutation queues. Editor content (Yjs) still works offline via y-indexeddb.
-
-### 3. Computed Week Dates/Status
-
-Week dates computed from `sprint_number` (historical field name) + workspace `sprint_start_date`. Status computed from dates.
-
-```typescript
-// shared/src/types/document.ts:341-366
-export function computeWeekDates(sprintNumber: number, workspaceStartDate: Date) {
-  const start = new Date(workspaceStartDate);
-  start.setDate(start.getDate() + (sprintNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  return { start, end };
-}
-```
-
-**Why:** YAGNI - don't store what you can compute. Single source of truth.
-
-### 4. Session-Based Auth with 15-Minute Timeout
-
-Government compliance requires strict session management.
-
-```sql
--- api/src/db/schema.sql:68-80
-CREATE TABLE sessions (
-  id TEXT PRIMARY KEY,          -- Hex string from crypto.randomBytes
-  user_id UUID NOT NULL,
-  workspace_id UUID NOT NULL,
-  expires_at TIMESTAMPTZ NOT NULL,
-  last_activity TIMESTAMPTZ DEFAULT now()
-);
-```
-
-### 5. Properties in JSONB, Associations in Columns
-
-Association fields (`program_id`, `project_id`) are columns for efficient joins. Week assignments use the `document_associations` table (`sprint_id` column was dropped by migration 027). Type-specific properties go in JSONB.
-
-```sql
--- api/src/db/schema.sql:107-116
-program_id UUID REFERENCES documents(id),
-project_id UUID REFERENCES documents(id),
-properties JSONB DEFAULT '{}',
-```
-
-### 6. Rate Limiting on WebSocket
-
-Protection against connection floods and message spam.
-
-```typescript
-// api/src/collaboration/index.ts:17-24
-const RATE_LIMIT = {
-  CONNECTION_WINDOW_MS: 60_000,     // 1 minute
-  MAX_CONNECTIONS_PER_IP: 30,       // 30 per minute per IP
-  MESSAGE_WINDOW_MS: 1_000,         // 1 second
-  MAX_MESSAGES_PER_SECOND: 50,      // 50 per second per connection
-};
-```
-
-## File References
-
-| Concern | Primary Files |
-|---------|--------------|
-| Database Schema | `api/src/db/schema.sql` |
-| API Entry | `api/src/index.ts` |
-| Collaboration Server | `api/src/collaboration/index.ts` |
-| Editor Component | `web/src/components/Editor.tsx` |
-| Query Client | `web/src/lib/queryClient.ts` |
-| Type Definitions | `shared/src/types/document.ts` |
-| REST Routes | `api/src/routes/*.ts` |
+| Category | Evidence |
+| --- | --- |
+| Type safety | `docs/audit-evidence/type-safety-after-auth-context.json` |
+| Bundle size | `docs/audit-evidence/bundle-analysis-after-route-splitting.json` |
+| API response time | `docs/audit-evidence/api-benchmarks-after-session-touch-throttle.json` |
+| Database query efficiency | `docs/audit-evidence/auth-query-count-after.json` |
+| Test quality | `docs/audit-evidence/web-test-run-after-jsdom-pin.json` |
+| Runtime/edge cases | `docs/audit-evidence/browser-runtime-after-offline-shell.json` |
+| Accessibility | `docs/audit-evidence/browser-accessibility-after-contrast.json` |
+| Security tool | `docs/security-tool/latest-probe-report.json` |
 
 ## Related Documentation
 
-- `docs/unified-document-model.md` - Data model details
-- `docs/application-architecture.md` - Full tech stack decisions
-- `docs/document-model-conventions.md` - Terminology, UI patterns
-- `docs/week-documentation-philosophy.md` - Week workflow and documentation philosophy
+- `README.md` - Setup, current build links, final evidence overview.
+- `INFRASTRUCTURE.md` - Current AWS deployment and security-tool infrastructure.
+- `SECURITY.md` - Security policy and security-tool operations.
+- `docs/security-tool/README.md` - Category 8 scanner/probe usage.
+- `docs/shipshape-improvement-documentation.md` - Before/after rubric proof.
+- `docs/category-1-8-final-handoff.md` - Final reviewer handoff.

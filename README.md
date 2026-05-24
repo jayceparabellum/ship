@@ -27,13 +27,13 @@ Ship is a project management tool that combines documentation, issue tracking, a
 
 ### Current ShipShape Build
 
-This working branch is the ShipShape final build with the Category 8 security tool:
+The consolidated `master` branch is the ShipShape final build with the Category 8 security tool:
 
 | Item | Current value |
 |------|---------------|
-| Final branch | `ShipShape-Security-Tool` |
-| Labs GitLab branch | `https://labs.gauntletai.com/jayceparabellum/ship/-/tree/ShipShape-Security-Tool` |
-| GitHub branch | `https://github.com/jayceparabellum/ship/tree/ShipShape-Security-Tool` |
+| Final branch | `master` |
+| Labs GitLab branch | `https://labs.gauntletai.com/jayceparabellum/ship/-/tree/master` |
+| GitHub branch | `https://github.com/jayceparabellum/ship/tree/master` |
 | Production app | `https://d9o5hawnpdm4g.cloudfront.net` |
 | Production API health | `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
 | Security results page | `https://d9o5hawnpdm4g.cloudfront.net/programs/security` |
