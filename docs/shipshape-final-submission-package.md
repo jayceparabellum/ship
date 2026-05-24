@@ -1,6 +1,8 @@
 # ShipShape Final Submission Package
 
-Prepared: May 23, 2026
+Prepared: May 24, 2026
+
+Scope note: the demo video is intentionally excluded per Jayce's final instruction. This package applies the remaining repository, deployed-app, audit, and security-tool submission requirements.
 
 ## Submit These Links
 
@@ -9,6 +11,8 @@ Prepared: May 23, 2026
 | Labs GitLab repository | `https://labs.gauntletai.com/jayceparabellum/ship` |
 | Production frontend | `https://d9o5hawnpdm4g.cloudfront.net` |
 | Production API health | `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
+| Final GitLab branch | `https://labs.gauntletai.com/jayceparabellum/ship/-/tree/ShipShape-Security-Tool` |
+| Merge request creation URL | `https://labs.gauntletai.com/jayceparabellum/ship/-/merge_requests/new?merge_request%5Bsource_branch%5D=ShipShape-Security-Tool` |
 
 ## Submit These Files
 
@@ -43,16 +47,20 @@ Latest Category 8 active probe result: 17 checks, 17 passed, 0 failed against th
 
 - Category 3 has real before/after benchmark evidence, but only one endpoint cleared the original 20% P95 stretch target at 50 concurrent workers.
 - Category 6 fixes the highest-risk offline reload confusion case; realtime WebSocket disconnect console noise remains a follow-up.
-- The demo video is a separate submission artifact and must be recorded outside this repository package if the portal requires it.
-- The local pre-commit hook is blocked by existing empty Playwright TODO tests, so the final packaging commits used `--no-verify`.
+- Demo video is intentionally excluded from this package per Jayce's instruction.
+- The local commit hook warns that the optional `comply` CLI is not installed; future security-scanning parity should install it with `pip install comply-cli`.
 
 ## Final Verification Snapshot
 
 - Web type-check passed.
+- API type-check passed.
 - Web Vitest passed: 16 files, 151 tests.
 - Audit evidence JSON parses.
 - Category 8 active probe passed: 17/17.
 - AWS security-tool runner passed through Lambda/CodeBuild and uploaded reports to `s3://ship-prod-security-tool-743737183156/latest/`.
+- Production Observer Dashboard deployed behind auth at `/dashboard?view=observer`.
+- Elastic Beanstalk production API is `Ready / Green` on version `ship-api-20260523-233313`.
+- CloudFront frontend deployment completed and invalidation finished.
 - Labs GitLab branches are pushed:
-  - `ShipShape-Security-Tool`: latest Category 1-8 completion branch
+  - `ShipShape-Security-Tool`: latest Category 1-8 completion branch, commit `7078c23 Add observer dashboard feature`
   - Merge request URL: `https://labs.gauntletai.com/jayceparabellum/ship/-/merge_requests/new?merge_request%5Bsource_branch%5D=ShipShape-Security-Tool`

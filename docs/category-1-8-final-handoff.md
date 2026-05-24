@@ -1,10 +1,10 @@
 # ShipShape Category 1-8 Final Handoff
 
-Prepared: May 23, 2026
+Prepared: May 24, 2026
 
 ## Submission Status
 
-Categories 1-8 are complete and ready for review on the `ShipShape-Security-Tool` branch.
+Categories 1-8 are complete and ready for review on the `ShipShape-Security-Tool` branch. Latest pushed commit: `7078c23 Add observer dashboard feature`.
 
 | Category | Status | Primary Evidence |
 | --- | --- | --- |
@@ -25,6 +25,7 @@ Categories 1-8 are complete and ready for review on the `ShipShape-Security-Tool
 | Merge request creation URL | `https://labs.gauntletai.com/jayceparabellum/ship/-/merge_requests/new?merge_request%5Bsource_branch%5D=ShipShape-Security-Tool` |
 | Production app | `https://d9o5hawnpdm4g.cloudfront.net` |
 | Production API health | `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health` |
+| Observer dashboard | `https://d9o5hawnpdm4g.cloudfront.net/dashboard?view=observer` |
 | Security probe report | `docs/security-tool/latest-probe-report.md` |
 | Security walkthrough Word document | `docs/security-tool/ShipShape Security Tool Walkthrough.docx` |
 | Final submission package | `docs/shipshape-final-submission-package.md` |
@@ -50,10 +51,10 @@ Failed: 0
 
 ## Copy/Paste Submission Blurb
 
-ShipShape Categories 1-8 are complete on the `ShipShape-Security-Tool` branch. Categories 1-7 include measured baseline evidence, after-fix proof, raw audit data, and documented caveats where appropriate. Category 8 adds a runnable security tool with a static scanner, active live-app probe, AWS Lambda/CodeBuild automation, SSM-backed probe credentials, S3 report storage, and a Word walkthrough. The AWS production security probe was executed against the deployed CloudFront app and passed 17/17 checks with 0 failures.
+ShipShape Categories 1-8 are complete on the `ShipShape-Security-Tool` branch. Categories 1-7 include measured baseline evidence, after-fix proof, raw audit data, and documented caveats where appropriate. Category 8 adds a runnable security tool with a static scanner, active live-app probe, AWS Lambda/CodeBuild automation, SSM-backed probe credentials, S3 report storage, a Word walkthrough, and a deployed in-app results surface. The AWS production security probe was executed against the deployed CloudFront app and passed 17/17 checks with 0 failures.
 
 ## Final Notes
 
-- The demo video remains a separate artifact if the submission portal requires it.
+- Demo video is intentionally excluded from this package per Jayce's instruction.
 - The AWS access key used during setup should be rotated after final submission work is complete.
 - The repo was also migrated to the Mac mini at `/Users/jayceparabellum/projects/ship` on branch `ShipShape-Security-Tool`.

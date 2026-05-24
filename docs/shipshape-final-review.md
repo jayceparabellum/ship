@@ -1,6 +1,6 @@
 # ShipShape Final Review
 
-Review date: May 23, 2026
+Review date: May 24, 2026
 
 ## Assignment Requirements Checked
 
@@ -9,7 +9,7 @@ Source PDFs reviewed:
 - `GFA Week 4 - ShipShape.pdf`
 - `ShipShape - Kickoff.pdf`
 
-The assignment requires a written audit report with baseline measurements for all seven audit categories, orientation notes, raw data, improvement documentation, discovery write-up, AI cost analysis, deployed application, and a demo video.
+The assignment requires a written audit report with baseline measurements for all seven audit categories, orientation notes, raw data, improvement documentation, discovery write-up, AI cost analysis, deployed application, and, unless explicitly excluded by submission direction, a demo video. Jayce excluded the demo video for this final package.
 
 ## Audit Gate Status
 
@@ -42,21 +42,23 @@ Production is deployed on AWS:
 
 - Frontend: `https://d9o5hawnpdm4g.cloudfront.net`
 - API health: `http://ship-api-prod.eba-yrjupwcv.us-east-2.elasticbeanstalk.com/health`
+- Observer dashboard: `https://d9o5hawnpdm4g.cloudfront.net/dashboard?view=observer`
 - Production smoke evidence: `docs/audit-evidence/production-smoke-test.json`
 
 Latest health check during review:
 
 - Elastic Beanstalk: `Ready / Green`
+- Elastic Beanstalk version: `ship-api-20260523-233313`
 - Aurora: `available`
 
 ## Remaining Risks
 
 The audit gate is complete, and `docs/shipshape-improvement-documentation.md` now has after-fix proof for Categories 1 through 7. The main remaining risk is Phase 2 depth rather than missing evidence: Category 3 has real benchmark evidence, but only one endpoint cleared the original 20% P95 stretch target at 50 concurrency. Category 6 fixes the highest-risk offline reload confusion case, but the after capture still records expected development/offline network noise from Vite HMR and realtime WebSocket disconnects.
 
-The demo video is also a separate required final-submission item, but it remains intentionally out of scope for this pass per Jayce's instruction.
+The demo video remains intentionally excluded per Jayce's instruction.
 
 The final copy/paste submission package is tracked at `docs/shipshape-final-submission-package.md`.
 
 ## Final Review Result
 
-Ready for audit-gate resubmission. For full final-submission scoring, record the demo video if required by the submission portal and consider one additional performance slice if there is time.
+Ready for final submission without the demo video. The remaining post-submission cleanup item is rotating the AWS access key used during setup.
