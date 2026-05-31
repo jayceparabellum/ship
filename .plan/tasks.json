@@ -1,0 +1,462 @@
+{
+  "mission_id": "shipshape-fresh-audit-perfect-submission",
+  "created_by": "plan-mission",
+  "frozen": true,
+  "tasks": [
+    {
+      "id": "T01-baseline-setup",
+      "goal": "Prepare and document the original baseline worktree at commit 076a1837 for before measurements.",
+      "inputs": [
+        "C:/Users/jayce/OneDrive/Documents/ShipShape/ship-baseline-076a1837",
+        "package.json",
+        "README.md",
+        "docker-compose.local.yml"
+      ],
+      "file_whitelist": [
+        "docs/audit-evidence/**",
+        "docs/shipshape-audit-report.md",
+        "audit.md"
+      ],
+      "success_criteria": [
+        "Baseline commit hash and local path are documented.",
+        "Setup prerequisites and any local friction are recorded.",
+        "No implementation changes are made in the baseline worktree."
+      ],
+      "deps": [],
+      "owner_role": "audit-lead",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T02-baseline-evidence",
+      "goal": "Generate or verify baseline evidence for all seven required ShipShape audit categories.",
+      "inputs": [
+        "C:/Users/jayce/OneDrive/Documents/ShipShape/ship-baseline-076a1837",
+        "scripts/audit-type-safety.mjs",
+        "scripts/audit-bundle-map.mjs",
+        "scripts/audit-api-benchmark.mjs",
+        "scripts/audit-db-query-capture.mjs",
+        "scripts/audit-browser-accessibility.mjs"
+      ],
+      "file_whitelist": [
+        "docs/audit-evidence/**",
+        "docs/shipshape-audit-report.md",
+        "audit.md"
+      ],
+      "success_criteria": [
+        "Type safety, bundle, API, DB, test, runtime, and accessibility baselines are represented by raw artifacts.",
+        "Each baseline artifact records command, environment, or measurement conditions.",
+        "Every baseline number used in docs can be traced to a raw artifact."
+      ],
+      "deps": [
+        "T01-baseline-setup"
+      ],
+      "owner_role": "measurement-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T03-current-state-review",
+      "goal": "Review current master for existing ShipShape work, stale evidence, weak claims, and rubric gaps.",
+      "inputs": [
+        "C:/Users/jayce/OneDrive/Documents/ShipShape/ship",
+        "audit.md",
+        "docs/shipshape-rubric-readiness-review.md",
+        "docs/shipshape-improvement-documentation.md",
+        "docs/audit-evidence/**"
+      ],
+      "file_whitelist": [
+        "docs/shipshape-rubric-readiness-review.md",
+        "docs/shipshape-improvement-documentation.md",
+        "docs/shipshape-final-submission-package.md",
+        "docs/shipshape-submission-checklist.md"
+      ],
+      "success_criteria": [
+        "Each current category claim is marked keep, refresh, fix, or remove.",
+        "Demo/social/deployment risks are explicitly documented.",
+        "Category 8 is treated as an optional extension, not a replacement for the seven required categories."
+      ],
+      "deps": [
+        "T02-baseline-evidence"
+      ],
+      "owner_role": "rubric-reviewer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T04-category-1-type-safety",
+      "goal": "Verify or improve Category 1 so type-safety violations are reduced by at least 25% with meaningful typing.",
+      "inputs": [
+        "scripts/audit-type-safety.mjs",
+        "api/src/**",
+        "web/src/**",
+        "shared/src/**"
+      ],
+      "file_whitelist": [
+        "api/src/**",
+        "web/src/**",
+        "shared/src/**",
+        "docs/audit-evidence/type-safety*.json",
+        "audit.md",
+        "docs/shipshape-improvement-documentation.md"
+      ],
+      "success_criteria": [
+        "After count clears the 25% reduction threshold from the baseline.",
+        "Fixes use real types or narrowing rather than superficial unknown substitutions.",
+        "Type-check passes after changes."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "typescript-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T05-category-2-bundle-size",
+      "goal": "Verify or improve Category 2 so the frontend bundle meets the required reduction target without removing functionality.",
+      "inputs": [
+        "web/src/main.tsx",
+        "web/src/pages/**",
+        "web/vite.config.ts",
+        "scripts/audit-bundle-map.mjs"
+      ],
+      "file_whitelist": [
+        "web/src/**",
+        "web/vite.config.ts",
+        "docs/audit-evidence/bundle-analysis*.json",
+        "audit.md",
+        "docs/shipshape-improvement-documentation.md"
+      ],
+      "success_criteria": [
+        "After evidence shows either 15% total bundle reduction or 20% initial-load reduction.",
+        "Before and after builds use comparable commands and sourcemap analysis.",
+        "The app still builds and route loading remains functional."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "frontend-performance-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T06-category-3-api-performance",
+      "goal": "Verify or improve Category 3 so P95 response time improves at least 20% on two important endpoints.",
+      "inputs": [
+        "scripts/audit-api-benchmark.mjs",
+        "api/src/routes/documents.ts",
+        "api/src/routes/issues.ts",
+        "api/src/routes/weeks.ts",
+        "api/src/routes/dashboard.ts",
+        "api/src/middleware/auth.ts"
+      ],
+      "file_whitelist": [
+        "api/src/routes/**",
+        "api/src/middleware/**",
+        "api/src/utils/**",
+        "docs/audit-evidence/api-benchmarks*.json",
+        "audit.md",
+        "docs/shipshape-improvement-documentation.md"
+      ],
+      "success_criteria": [
+        "After evidence shows at least two endpoints with 20%+ P95 improvement under comparable concurrency and data.",
+        "Root cause is documented for each improved endpoint.",
+        "API tests or focused regression tests pass."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "api-performance-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T07-category-4-db-efficiency",
+      "goal": "Verify or improve Category 4 so query count or slow-query performance meets the required target.",
+      "inputs": [
+        "scripts/audit-db-query-capture.mjs",
+        "scripts/audit-auth-query-count.mjs",
+        "api/src/db/schema.sql",
+        "api/src/db/migrations/**",
+        "api/src/routes/**",
+        "api/src/middleware/auth.ts"
+      ],
+      "file_whitelist": [
+        "api/src/db/**",
+        "api/src/routes/**",
+        "api/src/middleware/**",
+        "scripts/audit-db-query-capture.mjs",
+        "scripts/audit-auth-query-count.mjs",
+        "docs/audit-evidence/*query*.json",
+        "audit.md",
+        "docs/shipshape-improvement-documentation.md"
+      ],
+      "success_criteria": [
+        "After evidence shows 20% fewer queries on one flow or 50% faster slow-query performance.",
+        "EXPLAIN ANALYZE or instrumented query counts support the claim.",
+        "Database changes are narrowly scoped and migration-safe."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "database-performance-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T08-category-5-tests",
+      "goal": "Close Category 5 with unambiguous rubric coverage: three meaningful critical-path tests or three flaky-test fixes with root cause.",
+      "inputs": [
+        "api/src/**/*.test.ts",
+        "web/src/**/*.test.ts",
+        "web/src/**/*.test.tsx",
+        "e2e/**/*.spec.ts",
+        "web/package.json",
+        "api/package.json"
+      ],
+      "file_whitelist": [
+        "api/src/**/*.test.ts",
+        "web/src/**/*.test.ts",
+        "web/src/**/*.test.tsx",
+        "e2e/**/*.spec.ts",
+        "web/package.json",
+        "pnpm-lock.yaml",
+        "docs/audit-evidence/*test*.json",
+        "audit.md",
+        "docs/shipshape-improvement-documentation.md"
+      ],
+      "success_criteria": [
+        "The final documentation explicitly maps three meaningful tests or flaky fixes to real regression risks.",
+        "Test evidence includes pass/fail counts and runtime.",
+        "The chosen strategy no longer reads as merely fixing a test runner environment unless the rubric mapping justifies it."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "test-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T09-category-6-runtime-errors",
+      "goal": "Verify or improve Category 6 with three real runtime/error-handling fixes, including at least one user-facing data-loss or confusion scenario.",
+      "inputs": [
+        "scripts/audit-browser-accessibility.mjs",
+        "api/src/routes/documents.ts",
+        "api/src/middleware/auth.ts",
+        "web/public/offline-sw.js",
+        "web/src/pages/App.tsx"
+      ],
+      "file_whitelist": [
+        "api/src/**",
+        "web/src/**",
+        "web/public/**",
+        "docs/audit-evidence/browser-runtime*.json",
+        "audit.md",
+        "docs/shipshape-improvement-documentation.md"
+      ],
+      "success_criteria": [
+        "Three distinct runtime gaps have reproduction steps, before behavior, after behavior, and evidence.",
+        "At least one fix addresses user-facing data loss or confusing failure recovery.",
+        "Browser evidence confirms the after behavior."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "runtime-reliability-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T10-category-7-accessibility",
+      "goal": "Verify or improve Category 7 so accessibility evidence meets the Lighthouse or Critical/Serious axe target.",
+      "inputs": [
+        "scripts/audit-browser-accessibility.mjs",
+        "web/src/pages/**",
+        "web/src/components/**",
+        "web/src/index.css"
+      ],
+      "file_whitelist": [
+        "web/src/**",
+        "docs/audit-evidence/browser-accessibility*.json",
+        "docs/audit-evidence/lighthouse-summary.json",
+        "audit.md",
+        "docs/shipshape-improvement-documentation.md"
+      ],
+      "success_criteria": [
+        "After evidence shows all Critical/Serious violations fixed on the three most important pages or a 10+ Lighthouse gain on the worst page.",
+        "Keyboard and screen-reader-relevant semantics are documented where applicable.",
+        "Accessibility fixes do not reduce visual clarity or core functionality."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "accessibility-engineer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T11-documentation-package",
+      "goal": "Update the final ShipShape documentation package from verified evidence and remove or clarify weak claims.",
+      "inputs": [
+        "audit.md",
+        "docs/shipshape-audit-report.md",
+        "docs/shipshape-improvement-documentation.md",
+        "docs/shipshape-discovery-writeup.md",
+        "docs/shipshape-ai-cost-analysis.md",
+        "docs/shipshape-submission-checklist.md",
+        "docs/shipshape-final-submission-package.md"
+      ],
+      "file_whitelist": [
+        "audit.md",
+        "SHIPSHAPE_AUDIT.md",
+        "SHIPSHAPE_IMPROVEMENTS.md",
+        "SHIPSHAPE_DISCOVERY.md",
+        "docs/shipshape-*.md",
+        "docs/audit-evidence/README.md"
+      ],
+      "success_criteria": [
+        "Every required deliverable is listed with a file path or explicit human action.",
+        "Every category has a rubric threshold, before metric, after metric, root cause, and evidence path.",
+        "Demo video and social post are handled honestly as required deliverables or documented external actions."
+      ],
+      "deps": [
+        "T04-category-1-type-safety",
+        "T05-category-2-bundle-size",
+        "T06-category-3-api-performance",
+        "T07-category-4-db-efficiency",
+        "T08-category-5-tests",
+        "T09-category-6-runtime-errors",
+        "T10-category-7-accessibility",
+        "T13-demo-feature-audit"
+      ],
+      "owner_role": "technical-writer",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T13-demo-feature-audit",
+      "goal": "Audit the entire repo surface relevant to PRESENTATION.md and produce reviewed proposals for any demo-product gaps.",
+      "inputs": [
+        "PRESENTATION.md",
+        "ship-welcome-guide.md",
+        "ship-changelog-72h.md",
+        "README.md",
+        "web/src/**",
+        "api/src/**",
+        "shared/src/**",
+        "docs/screenshots/**",
+        "e2e/**"
+      ],
+      "file_whitelist": [
+        ".plan/demo-contract.md",
+        ".plan/proposals/**",
+        "docs/shipshape-rubric-readiness-review.md",
+        "docs/shipshape-final-submission-package.md"
+      ],
+      "success_criteria": [
+        "Every feature claimed in PRESENTATION.md is mapped to UI, API, shared type, seed data, test, screenshot, and documentation evidence where applicable.",
+        "Missing or questionable demo features are written as proposals under .plan/proposals/ before implementation.",
+        "No product/demo fix is implemented before Jayce approves the proposal."
+      ],
+      "deps": [
+        "T03-current-state-review"
+      ],
+      "owner_role": "demo-orchestrator",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T14-approved-demo-feature-repairs",
+      "goal": "Implement Jayce-approved repairs so the running app matches the PRESENTATION.md demo contract.",
+      "inputs": [
+        ".plan/proposals/**",
+        ".plan/demo-contract.md",
+        "PRESENTATION.md",
+        "web/src/**",
+        "api/src/**",
+        "shared/src/**",
+        "api/src/db/seed.ts",
+        "docs/screenshots/**"
+      ],
+      "file_whitelist": [
+        "web/src/**",
+        "api/src/**",
+        "shared/src/**",
+        "api/src/db/**",
+        "e2e/**",
+        "docs/screenshots/**",
+        "PRESENTATION.md",
+        "docs/shipshape-*.md"
+      ],
+      "success_criteria": [
+        "Only approved proposals are implemented.",
+        "Each repaired demo feature has browser verification, test coverage, fresh screenshot, or approved presentation revision.",
+        "The final demo story remains coherent and does not overclaim."
+      ],
+      "deps": [
+        "T13-demo-feature-audit"
+      ],
+      "owner_role": "demo-feature-worker",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    },
+    {
+      "id": "T12-final-validation",
+      "goal": "Run final verification and produce a rubric readiness review for the perfected ShipShape submission.",
+      "inputs": [
+        "package.json",
+        "docs/audit-evidence/**",
+        "docs/shipshape-rubric-readiness-review.md",
+        "docs/shipshape-final-submission-package.md"
+      ],
+      "file_whitelist": [
+        "docs/shipshape-rubric-readiness-review.md",
+        "docs/shipshape-final-submission-package.md",
+        "docs/shipshape-submission-checklist.md",
+        "docs/audit-evidence/**"
+      ],
+      "success_criteria": [
+        "Type-check, builds, tests, and audit scripts are run or explicitly documented if blocked.",
+        "Final readiness review marks each rubric item pass, risk, or human action.",
+        "No known stale evidence remains in the final package."
+      ],
+      "deps": [
+        "T11-documentation-package",
+        "T14-approved-demo-feature-repairs"
+      ],
+      "owner_role": "verification-lead",
+      "state": "pending",
+      "assigned_to": null,
+      "attempts": 0,
+      "irreversible": false
+    }
+  ]
+}

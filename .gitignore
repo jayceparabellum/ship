@@ -65,6 +65,9 @@ test-results/
 # Audit artifacts
 .audit
 
+# Compound Engineering local/private config
+.compound-engineering/config.local.yaml
+
 # Terraform
 terraform/.terraform/
 terraform/.terraform.lock.hcl
